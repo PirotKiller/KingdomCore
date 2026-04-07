@@ -13,8 +13,7 @@ public enum ShopType {
     REDSTONE("redstone", CurrencyMode.SHARDS),
     FARMING("farming", CurrencyMode.SHARDS),
 
-    // Gem-only shops
-    CLASSES("classes", CurrencyMode.GEMS),
+    // Gem-only shops (Removed Classes)
 
     // Dual-currency shops
     BLACKSMITH("blacksmith", CurrencyMode.DUAL),

@@ -43,9 +43,8 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
     // Valid subcommands
     private static final List<String> SUBCOMMANDS = Arrays.asList(
             "wood", "stone", "fisherman", "fletcher", "redstone", "farming",
-            "classes",
             "blacksmith", "enchant", "potion", "nether", "end", "armor",
-            "sell", "ah", "bounty"
+            "sell", "convert"
     );
 
     public ShopCommandHandler(KingdomCore plugin, ShopGUI shopGUI, ConverterShop converterShop) {
@@ -76,13 +75,8 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
             return true;
         }
 
-        if (sub.equals("ah")) {
-            player.performCommand("ah");
-            return true;
-        }
-
-        if (sub.equals("bounty")) {
-            player.performCommand("bounty");
+        if (sub.equals("ah") || sub.equals("bounty") || sub.equals("classes")) {
+            player.sendMessage("§c§l[Kingdom] §7This specialized menu has been moved or retired.");
             return true;
         }
 
@@ -119,50 +113,74 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
 
         fillMainMenuBorder(inv);
 
-        // Core / Classes
-        inv.setItem(22, createIcon(Material.NETHER_STAR, "§d§lClass Selection", "classes",
-                "§7Choose or switch your RPG class.", "§b✦ §eRequires Gems"));
-
-        // Gear / Dual Shops
-        inv.setItem(20, createIcon(Material.ANVIL, "§8§lBlacksmith", "blacksmith",
-                "§7Buy high-tier weapons.", "§6✦ §eDual Currency"));
-        inv.setItem(29, createIcon(Material.DIAMOND_CHESTPLATE, "§b§lArmor Shop", "armor",
-                "§7Buy protective gear.", "§6✦ §eDual Currency"));
-        inv.setItem(24, createIcon(Material.ENCHANTING_TABLE, "§9§lEnchantments", "enchant",
-                "§7Buy magic books.", "§6✦ §eDual Currency"));
-        inv.setItem(33, createIcon(Material.BREWING_STAND, "§d§lPotions", "potion",
-                "§7Buy brewing supplies.", "§6✦ §eDual Currency"));
-
-        // Resource / Shard Shops
-        inv.setItem(38, createIcon(Material.WHEAT, "§e§lFarming Shop", "farming",
-                "§7Crops and seeds.", "§6✦ §eRequires Shards"));
-        inv.setItem(39, createIcon(Material.OAK_LOG, "§a§lWood Shop", "wood",
-                "§7Logs and planks.", "§6✦ §eRequires Shards"));
-        inv.setItem(40, createIcon(Material.COBBLESTONE, "§7§lStone Shop", "stone",
-                "§7Building blocks.", "§6✦ §eRequires Shards"));
-        inv.setItem(41, createIcon(Material.REDSTONE, "§c§lRedstone Shop", "redstone",
-                "§7Mechanisms.", "§6✦ §eRequires Shards"));
-        inv.setItem(42, createIcon(Material.FISHING_ROD, "§3§lFisherman", "fisherman",
-                "§7Fishing supplies.", "§6✦ §eRequires Shards"));
-
-        // Dimensions
-        inv.setItem(11, createIcon(Material.NETHERRACK, "§4§lNether Shop", "nether",
+        // -- Top Row: Dimensions --
+        inv.setItem(12, createIcon(Material.NETHERRACK, "§4§lNether Shop", "nether",
                 "§7Hellish resources.", "§6✦ §eDual Currency"));
-        inv.setItem(15, createIcon(Material.END_STONE, "§e§lEnd Shop", "end",
+        inv.setItem(14, createIcon(Material.END_STONE, "§e§lEnd Shop", "end",
                 "§7Void materials.", "§6✦ §eDual Currency"));
 
-        // Utilities
-        inv.setItem(31, createIcon(Material.GOLD_INGOT, "§a§lOre Converter", "converter",
+        // -- Middle Row: Gear & Magic & Util --
+        inv.setItem(20, createIcon(Material.ANVIL, "§8§lBlacksmith", "blacksmith",
+                "§7Buy high-tier weapons.", "§6✦ §eDual Currency"));
+        inv.setItem(21, createIcon(Material.DIAMOND_CHESTPLATE, "§b§lArmor Shop", "armor",
+                "§7Buy protective gear.", "§6✦ §eDual Currency"));
+        inv.setItem(22, createIcon(Material.GOLD_INGOT, "§a§lOre Converter", "converter",
                 "§7Convert ores to Shards.", "§6✦ §eEarn Shards"));
-        inv.setItem(49, createIcon(Material.GOLDEN_HORSE_ARMOR, "§6§lAuction House", "ah",
-                "§7Player marketplace.", "§ePvP Economy"));
+        inv.setItem(23, createIcon(Material.ENCHANTING_TABLE, "§9§lEnchantments", "enchant",
+                "§7Buy magic books.", "§6✦ §eDual Currency"));
+        inv.setItem(24, createIcon(Material.BREWING_STAND, "§d§lPotions", "potion",
+                "§7Buy brewing supplies.", "§6✦ §eDual Currency"));
+
+        // -- Bottom Row: Resources --
+        inv.setItem(29, createIcon(Material.WHEAT, "§e§lFarming Shop", "farming",
+                "§7Crops and seeds.", "§6✦ §eRequires Shards"));
+        inv.setItem(30, createIcon(Material.OAK_LOG, "§a§lWood Shop", "wood",
+                "§7Logs and planks.", "§6✦ §eRequires Shards"));
+        inv.setItem(31, createIcon(Material.COBBLESTONE, "§7§lStone Shop", "stone",
+                "§7Building blocks.", "§6✦ §eRequires Shards"));
+        inv.setItem(32, createIcon(Material.REDSTONE, "§c§lRedstone Shop", "redstone",
+                "§7Mechanisms.", "§6✦ §eRequires Shards"));
+        inv.setItem(33, createIcon(Material.FISHING_ROD, "§3§lFisherman", "fisherman",
+                "§7Fishing supplies.", "§6✦ §eRequires Shards"));
+
+        // -- Player Profile Stats (Bottom Center) --
+        inv.setItem(40, getPlayerProfileIcon(player));
 
         player.openInventory(inv);
     }
 
+    private ItemStack getPlayerProfileIcon(Player player) {
+        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        org.bukkit.inventory.meta.SkullMeta meta = (org.bukkit.inventory.meta.SkullMeta) head.getItemMeta();
+        if (meta != null) {
+            meta.setOwningPlayer(player);
+            meta.setDisplayName("§b§l" + player.getName() + "'s Wealth");
+            
+            int shards = plugin.getEconomyManager() != null ? plugin.getEconomyManager().getShards(player.getUniqueId()) : 0;
+            int gems = plugin.getEconomyManager() != null ? plugin.getEconomyManager().getGems(player.getUniqueId()) : 0;
+            
+            List<String> lore = new ArrayList<>();
+            lore.add("§8§m                              ");
+            lore.add("§6✦ §eShards: §a" + formatNumber(shards));
+            lore.add("§b✦ §eGems: §b" + formatNumber(gems));
+            lore.add("§8§m                              ");
+            lore.add("§7Your current balance.");
+            meta.setLore(lore);
+            head.setItemMeta(meta);
+        }
+        return head;
+    }
+
+    private String formatNumber(int number) {
+        if (number >= 1000) {
+            return String.format("%,d", number);
+        }
+        return String.valueOf(number);
+    }
+
     private void fillMainMenuBorder(Inventory inv) {
-        ItemStack border = createDecoPane(Material.MAGENTA_STAINED_GLASS_PANE);
-        ItemStack corner = createDecoPane(Material.PURPLE_STAINED_GLASS_PANE);
+        ItemStack border = createDecoPane(Material.CYAN_STAINED_GLASS_PANE);
+        ItemStack corner = createDecoPane(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
 
         for (int i = 0; i < 54; i++) {
             if (isBorderSlot(i, 54)) {
@@ -216,7 +234,7 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
             meta.getPersistentDataContainer().set(ACTION_KEY, PersistentDataType.STRING, action);
 
             // Add glow to special categories
-            if (action.equals("classes") || action.equals("converter") || action.equals("ah")) {
+            if (action.equals("converter")) {
                 meta.addEnchant(Enchantment.UNBREAKING, 1, true);
                 meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             }
@@ -248,9 +266,6 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
         if (action == null) return;
 
         switch (action) {
-            case "ah":
-                player.performCommand("ah");
-                break;
             case "converter":
                 converterShop.openConverter(player);
                 break;

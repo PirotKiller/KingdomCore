@@ -29,7 +29,6 @@ public class ShopGUI {
     public final NamespacedKey SHOP_TYPE_KEY;
     public final NamespacedKey SHOP_PRICE_SHARDS_KEY;
     public final NamespacedKey SHOP_PRICE_GEMS_KEY;
-    public final NamespacedKey SHOP_CLASS_KEY;
 
     // Prefix used to identify shop inventories
     public static final String SHOP_IDENTIFIER = "§8§l[";
@@ -40,7 +39,6 @@ public class ShopGUI {
         this.SHOP_TYPE_KEY = new NamespacedKey(plugin, "shop_type");
         this.SHOP_PRICE_SHARDS_KEY = new NamespacedKey(plugin, "shop_price_shards");
         this.SHOP_PRICE_GEMS_KEY = new NamespacedKey(plugin, "shop_price_gems");
-        this.SHOP_CLASS_KEY = new NamespacedKey(plugin, "shop_class");
     }
 
     /**
@@ -71,43 +69,10 @@ public class ShopGUI {
         ConfigurationSection itemsSection = shopConfig.getConfigurationSection("items");
         if (itemsSection == null) return inv;
 
-        // For class selection, center the items
-        if (shopType == ShopType.CLASSES) {
-            placeItemsCentered(inv, itemsSection, shopType, size);
-        } else {
-            placeItemsSequential(inv, itemsSection, shopType, size);
-        }
+        placeItemsSequential(inv, itemsSection, shopType, size);
 
         return inv;
     }
-
-    /**
-     * Place items centered in the GUI (used for class selection).
-     */
-    private void placeItemsCentered(Inventory inv, ConfigurationSection itemsSection,
-                                    ShopType shopType, int size) {
-        List<String> keys = new ArrayList<>(itemsSection.getKeys(false));
-        int count = keys.size();
-        
-        // Calculate center row (row 1 for 27-slot, row 2 for 45/54-slot)
-        int centerRow = (size / 9) / 2;
-        int startCol = Math.max(1, (9 - count) / 2); // Center horizontally
-
-        for (int i = 0; i < count; i++) {
-            int col = startCol + i;
-            if (col > 7) break; // Don't go past border
-            int slot = centerRow * 9 + col;
-
-            ConfigurationSection itemConfig = itemsSection.getConfigurationSection(keys.get(i));
-            if (itemConfig == null) continue;
-
-            ItemStack shopItem = createShopItem(keys.get(i), itemConfig, shopType);
-            if (shopItem != null) {
-                inv.setItem(slot, shopItem);
-            }
-        }
-    }
-
     /**
      * Place items sequentially in the GUI (standard shops).
      */
@@ -170,11 +135,7 @@ public class ShopGUI {
 
         // Click instruction
         lore.add("");
-        if (config.contains("class")) {
-            lore.add("§e▸ Click to select this class");
-        } else {
-            lore.add("§e▸ Click to purchase");
-        }
+        lore.add("§e▸ Click to purchase");
 
         meta.setLore(lore);
 
@@ -191,12 +152,6 @@ public class ShopGUI {
             if (enchantment != null && meta instanceof EnchantmentStorageMeta esMeta) {
                 esMeta.addStoredEnchant(enchantment, enchantLevel, true);
             }
-        }
-
-        // Add enchant glow for class items (makes them visually stand out)
-        if (config.contains("class") && !(meta instanceof EnchantmentStorageMeta)) {
-            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
 
         // PDC: store shop metadata
@@ -220,11 +175,6 @@ public class ShopGUI {
         }
         meta.getPersistentDataContainer().set(SHOP_PRICE_SHARDS_KEY, PersistentDataType.INTEGER, priceShards);
         meta.getPersistentDataContainer().set(SHOP_PRICE_GEMS_KEY, PersistentDataType.INTEGER, priceGems);
-
-        // If this is a class purchase item, store the class name
-        if (config.contains("class")) {
-            meta.getPersistentDataContainer().set(SHOP_CLASS_KEY, PersistentDataType.STRING, config.getString("class"));
-        }
 
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
 
@@ -295,7 +245,6 @@ public class ShopGUI {
             case NETHER -> Material.NETHERRACK;
             case END -> Material.END_STONE;
             case ARMOR -> Material.DIAMOND_CHESTPLATE;
-            case CLASSES -> Material.NETHER_STAR;
             case WOOD -> Material.OAK_LOG;
             case STONE -> Material.COBBLESTONE;
             case FISHERMAN -> Material.FISHING_ROD;
@@ -332,7 +281,6 @@ public class ShopGUI {
             case NETHER -> Material.RED_STAINED_GLASS_PANE;
             case END -> Material.YELLOW_STAINED_GLASS_PANE;
             case ARMOR -> Material.LIGHT_BLUE_STAINED_GLASS_PANE;
-            case CLASSES -> Material.MAGENTA_STAINED_GLASS_PANE;
             case WOOD -> Material.BROWN_STAINED_GLASS_PANE;
             case STONE -> Material.LIGHT_GRAY_STAINED_GLASS_PANE;
             case FISHERMAN -> Material.CYAN_STAINED_GLASS_PANE;
@@ -351,7 +299,6 @@ public class ShopGUI {
             case NETHER -> Material.BLACK_STAINED_GLASS_PANE;
             case END -> Material.BLACK_STAINED_GLASS_PANE;
             case ARMOR -> Material.BLUE_STAINED_GLASS_PANE;
-            case CLASSES -> Material.PURPLE_STAINED_GLASS_PANE;
             case WOOD -> Material.BLACK_STAINED_GLASS_PANE;
             case STONE -> Material.BLACK_STAINED_GLASS_PANE;
             case FISHERMAN -> Material.BLUE_STAINED_GLASS_PANE;

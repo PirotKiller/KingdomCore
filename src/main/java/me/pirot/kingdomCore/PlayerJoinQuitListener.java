@@ -60,9 +60,7 @@ public class PlayerJoinQuitListener implements Listener {
                     player.sendMessage("§a§l[Kingdom] §7Welcome back, " +
                             me.pirot.kingdomCore.rpg.RPGClass.fromString(className).getColoredName() + "§7!");
                 } else {
-                    player.sendMessage("§a§l[Kingdom] §eWelcome! Please select a class to begin your journey.");
-                    // Open class selection menu automatically
-                    player.openInventory(shopGUI.buildShopInventory(ShopType.CLASSES));
+                    player.sendMessage("§a§l[Kingdom] §eWelcome! Embark on your legendary quest today.");
                 }
 
                 // Prompt for resource pack if enabled
