@@ -1,0 +1,271 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:using_item",
+      "on_true": {
+        "type": "minecraft:range_dispatch",
+        "property": "minecraft:use_duration",
+        "scale": 20.0,
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/bow"
+        },
+        "entries": [
+          {
+            "threshold": 0.0,
+            "model": {
+              "type": "minecraft:model",
+              "model": "minecraft:item/bow_pulling_0"
+            }
+          },
+          {
+            "threshold": 0.65,
+            "model": {
+              "type": "minecraft:model",
+              "model": "minecraft:item/bow_pulling_1"
+            }
+          },
+          {
+            "threshold": 0.9,
+            "model": {
+              "type": "minecraft:model",
+              "model": "minecraft:item/bow_pulling_2"
+            }
+          }
+        ]
+      },
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "minecraft:item/bow"
+      }
+    },
+    "entries": [
+      {
+        "threshold": 1001.0,
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 20.0,
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "minecraft:item/custom_weapons/archer/goldbow/midas_bow_1"
+            },
+            "entries": [
+              {
+                "threshold": 0.0,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/goldbow/midas_bow_1"
+                }
+              },
+              {
+                "threshold": 0.65,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/goldbow/midas_bow_2"
+                }
+              },
+              {
+                "threshold": 0.9,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/goldbow/midas_bow_3"
+                }
+              }
+            ]
+          },
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/custom_weapons/archer/goldbow/midas_bow"
+          }
+        }
+      },
+      {
+        "threshold": 1002.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/bow"
+        }
+      },
+      {
+        "threshold": 1002.0,
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 20.0,
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "minecraft:item/custom_weapons/archer/diamondbow/diamond_bow_1"
+            },
+            "entries": [
+              {
+                "threshold": 0.0,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/diamondbow/diamond_bow_1"
+                }
+              },
+              {
+                "threshold": 0.65,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/diamondbow/diamond_bow_2"
+                }
+              },
+              {
+                "threshold": 0.9,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/diamondbow/diamond_bow_3"
+                }
+              }
+            ]
+          },
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/custom_weapons/archer/diamondbow/diamond_bow"
+          }
+        }
+      },
+      {
+        "threshold": 1003.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/bow"
+        }
+      },
+      {
+        "threshold": 1003.0,
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 20.0,
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "minecraft:item/custom_weapons/archer/enderbow/ender_bow_1"
+            },
+            "entries": [
+              {
+                "threshold": 0.0,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/enderbow/ender_bow_1"
+                }
+              },
+              {
+                "threshold": 0.65,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/enderbow/ender_bow_2"
+                }
+              },
+              {
+                "threshold": 0.9,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/enderbow/ender_bow_3"
+                }
+              }
+            ]
+          },
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/custom_weapons/archer/enderbow/ender_bow"
+          }
+        }
+      },
+      {
+        "threshold": 1004.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/bow"
+        }
+      },
+      {
+        "threshold": 1004.0,
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 20.0,
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "minecraft:item/custom_weapons/archer/bonebow/bow_cold_blood_0"
+            },
+            "entries": [
+              {
+                "threshold": 0.0,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/bonebow/bow_cold_blood_0"
+                }
+              },
+              {
+                "threshold": 0.65,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/bonebow/bow_cold_blood_1"
+                }
+              },
+              {
+                "threshold": 0.9,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/bonebow/bow_cold_blood_2"
+                }
+              }
+            ]
+          },
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/custom_weapons/archer/bonebow/model"
+          }
+        }
+      },
+      {
+        "threshold": 1005.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/bow"
+        }
+      },
+      {
+        "threshold": 1005.0,
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/custom_weapons/archer/chaosbow/bow_dark_03"
+          },
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/custom_weapons/archer/chaosbow/bow_dark_03"
+          }
+        }
+      },
+      {
+        "threshold": 1006.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/bow"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+title: "§8§l[ §4§lNether Shop §8§l]"
+size: 27
+items:
+  netherrack:
+    material: NETHERRACK
+    amount: 64
+    price-shards: 10
+    price-gems: 0
+    name: "§fNetherrack x64"
+  nether_bricks:
+    material: NETHER_BRICKS
+    amount: 32
+    price-shards: 20
+    price-gems: 0
+    name: "§fNether Bricks x32"
+  soul_sand:
+    material: SOUL_SAND
+    amount: 16
+    price-shards: 25
+    price-gems: 0
+    name: "§fSoul Sand x16"
+  blaze_rod:
+    material: BLAZE_ROD
+    amount: 4
+    price-shards: 50
+    price-gems: 5
+    name: "§fBlaze Rod x4"
+  ghast_tear:
+    material: GHAST_TEAR
+    amount: 2
+    price-shards: 80
+    price-gems: 10
+    name: "§fGhast Tear x2"
+  magma_cream:
+    material: MAGMA_CREAM
+    amount: 8
+    price-shards: 40
+    price-gems: 0
+    name: "§fMagma Cream x8"
+  wither_skeleton_skull:
+    material: WITHER_SKELETON_SKULL
+    amount: 1
+    price-shards: 500
+    price-gems: 50
+    name: "§fWither Skeleton Skull"

@@ -1,0 +1,38 @@
+title: "§8§l[ §e§lFletcher §8§l]"
+size: 27
+items:
+  arrow:
+    material: ARROW
+    amount: 32
+    price: 20
+    name: "§fArrow x32"
+  spectral_arrow:
+    material: SPECTRAL_ARROW
+    amount: 16
+    price: 40
+    name: "§fSpectral Arrow x16"
+  bow:
+    material: BOW
+    amount: 1
+    price: 75
+    name: "§fBow"
+  crossbow:
+    material: CROSSBOW
+    amount: 1
+    price: 100
+    name: "§fCrossbow"
+  string:
+    material: STRING
+    amount: 16
+    price: 15
+    name: "§fString x16"
+  flint:
+    material: FLINT
+    amount: 16
+    price: 10
+    name: "§fFlint x16"
+  feather:
+    material: FEATHER
+    amount: 16
+    price: 10
+    name: "§fFeather x16"

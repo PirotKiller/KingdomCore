@@ -1,0 +1,43 @@
+title: "§8§l[ §2§lFarming Shop §8§l]"
+size: 27
+items:
+  wheat_seeds:
+    material: WHEAT_SEEDS
+    amount: 16
+    price: 5
+    name: "§fWheat Seeds x16"
+  beetroot_seeds:
+    material: BEETROOT_SEEDS
+    amount: 16
+    price: 5
+    name: "§fBeetroot Seeds x16"
+  carrot:
+    material: CARROT
+    amount: 8
+    price: 10
+    name: "§fCarrot x8"
+  potato:
+    material: POTATO
+    amount: 8
+    price: 10
+    name: "§fPotato x8"
+  melon_seeds:
+    material: MELON_SEEDS
+    amount: 8
+    price: 12
+    name: "§fMelon Seeds x8"
+  pumpkin_seeds:
+    material: PUMPKIN_SEEDS
+    amount: 8
+    price: 12
+    name: "§fPumpkin Seeds x8"
+  bone_meal:
+    material: BONE_MEAL
+    amount: 16
+    price: 15
+    name: "§fBone Meal x16"
+  sugar_cane:
+    material: SUGAR_CANE
+    amount: 8
+    price: 10
+    name: "§fSugar Cane x8"

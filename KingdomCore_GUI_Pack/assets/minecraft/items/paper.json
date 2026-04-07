@@ -1,0 +1,97 @@
+{
+    "model": {
+        "type": "minecraft:range_dispatch",
+        "property": "minecraft:custom_model_data",
+        "index": 0,
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/paper"
+        },
+        "entries": [
+            {
+                "threshold": 1000,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/custom_gui/archer"
+                }
+            },
+            {
+                "threshold": 1001,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/paper"
+                }
+            },
+            {
+                "threshold": 2000,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/custom_gui/knight"
+                }
+            },
+            {
+                "threshold": 2001,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/paper"
+                }
+            },
+            {
+                "threshold": 3000,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/custom_gui/wizard"
+                }
+            },
+            {
+                "threshold": 3001,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/paper"
+                }
+            },
+            {
+                "threshold": 4000,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/custom_gui/rogue"
+                }
+            },
+            {
+                "threshold": 4001,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/paper"
+                }
+            },
+            {
+                "threshold": 5000,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/custom_gui/ronin"
+                }
+            },
+            {
+                "threshold": 5001,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/paper"
+                }
+            },
+            {
+                "threshold": 9999,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/custom_gui/background"
+                }
+            },
+            {
+                "threshold": 10000,
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "minecraft:item/paper"
+                }
+            }
+        ]
+    }
+}

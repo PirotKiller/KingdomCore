@@ -1,0 +1,21 @@
+{
+    "providers": [
+        {
+            "type": "space",
+            "advances": {
+                "\ue000": -8,
+                "\ue002": -176,
+                "\ue003": 20
+            }
+        },
+        {
+            "type": "bitmap",
+            "file": "font/gui_border.png",
+            "ascent": 13,
+            "height": 222,
+            "chars": [
+                "\ue001"
+            ]
+        }
+    ]
+}

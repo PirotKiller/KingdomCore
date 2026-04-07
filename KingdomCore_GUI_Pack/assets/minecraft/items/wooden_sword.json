@@ -1,0 +1,83 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/wooden_sword"
+    },
+    "entries": [
+      {
+        "threshold": 5001.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/ronin/gold_katana/katana_yellow"
+        }
+      },
+      {
+        "threshold": 5002.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/wooden_sword"
+        }
+      },
+      {
+        "threshold": 5002.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/ronin/diamond_katana/diamond_katana"
+        }
+      },
+      {
+        "threshold": 5003.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/wooden_sword"
+        }
+      },
+      {
+        "threshold": 5003.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/ronin/ender_katana/katana_purple"
+        }
+      },
+      {
+        "threshold": 5004.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/wooden_sword"
+        }
+      },
+      {
+        "threshold": 5004.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/ronin/bone_katana/bone_katana"
+        }
+      },
+      {
+        "threshold": 5005.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/wooden_sword"
+        }
+      },
+      {
+        "threshold": 5005.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/ronin/chaos_katana/odachi_dark"
+        }
+      },
+      {
+        "threshold": 5006.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/wooden_sword"
+        }
+      }
+    ]
+  }
+}

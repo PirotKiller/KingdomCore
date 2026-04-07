@@ -1,0 +1,45 @@
+title: "§8§l[ §5§lEnd Shop §8§l]"
+size: 27
+items:
+  end_stone:
+    material: END_STONE
+    amount: 64
+    price-shards: 15
+    price-gems: 0
+    name: "§fEnd Stone x64"
+  purpur_block:
+    material: PURPUR_BLOCK
+    amount: 32
+    price-shards: 30
+    price-gems: 0
+    name: "§fPurpur Block x32"
+  chorus_fruit:
+    material: CHORUS_FRUIT
+    amount: 8
+    price-shards: 40
+    price-gems: 5
+    name: "§fChorus Fruit x8"
+  ender_pearl:
+    material: ENDER_PEARL
+    amount: 4
+    price-shards: 60
+    price-gems: 5
+    name: "§fEnder Pearl x4"
+  ender_eye:
+    material: ENDER_EYE
+    amount: 2
+    price-shards: 100
+    price-gems: 10
+    name: "§fEye of Ender x2"
+  shulker_shell:
+    material: SHULKER_SHELL
+    amount: 2
+    price-shards: 200
+    price-gems: 25
+    name: "§fShulker Shell x2"
+  elytra:
+    material: ELYTRA
+    amount: 1
+    price-shards: 5000
+    price-gems: 200
+    name: "§fElytra"

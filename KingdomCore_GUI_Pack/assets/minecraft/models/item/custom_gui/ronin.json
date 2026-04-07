@@ -1,0 +1,25 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "item/custom_gui/ronin"
+    },
+    "display": {
+        "gui": {
+            "rotation": [
+                0,
+                0,
+                0
+            ],
+            "translation": [
+                0,
+                0,
+                0
+            ],
+            "scale": [
+                2.5,
+                2.5,
+                1
+            ]
+        }
+    }
+}

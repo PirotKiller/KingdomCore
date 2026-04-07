@@ -1,0 +1,43 @@
+title: "§8§l[ §c§lRedstone Shop §8§l]"
+size: 27
+items:
+  redstone:
+    material: REDSTONE
+    amount: 32
+    price: 20
+    name: "§fRedstone x32"
+  repeater:
+    material: REPEATER
+    amount: 8
+    price: 30
+    name: "§fRepeater x8"
+  comparator:
+    material: COMPARATOR
+    amount: 4
+    price: 35
+    name: "§fComparator x4"
+  piston:
+    material: PISTON
+    amount: 4
+    price: 40
+    name: "§fPiston x4"
+  sticky_piston:
+    material: STICKY_PISTON
+    amount: 4
+    price: 50
+    name: "§fSticky Piston x4"
+  observer:
+    material: OBSERVER
+    amount: 4
+    price: 45
+    name: "§fObserver x4"
+  hopper:
+    material: HOPPER
+    amount: 4
+    price: 60
+    name: "§fHopper x4"
+  dropper:
+    material: DROPPER
+    amount: 4
+    price: 30
+    name: "§fDropper x4"

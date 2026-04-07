@@ -1,0 +1,388 @@
+title: "§8§l[ §6§lBlacksmith §8§l]"
+size: 54
+items:
+  # Archer Weapons
+  gold_bow:
+    material: BOW
+    cmd: 1001
+    price-shards: 500
+    price-gems: 0
+    amount: 1
+    name: "§6Midas Bow"
+    lore:
+      - "§7Tier: §6Gold"
+      - "§7Class: §6Archer"
+      - "§7Damage: §c6.0"
+      - "§7Speed: §a1.4"
+    damage: 6.0
+    speed: 1.4
+    class: ARCHER
+    tier: GOLD
+  diamond_bow:
+    material: BOW
+    cmd: 1002
+    price-shards: 1000
+    price-gems: 25
+    amount: 1
+    name: "§bDiamond Bow"
+    lore:
+      - "§7Tier: §bDiamond"
+      - "§7Class: §6Archer"
+      - "§7Damage: §c8.0"
+      - "§7Speed: §a1.5"
+    damage: 8.0
+    speed: 1.5
+    class: ARCHER
+    tier: DIAMOND
+  nether_bow:
+    material: BOW
+    cmd: 1003
+    price-shards: 2000
+    price-gems: 50
+    amount: 1
+    name: "§4Ender Bow"
+    lore:
+      - "§7Tier: §4Nether"
+      - "§7Class: §6Archer"
+      - "§7Damage: §c10.0"
+      - "§7Speed: §a1.6"
+    damage: 10.0
+    speed: 1.6
+    class: ARCHER
+    tier: NETHER
+  bone_bow:
+    material: BOW
+    cmd: 1004
+    price-shards: 3500
+    price-gems: 75
+    amount: 1
+    name: "§fBone Bow"
+    lore:
+      - "§7Tier: §fBone"
+      - "§7Class: §6Archer"
+      - "§7Damage: §c12.0"
+      - "§7Speed: §a1.7"
+    damage: 12.0
+    speed: 1.7
+    class: ARCHER
+    tier: BONE
+  chaos_bow:
+    material: BOW
+    cmd: 1005
+    price-shards: 5000
+    price-gems: 150
+    amount: 1
+    name: "§4§lChaos Bow"
+    lore:
+      - "§7Tier: §4§lChaos"
+      - "§7Class: §6Archer"
+      - "§7Damage: §c15.0"
+      - "§7Speed: §a1.8"
+    damage: 15.0
+    speed: 1.8
+    class: ARCHER
+    tier: CHAOS
+  # Knight Shields
+  gold_shield:
+    material: SHIELD
+    cmd: 2001
+    price-shards: 500
+    price-gems: 0
+    amount: 1
+    name: "§6Midas Shield"
+    lore:
+      - "§7Tier: §6Gold"
+      - "§7Class: §bKnight"
+    class: KNIGHT
+    tier: GOLD
+  diamond_shield:
+    material: SHIELD
+    cmd: 2002
+    price-shards: 1000
+    price-gems: 25
+    amount: 1
+    name: "§bDiamond Shield"
+    lore:
+      - "§7Tier: §bDiamond"
+      - "§7Class: §bKnight"
+    class: KNIGHT
+    tier: DIAMOND
+  nether_shield:
+    material: SHIELD
+    cmd: 2003
+    price-shards: 2000
+    price-gems: 50
+    amount: 1
+    name: "§4Ender Shield"
+    lore:
+      - "§7Tier: §4Nether"
+      - "§7Class: §bKnight"
+    class: KNIGHT
+    tier: NETHER
+  bone_shield:
+    material: SHIELD
+    cmd: 2004
+    price-shards: 3500
+    price-gems: 75
+    amount: 1
+    name: "§fBone Shield"
+    lore:
+      - "§7Tier: §fBone"
+      - "§7Class: §bKnight"
+    class: KNIGHT
+    tier: BONE
+  chaos_shield:
+    material: SHIELD
+    cmd: 2005
+    price-shards: 5000
+    price-gems: 150
+    amount: 1
+    name: "§4§lChaos Shield"
+    lore:
+      - "§7Tier: §4§lChaos"
+      - "§7Class: §bKnight"
+    class: KNIGHT
+    tier: CHAOS
+  # Wizard Staffs
+  gold_staff:
+    material: STICK
+    cmd: 3001
+    price-shards: 500
+    price-gems: 0
+    amount: 1
+    name: "§6Gold Staff"
+    lore:
+      - "§7Tier: §6Gold"
+      - "§7Class: §5Wizard"
+      - "§7Damage: §c6.0"
+      - "§7Speed: §a1.4"
+    damage: 6.0
+    speed: 1.4
+    class: WIZARD
+    tier: GOLD
+  diamond_staff:
+    material: STICK
+    cmd: 3002
+    price-shards: 1000
+    price-gems: 25
+    amount: 1
+    name: "§bDiamond Staff"
+    lore:
+      - "§7Tier: §bDiamond"
+      - "§7Class: §5Wizard"
+      - "§7Damage: §c8.0"
+      - "§7Speed: §a1.5"
+    damage: 8.0
+    speed: 1.5
+    class: WIZARD
+    tier: DIAMOND
+  nether_staff:
+    material: STICK
+    cmd: 3003
+    price-shards: 2000
+    price-gems: 50
+    amount: 1
+    name: "§4Ender Staff"
+    lore:
+      - "§7Tier: §4Nether"
+      - "§7Class: §5Wizard"
+      - "§7Damage: §c10.0"
+      - "§7Speed: §a1.6"
+    damage: 10.0
+    speed: 1.6
+    class: WIZARD
+    tier: NETHER
+  bone_staff:
+    material: STICK
+    cmd: 3004
+    price-shards: 3500
+    price-gems: 75
+    amount: 1
+    name: "§fBone Staff"
+    lore:
+      - "§7Tier: §fBone"
+      - "§7Class: §5Wizard"
+      - "§7Damage: §c12.0"
+      - "§7Speed: §a1.7"
+    damage: 12.0
+    speed: 1.7
+    class: WIZARD
+    tier: BONE
+  chaos_staff:
+    material: STICK
+    cmd: 3005
+    price-shards: 5000
+    price-gems: 150
+    amount: 1
+    name: "§4§lChaos Staff"
+    lore:
+      - "§7Tier: §4§lChaos"
+      - "§7Class: §5Wizard"
+      - "§7Damage: §c15.0"
+      - "§7Speed: §a1.8"
+    damage: 15.0
+    speed: 1.8
+    class: WIZARD
+    tier: CHAOS
+  # Rogue Daggers
+  gold_dagger:
+    material: IRON_SWORD
+    cmd: 4001
+    price-shards: 500
+    price-gems: 0
+    amount: 1
+    name: "§6Spirit Flame Dagger"
+    lore:
+      - "§7Tier: §6Gold"
+      - "§7Class: §cRogue"
+      - "§7Damage: §c6.0"
+      - "§7Speed: §a1.4"
+    damage: 6.0
+    speed: 1.4
+    class: ROGUE
+    tier: GOLD
+  diamond_dagger:
+    material: IRON_SWORD
+    cmd: 4002
+    price-shards: 1000
+    price-gems: 25
+    amount: 1
+    name: "§bSpirit Magic Dagger"
+    lore:
+      - "§7Tier: §bDiamond"
+      - "§7Class: §cRogue"
+      - "§7Damage: §c8.0"
+      - "§7Speed: §a1.5"
+    damage: 8.0
+    speed: 1.5
+    class: ROGUE
+    tier: DIAMOND
+  nether_dagger:
+    material: IRON_SWORD
+    cmd: 4003
+    price-shards: 2000
+    price-gems: 50
+    amount: 1
+    name: "§4Spirit Void Dagger"
+    lore:
+      - "§7Tier: §4Nether"
+      - "§7Class: §cRogue"
+      - "§7Damage: §c10.0"
+      - "§7Speed: §a1.6"
+    damage: 10.0
+    speed: 1.6
+    class: ROGUE
+    tier: NETHER
+  bone_dagger:
+    material: IRON_SWORD
+    cmd: 4004
+    price-shards: 3500
+    price-gems: 75
+    amount: 1
+    name: "§fBone Dagger"
+    lore:
+      - "§7Tier: §fBone"
+      - "§7Class: §cRogue"
+      - "§7Damage: §c12.0"
+      - "§7Speed: §a1.7"
+    damage: 12.0
+    speed: 1.7
+    class: ROGUE
+    tier: BONE
+  chaos_dagger:
+    material: IRON_SWORD
+    cmd: 4005
+    price-shards: 5000
+    price-gems: 150
+    amount: 1
+    name: "§4§lChaos Dagger"
+    lore:
+      - "§7Tier: §4§lChaos"
+      - "§7Class: §cRogue"
+      - "§7Damage: §c15.0"
+      - "§7Speed: §a1.8"
+    damage: 15.0
+    speed: 1.8
+    class: ROGUE
+    tier: CHAOS
+  # Ronin Katanas
+  gold_katana:
+    material: WOODEN_SWORD
+    cmd: 5001
+    price-shards: 500
+    price-gems: 0
+    amount: 1
+    name: "§6Gold Katana"
+    lore:
+      - "§7Tier: §6Gold"
+      - "§7Class: §eRonin"
+      - "§7Damage: §c6.0"
+      - "§7Speed: §a1.4"
+    damage: 6.0
+    speed: 1.4
+    class: RONIN
+    tier: GOLD
+  diamond_katana:
+    material: WOODEN_SWORD
+    cmd: 5002
+    price-shards: 1000
+    price-gems: 25
+    amount: 1
+    name: "§bDiamond Katana"
+    lore:
+      - "§7Tier: §bDiamond"
+      - "§7Class: §eRonin"
+      - "§7Damage: §c8.0"
+      - "§7Speed: §a1.5"
+    damage: 8.0
+    speed: 1.5
+    class: RONIN
+    tier: DIAMOND
+  nether_katana:
+    material: WOODEN_SWORD
+    cmd: 5003
+    price-shards: 2000
+    price-gems: 50
+    amount: 1
+    name: "§4Ender Katana"
+    lore:
+      - "§7Tier: §4Nether"
+      - "§7Class: §eRonin"
+      - "§7Damage: §c10.0"
+      - "§7Speed: §a1.6"
+    damage: 10.0
+    speed: 1.6
+    class: RONIN
+    tier: NETHER
+  bone_katana:
+    material: WOODEN_SWORD
+    cmd: 5004
+    price-shards: 3500
+    price-gems: 75
+    amount: 1
+    name: "§fBone Katana"
+    lore:
+      - "§7Tier: §fBone"
+      - "§7Class: §eRonin"
+      - "§7Damage: §c12.0"
+      - "§7Speed: §a1.7"
+    damage: 12.0
+    speed: 1.7
+    class: RONIN
+    tier: BONE
+  chaos_katana:
+    material: WOODEN_SWORD
+    cmd: 5005
+    price-shards: 5000
+    price-gems: 150
+    amount: 1
+    name: "§4§lChaos Katana"
+    lore:
+      - "§7Tier: §4§lChaos"
+      - "§7Class: §eRonin"
+      - "§7Damage: §c15.0"
+      - "§7Speed: §a1.8"
+    damage: 15.0
+    speed: 1.8
+    class: RONIN
+    tier: CHAOS

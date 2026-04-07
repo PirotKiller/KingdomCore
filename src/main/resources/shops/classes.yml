@@ -1,0 +1,94 @@
+title: §8§l[ §d§lClass Selection §8§l]
+size: 27
+items:
+  archer:
+    material: BOW
+    price: 1000
+    amount: 1
+    class: ARCHER
+    name: §6§l⚔ Archer Class
+    lore:
+      - "§8§m                              "
+      - ""
+      - §7Masters of ranged combat who
+      - §7strike from the shadows.
+      - ""
+      - "§f§l» §6Passives:"
+      - §8 ├ §c1.5x §7melee damage taken
+      - §8 ├ §a1.3x §7projectile damage
+      - "§8 └ §7Weapon: §6Bow"
+      - ""
+      - "§8§m                              "
+  knight:
+    material: SHIELD
+    price: 100
+    amount: 1
+    class: KNIGHT
+    name: §b§l⚔ Knight Class
+    lore:
+      - "§8§m                              "
+      - ""
+      - §7The unyielding defenders who
+      - §7stand firm against all odds.
+      - ""
+      - "§f§l» §bPassives:"
+      - §8 ├ §a25% §7Blast Resistance
+      - §8 ├ §a80% §7Melee Damage Reduction
+      - §8 ├ §c1.5x §7Fall Damage
+      - "§8 └ §7Weapon: §bShield"
+      - ""
+      - "§8§m                              "
+  rogue:
+    material: IRON_SWORD
+    price: 100
+    amount: 1
+    class: ROGUE
+    name: §c§l⚔ Rogue Class
+    lore:
+      - "§8§m                              "
+      - ""
+      - §7Swift assassins who rely on
+      - §7speed and precision strikes.
+      - ""
+      - "§f§l» §cPassives:"
+      - §8 ├ §a1.25x §7Movement Speed
+      - §8 ├ §aPermanent §7Feather Falling
+      - "§8 └ §7Weapon: §cDagger"
+      - ""
+      - "§8§m                              "
+  wizard:
+    material: STICK
+    price: 100
+    amount: 1
+    class: WIZARD
+    name: §5§l⚔ Wizard Class
+    lore:
+      - "§8§m                              "
+      - ""
+      - §7Arcane scholars who bend the
+      - §7elements to their will.
+      - ""
+      - "§f§l» §5Passives:"
+      - §8 ├ §a1.3x §7Projectile Damage
+      - §8 ├ §c1.25x §7Melee Damage Taken
+      - "§8 └ §7Weapon: §5Staff"
+      - ""
+      - "§8§m                              "
+  ronin:
+    material: WOODEN_SWORD
+    price: 100
+    amount: 1
+    class: RONIN
+    name: §e§l⚔ Ronin Class
+    lore:
+      - "§8§m                              "
+      - ""
+      - §7Honorable warriors who walk
+      - §7the path of the blade.
+      - ""
+      - "§f§l» §ePassives:"
+      - §8 ├ §a1.15x §7Melee Damage
+      - §8 ├ §a10% §7Damage Reduction
+      - "§8 └ §7Weapon: §eKatana"
+      - ""
+      - "§8§m                              "

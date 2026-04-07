@@ -1,0 +1,43 @@
+title: §8§l[ §a§lWood Shop §8§l]
+size: 27
+items:
+  oak_log:
+    material: OAK_LOG
+    amount: 16
+    price: 1044
+    name: §fOak Log x16
+  birch_log:
+    material: BIRCH_LOG
+    amount: 16
+    price: 10
+    name: §fBirch Log x16
+  spruce_log:
+    material: SPRUCE_LOG
+    amount: 16
+    price: 10
+    name: §fSpruce Log x16
+  dark_oak_log:
+    material: DARK_OAK_LOG
+    amount: 16
+    price: 12
+    name: §fDark Oak Log x16
+  jungle_log:
+    material: JUNGLE_LOG
+    amount: 16
+    price: 12
+    name: §fJungle Log x16
+  acacia_log:
+    material: ACACIA_LOG
+    amount: 16
+    price: 10
+    name: §fAcacia Log x16
+  mangrove_log:
+    material: MANGROVE_LOG
+    amount: 16
+    price: 12
+    name: §fMangrove Log x16
+  cherry_log:
+    material: CHERRY_LOG
+    amount: 16
+    price: 15
+    name: §fCherry Log x16

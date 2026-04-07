@@ -1,0 +1,57 @@
+title: "§8§l[ §5§lPotion Shop §8§l]"
+size: 27
+items:
+  speed_2:
+    material: SPLASH_POTION
+    potion-type: SPEED
+    potion-level: 2
+    potion-duration: 180
+    price-shards: 100
+    price-gems: 5
+    amount: 1
+    name: "§fSpeed II Potion"
+  strength_2:
+    material: SPLASH_POTION
+    potion-type: STRENGTH
+    potion-level: 2
+    potion-duration: 180
+    price-shards: 150
+    price-gems: 8
+    amount: 1
+    name: "§fStrength II Potion"
+  regen_2:
+    material: SPLASH_POTION
+    potion-type: REGENERATION
+    potion-level: 2
+    potion-duration: 90
+    price-shards: 200
+    price-gems: 10
+    amount: 1
+    name: "§fRegeneration II Potion"
+  fire_resist:
+    material: SPLASH_POTION
+    potion-type: FIRE_RESISTANCE
+    potion-level: 1
+    potion-duration: 480
+    price-shards: 100
+    price-gems: 5
+    amount: 1
+    name: "§fFire Resistance Potion"
+  invisibility:
+    material: SPLASH_POTION
+    potion-type: INVISIBILITY
+    potion-level: 1
+    potion-duration: 180
+    price-shards: 200
+    price-gems: 10
+    amount: 1
+    name: "§fInvisibility Potion"
+  night_vision:
+    material: POTION
+    potion-type: NIGHT_VISION
+    potion-level: 1
+    potion-duration: 480
+    price-shards: 50
+    price-gems: 0
+    amount: 1
+    name: "§fNight Vision Potion"

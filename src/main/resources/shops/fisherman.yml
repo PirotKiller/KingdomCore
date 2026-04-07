@@ -1,0 +1,28 @@
+title: "§8§l[ §b§lFisherman §8§l]"
+size: 27
+items:
+  cod:
+    material: COD
+    amount: 8
+    price: 15
+    name: "§fCod x8"
+  salmon:
+    material: SALMON
+    amount: 8
+    price: 15
+    name: "§fSalmon x8"
+  tropical_fish:
+    material: TROPICAL_FISH
+    amount: 4
+    price: 25
+    name: "§fTropical Fish x4"
+  pufferfish:
+    material: PUFFERFISH
+    amount: 4
+    price: 30
+    name: "§fPufferfish x4"
+  fishing_rod:
+    material: FISHING_ROD
+    amount: 1
+    price: 50
+    name: "§fFishing Rod"

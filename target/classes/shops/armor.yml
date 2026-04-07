@@ -1,0 +1,146 @@
+title: "§8§l[ §e§lArmor Shop §8§l]"
+size: 54
+items:
+  # ---- Iron Tier ----
+  iron_helmet:
+    material: IRON_HELMET
+    amount: 1
+    price-shards: 100
+    price-gems: 0
+    name: "§f§lIron Helmet"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §fIron"
+      - "§7Slot: §fHelmet"
+      - "§8§m                    "
+  iron_chestplate:
+    material: IRON_CHESTPLATE
+    amount: 1
+    price-shards: 150
+    price-gems: 0
+    name: "§f§lIron Chestplate"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §fIron"
+      - "§7Slot: §fChestplate"
+      - "§8§m                    "
+  iron_leggings:
+    material: IRON_LEGGINGS
+    amount: 1
+    price-shards: 130
+    price-gems: 0
+    name: "§f§lIron Leggings"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §fIron"
+      - "§7Slot: §fLeggings"
+      - "§8§m                    "
+  iron_boots:
+    material: IRON_BOOTS
+    amount: 1
+    price-shards: 80
+    price-gems: 0
+    name: "§f§lIron Boots"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §fIron"
+      - "§7Slot: §fBoots"
+      - "§8§m                    "
+
+  # ---- Spacer (decorative) ----
+
+  # ---- Diamond Tier ----
+  diamond_helmet:
+    material: DIAMOND_HELMET
+    amount: 1
+    price-shards: 500
+    price-gems: 15
+    name: "§b§lDiamond Helmet"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §bDiamond"
+      - "§7Slot: §fHelmet"
+      - "§8§m                    "
+  diamond_chestplate:
+    material: DIAMOND_CHESTPLATE
+    amount: 1
+    price-shards: 800
+    price-gems: 25
+    name: "§b§lDiamond Chestplate"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §bDiamond"
+      - "§7Slot: §fChestplate"
+      - "§8§m                    "
+  diamond_leggings:
+    material: DIAMOND_LEGGINGS
+    amount: 1
+    price-shards: 700
+    price-gems: 20
+    name: "§b§lDiamond Leggings"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §bDiamond"
+      - "§7Slot: §fLeggings"
+      - "§8§m                    "
+  diamond_boots:
+    material: DIAMOND_BOOTS
+    amount: 1
+    price-shards: 400
+    price-gems: 10
+    name: "§b§lDiamond Boots"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §bDiamond"
+      - "§7Slot: §fBoots"
+      - "§8§m                    "
+
+  # ---- Netherite Tier ----
+  netherite_helmet:
+    material: NETHERITE_HELMET
+    amount: 1
+    price-shards: 2000
+    price-gems: 75
+    name: "§4§lNetherite Helmet"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §4Netherite"
+      - "§7Slot: §fHelmet"
+      - "§c⚠ §7Endgame armor"
+      - "§8§m                    "
+  netherite_chestplate:
+    material: NETHERITE_CHESTPLATE
+    amount: 1
+    price-shards: 3000
+    price-gems: 100
+    name: "§4§lNetherite Chestplate"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §4Netherite"
+      - "§7Slot: §fChestplate"
+      - "§c⚠ §7Endgame armor"
+      - "§8§m                    "
+  netherite_leggings:
+    material: NETHERITE_LEGGINGS
+    amount: 1
+    price-shards: 2500
+    price-gems: 85
+    name: "§4§lNetherite Leggings"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §4Netherite"
+      - "§7Slot: §fLeggings"
+      - "§c⚠ §7Endgame armor"
+      - "§8§m                    "
+  netherite_boots:
+    material: NETHERITE_BOOTS
+    amount: 1
+    price-shards: 1500
+    price-gems: 50
+    name: "§4§lNetherite Boots"
+    lore:
+      - "§8§m                    "
+      - "§7Tier: §4Netherite"
+      - "§7Slot: §fBoots"
+      - "§c⚠ §7Endgame armor"
+      - "§8§m                    "

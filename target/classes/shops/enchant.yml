@@ -1,0 +1,168 @@
+title: "§8§l[ §d§lEnchantment Shop §8§l]"
+size: 54
+items:
+  # ---- Weapon Enchants ----
+  sharpness_3:
+    material: ENCHANTED_BOOK
+    enchant: SHARPNESS
+    enchant-level: 3
+    price-shards: 300
+    price-gems: 10
+    amount: 1
+    name: "§d§lSharpness III"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §cCombat"
+      - "§7Level: §dIII"
+      - "§8§m                    "
+  sharpness_5:
+    material: ENCHANTED_BOOK
+    enchant: SHARPNESS
+    enchant-level: 5
+    price-shards: 800
+    price-gems: 30
+    amount: 1
+    name: "§d§lSharpness V"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §cCombat"
+      - "§7Level: §d§lV §8(Max)"
+      - "§8§m                    "
+  fire_aspect_2:
+    material: ENCHANTED_BOOK
+    enchant: FIRE_ASPECT
+    enchant-level: 2
+    price-shards: 400
+    price-gems: 15
+    amount: 1
+    name: "§d§lFire Aspect II"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §cCombat"
+      - "§7Level: §d§lII §8(Max)"
+      - "§8§m                    "
+
+  # ---- Protection Enchants ----
+  protection_3:
+    material: ENCHANTED_BOOK
+    enchant: PROTECTION
+    enchant-level: 3
+    price-shards: 300
+    price-gems: 10
+    amount: 1
+    name: "§d§lProtection III"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §bDefense"
+      - "§7Level: §dIII"
+      - "§8§m                    "
+  protection_4:
+    material: ENCHANTED_BOOK
+    enchant: PROTECTION
+    enchant-level: 4
+    price-shards: 600
+    price-gems: 25
+    amount: 1
+    name: "§d§lProtection IV"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §bDefense"
+      - "§7Level: §d§lIV §8(Max)"
+      - "§8§m                    "
+
+  # ---- Bow Enchants ----
+  power_3:
+    material: ENCHANTED_BOOK
+    enchant: POWER
+    enchant-level: 3
+    price-shards: 300
+    price-gems: 10
+    amount: 1
+    name: "§d§lPower III"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §6Ranged"
+      - "§7Level: §dIII"
+      - "§8§m                    "
+  power_5:
+    material: ENCHANTED_BOOK
+    enchant: POWER
+    enchant-level: 5
+    price-shards: 800
+    price-gems: 30
+    amount: 1
+    name: "§d§lPower V"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §6Ranged"
+      - "§7Level: §d§lV §8(Max)"
+      - "§8§m                    "
+
+  # ---- Tool Enchants ----
+  unbreaking_3:
+    material: ENCHANTED_BOOK
+    enchant: UNBREAKING
+    enchant-level: 3
+    price-shards: 400
+    price-gems: 15
+    amount: 1
+    name: "§d§lUnbreaking III"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §aUtility"
+      - "§7Level: §d§lIII §8(Max)"
+      - "§8§m                    "
+  mending:
+    material: ENCHANTED_BOOK
+    enchant: MENDING
+    enchant-level: 1
+    price-shards: 1000
+    price-gems: 50
+    amount: 1
+    name: "§d§l✦ Mending"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §aUtility"
+      - "§7Level: §d§lI §8(Max)"
+      - "§e★ §7Premium enchantment"
+      - "§8§m                    "
+  efficiency_5:
+    material: ENCHANTED_BOOK
+    enchant: EFFICIENCY
+    enchant-level: 5
+    price-shards: 600
+    price-gems: 20
+    amount: 1
+    name: "§d§lEfficiency V"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §aMining"
+      - "§7Level: §d§lV §8(Max)"
+      - "§8§m                    "
+  fortune_3:
+    material: ENCHANTED_BOOK
+    enchant: FORTUNE
+    enchant-level: 3
+    price-shards: 800
+    price-gems: 30
+    amount: 1
+    name: "§d§lFortune III"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §aMining"
+      - "§7Level: §d§lIII §8(Max)"
+      - "§e★ §7Premium enchantment"
+      - "§8§m                    "
+  silk_touch:
+    material: ENCHANTED_BOOK
+    enchant: SILK_TOUCH
+    enchant-level: 1
+    price-shards: 500
+    price-gems: 20
+    amount: 1
+    name: "§d§lSilk Touch"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §aMining"
+      - "§7Level: §d§lI §8(Max)"
+      - "§8§m                    "

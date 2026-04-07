@@ -1,0 +1,83 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/iron_sword"
+    },
+    "entries": [
+      {
+        "threshold": 4001.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/rogue/gold_dagger/spirit_flame_dagger"
+        }
+      },
+      {
+        "threshold": 4002.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/iron_sword"
+        }
+      },
+      {
+        "threshold": 4002.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/rogue/diamond_dagger/spirit_magic_dagger"
+        }
+      },
+      {
+        "threshold": 4003.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/iron_sword"
+        }
+      },
+      {
+        "threshold": 4003.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/rogue/ender_dagger/spirit_void_dagger"
+        }
+      },
+      {
+        "threshold": 4004.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/iron_sword"
+        }
+      },
+      {
+        "threshold": 4004.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/rogue/bone_dagger/bone_dagger"
+        }
+      },
+      {
+        "threshold": 4005.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/iron_sword"
+        }
+      },
+      {
+        "threshold": 4005.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/rogue/chaos_dagger/sword_dark"
+        }
+      },
+      {
+        "threshold": 4006.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/iron_sword"
+        }
+      }
+    ]
+  }
+}

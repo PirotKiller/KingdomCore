@@ -1,0 +1,83 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/stick"
+    },
+    "entries": [
+      {
+        "threshold": 3001.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/wizard/gold_staff/goldstaff"
+        }
+      },
+      {
+        "threshold": 3002.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/stick"
+        }
+      },
+      {
+        "threshold": 3002.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/wizard/diamond_staff/diamond_staff"
+        }
+      },
+      {
+        "threshold": 3003.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/stick"
+        }
+      },
+      {
+        "threshold": 3003.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/wizard/ender_staff/ender_staff"
+        }
+      },
+      {
+        "threshold": 3004.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/stick"
+        }
+      },
+      {
+        "threshold": 3004.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/wizard/bone_staff/staff_cold_blood"
+        }
+      },
+      {
+        "threshold": 3005.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/stick"
+        }
+      },
+      {
+        "threshold": 3005.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/custom_weapons/wizard/chaos_staff/staff_dark"
+        }
+      },
+      {
+        "threshold": 3006.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/stick"
+        }
+      }
+    ]
+  }
+}

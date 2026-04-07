@@ -1,0 +1,43 @@
+title: "§8§l[ §7§lStone Shop §8§l]"
+size: 27
+items:
+  cobblestone:
+    material: COBBLESTONE
+    amount: 64
+    price: 5
+    name: "§fCobblestone x64"
+  stone:
+    material: STONE
+    amount: 64
+    price: 8
+    name: "§fStone x64"
+  deepslate:
+    material: DEEPSLATE
+    amount: 64
+    price: 10
+    name: "§fDeepslate x64"
+  granite:
+    material: GRANITE
+    amount: 32
+    price: 6
+    name: "§fGranite x32"
+  diorite:
+    material: DIORITE
+    amount: 32
+    price: 6
+    name: "§fDiorite x32"
+  andesite:
+    material: ANDESITE
+    amount: 32
+    price: 6
+    name: "§fAndesite x32"
+  sandstone:
+    material: SANDSTONE
+    amount: 32
+    price: 8
+    name: "§fSandstone x32"
+  bricks:
+    material: BRICKS
+    amount: 32
+    price: 12
+    name: "§fBricks x32"

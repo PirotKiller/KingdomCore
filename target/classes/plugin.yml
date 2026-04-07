@@ -1,0 +1,54 @@
+name: KingdomCore
+prefix: KingdomCore
+version: '1.0-SNAPSHOT'
+
+main: me.pirot.kingdomCore.KingdomCore
+api-version: '1.21'
+depend: [Vault]
+
+authors: [ Pirot ]
+description: RPG Kingdom plugin with shops, classes, bounties, and more.
+
+commands:
+  shop:
+    description: Open a shop GUI
+    usage: /shop <type>
+    aliases: [s]
+  ah:
+    description: Open the Auction House
+    usage: /ah [sell <price>]
+    aliases: [auctionhouse]
+  bounty:
+    description: Place a bounty on a player
+    usage: /bounty <player> <amount>
+  sb:
+    description: Toggle the scoreboard
+    usage: /sb
+    aliases: [scoreboard]
+  verify:
+    description: Link your Minecraft account to the webstore
+    usage: /verify <code>
+  resourcepack:
+    description: Download the server resource pack.
+    usage: /resourcepack
+    aliases: [rp]
+
+permissions:
+  kingdomcore.shop:
+    description: Access shops
+    default: true
+  kingdomcore.ah:
+    description: Access auction house
+    default: true
+  kingdomcore.bounty:
+    description: Place bounties
+    default: true
+  kingdomcore.sb:
+    description: Toggle scoreboard
+    default: true
+  kingdomcore.verify:
+    description: Verify webstore account
+    default: true
+  kingdomcore.admin:
+    description: Admin permissions
+    default: op
