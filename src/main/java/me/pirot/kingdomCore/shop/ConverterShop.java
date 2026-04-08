@@ -1,12 +1,9 @@
 package me.pirot.kingdomCore.shop;
 
-import me.pirot.kingdomCore.KingdomCore;
 import me.pirot.kingdomCore.config.ConfigManager;
 import me.pirot.kingdomCore.economy.EconomyManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,7 +24,6 @@ import java.util.*;
  */
 public class ConverterShop implements Listener {
 
-    private final KingdomCore plugin;
     private final EconomyManager economyManager;
 
     // Track which inventories are converter GUIs
@@ -40,11 +36,30 @@ public class ConverterShop implements Listener {
     private static final int SELL_BUTTON_SLOT = 49;
     private static final int INFO_SLOT = 4;
 
-    public ConverterShop(KingdomCore plugin, ConfigManager configManager, EconomyManager economyManager) {
-        this.plugin = plugin;
+    // Ore conversion values (material -> shards per item)
+    private static final Map<Material, Integer> CONVERSION_VALUES = new HashMap<>();
+    static {
+        CONVERSION_VALUES.put(Material.NETHERITE_INGOT, 200);
+        CONVERSION_VALUES.put(Material.NETHERITE_SCRAP, 100);
+        CONVERSION_VALUES.put(Material.ANCIENT_DEBRIS, 80);
+        CONVERSION_VALUES.put(Material.DIAMOND, 50);
+        CONVERSION_VALUES.put(Material.EMERALD, 40);
+        CONVERSION_VALUES.put(Material.GOLD_INGOT, 15);
+        CONVERSION_VALUES.put(Material.IRON_INGOT, 10);
+        CONVERSION_VALUES.put(Material.COPPER_INGOT, 5);
+        CONVERSION_VALUES.put(Material.LAPIS_LAZULI, 5);
+        CONVERSION_VALUES.put(Material.REDSTONE, 3);
+        CONVERSION_VALUES.put(Material.COAL, 2);
+        CONVERSION_VALUES.put(Material.RAW_GOLD, 10);
+        CONVERSION_VALUES.put(Material.RAW_IRON, 7);
+        CONVERSION_VALUES.put(Material.RAW_COPPER, 3);
+        CONVERSION_VALUES.put(Material.QUARTZ, 4);
+        CONVERSION_VALUES.put(Material.AMETHYST_SHARD, 6);
+    }
+
+    public ConverterShop(ConfigManager configManager, EconomyManager economyManager) {
         this.economyManager = economyManager;
-        FileConfiguration convConfig = configManager.getShopConfig("converter");
-        this.converterTitle = convConfig != null ? convConfig.getString("title", "§8§l[ §a§lOre Converter §8§l]") : "§8§l[ §a§lOre Converter §8§l]";
+        this.converterTitle = "§8§l[ §a§lOre Converter §8§l]";
     }
 
     /**
@@ -153,12 +168,6 @@ public class ConverterShop implements Listener {
      * Process all items in the converter, award shards, return non-sellable.
      */
     private void processConversion(Player player, Inventory inv) {
-        FileConfiguration convConfig = plugin.getConfigManager().getShopConfig("converter");
-        if (convConfig == null) return;
-
-        ConfigurationSection values = convConfig.getConfigurationSection("values");
-        if (values == null) return;
-
         int totalShards = 0;
         int itemsSold = 0;
         List<ItemStack> returnItems = new ArrayList<>();
@@ -168,17 +177,14 @@ public class ConverterShop implements Listener {
 
             ItemStack item = inv.getItem(slot);
             if (item == null || item.getType() == Material.AIR) continue;
-            // Skip deco glass panes
             if (item.getType().name().endsWith("STAINED_GLASS_PANE")) continue;
 
-            String materialKey = item.getType().name();
-            if (values.contains(materialKey)) {
-                int valuePerItem = values.getInt(materialKey, 0);
+            Integer valuePerItem = CONVERSION_VALUES.get(item.getType());
+            if (valuePerItem != null && valuePerItem > 0) {
                 totalShards += valuePerItem * item.getAmount();
                 itemsSold += item.getAmount();
                 inv.setItem(slot, null);
             } else {
-                // Non-sellable item — return to player
                 returnItems.add(item.clone());
                 inv.setItem(slot, null);
             }

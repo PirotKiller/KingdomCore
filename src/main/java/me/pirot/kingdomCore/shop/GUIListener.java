@@ -2,19 +2,17 @@ package me.pirot.kingdomCore.shop;
 
 import me.pirot.kingdomCore.KingdomCore;
 import me.pirot.kingdomCore.economy.EconomyManager;
-import me.pirot.kingdomCore.rpg.ClassManager;
 import me.pirot.kingdomCore.rpg.RPGClass;
 import me.pirot.kingdomCore.rpg.WeaponManager;
 import me.pirot.kingdomCore.rpg.WeaponTier;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -26,22 +24,25 @@ import java.util.UUID;
 
 /**
  * Handles all inventory click events for shop GUIs.
+ * Supports paginated navigation and item purchases.
+ * Uses ShopDataManager (MongoDB) for item lookups.
  */
 public class GUIListener implements Listener {
 
-    private final KingdomCore plugin;
     private final ShopGUI shopGUI;
     private final EconomyManager economyManager;
-    private final ClassManager classManager;
     private final WeaponManager weaponManager;
+    private final ShopDataManager shopDataManager;
+    private final ShopCommandHandler shopCommandHandler;
 
     public GUIListener(KingdomCore plugin, ShopGUI shopGUI, EconomyManager economyManager,
-                       ClassManager classManager, WeaponManager weaponManager) {
-        this.plugin = plugin;
+                       WeaponManager weaponManager, ShopDataManager shopDataManager, 
+                       ShopCommandHandler shopCommandHandler) {
         this.shopGUI = shopGUI;
         this.economyManager = economyManager;
-        this.classManager = classManager;
         this.weaponManager = weaponManager;
+        this.shopDataManager = shopDataManager;
+        this.shopCommandHandler = shopCommandHandler;
     }
 
     @EventHandler
@@ -57,14 +58,39 @@ public class GUIListener implements Listener {
 
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
-        if (clickedItem.getType() == Material.BLACK_STAINED_GLASS_PANE) return; // Border
+
+        // Ignore glass pane border clicks
+        if (clickedItem.getType().name().endsWith("_STAINED_GLASS_PANE")) return;
 
         ItemMeta meta = clickedItem.getItemMeta();
         if (meta == null) return;
 
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
 
-        // Verify this is a shop item
+        // ---- Handle navigation button clicks ----
+        if (pdc.has(shopGUI.SHOP_NAV_KEY, PersistentDataType.STRING)) {
+            String navData = pdc.get(shopGUI.SHOP_NAV_KEY, PersistentDataType.STRING);
+            if (navData != null && navData.contains(":")) {
+                String[] parts = navData.split(":");
+                ShopType navShopType = ShopType.fromString(parts[0]);
+                int targetPage = Integer.parseInt(parts[1]);
+                if (navShopType != null) {
+                    Inventory newInv = shopGUI.buildShopInventory(navShopType, targetPage);
+                    player.openInventory(newInv);
+                    player.playSound(player.getLocation(), org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f);
+                }
+            }
+            return;
+        }
+
+        // ---- Handle back button click ----
+        if (pdc.has(shopGUI.SHOP_BACK_KEY, PersistentDataType.BOOLEAN)) {
+            shopCommandHandler.openMainMenu(player);
+            player.playSound(player.getLocation(), org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f);
+            return;
+        }
+
+        // Ignore non-shop items (like the Book page indicator)
         if (!pdc.has(shopGUI.SHOP_ITEM_KEY, PersistentDataType.STRING)) return;
 
         String itemId = pdc.get(shopGUI.SHOP_ITEM_KEY, PersistentDataType.STRING);
@@ -78,113 +104,67 @@ public class GUIListener implements Listener {
         UUID uuid = player.getUniqueId();
 
         // ---- Check if player can afford ----
-        // Bypass costs if it's a class selection and they are currently classless
-        boolean isClassSelection = pdc.has(shopGUI.SHOP_CLASS_KEY, PersistentDataType.STRING);
-        RPGClass currentClass = classManager.getPlayerClass(player);
-        boolean isClassless = (currentClass == null);
-        boolean waiveCost = isClassSelection && isClassless;
-
-        if (!waiveCost) {
-            if (priceShards > 0 && economyManager.getShards(uuid) < priceShards) {
-                player.sendMessage("§c§l[Kingdom] §7Not enough Shards! Need §a" + priceShards + " Shards§7.");
-                return;
-            }
-            if (priceGems > 0 && economyManager.getGems(uuid) < priceGems) {
-                player.sendMessage("§c§l[Kingdom] §7Not enough Gems! Need §b" + priceGems + " Gems§7.");
-                return;
-            }
-        }
-
-        // ---- Handle class purchase ----
-        if (isClassSelection) {
-            String className = pdc.get(shopGUI.SHOP_CLASS_KEY, PersistentDataType.STRING);
-            RPGClass rpgClass = RPGClass.fromString(className);
-            if (rpgClass == null) {
-                player.sendMessage("§c§l[Kingdom] §7Invalid class!");
-                return;
-            }
-
-            // Check if already this class
-            if (currentClass == rpgClass) {
-                player.sendMessage("§c§l[Kingdom] §7You are already a " + rpgClass.getColoredName() + "§7!");
-                return;
-            }
-
-            // Deduct currency if not waived
-            if (!waiveCost) {
-                if (priceShards > 0) economyManager.removeShards(uuid, priceShards);
-                if (priceGems > 0) economyManager.removeGems(uuid, priceGems);
-            } else {
-                player.sendMessage("§a§l[Kingdom] §7Your first class selection is §f§lFREE§7!");
-            }
-
-            // Set class
-            classManager.setClass(player, rpgClass);
-            player.sendMessage("§a§l[Kingdom] §7You are now a " + rpgClass.getColoredName() + "§7!");
-            player.closeInventory();
+        if (!economyManager.hasBalance(uuid, priceShards, priceGems)) {
+            player.sendMessage("§c§l[Kingdom] §7You do not have enough funds!");
+            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             return;
         }
 
-        // ---- Handle weapon purchase (has custom damage/speed in config) ----
-        ConfigurationSection itemConfig = getItemConfig(shopType, itemId);
-        if (itemConfig != null && itemConfig.contains("damage") && itemConfig.contains("class") && itemConfig.contains("tier")) {
-            // Deduct currency
-            if (priceShards > 0) economyManager.removeShards(uuid, priceShards);
-            if (priceGems > 0) economyManager.removeGems(uuid, priceGems);
+        // ---- Look up item data from MongoDB cache ----
+        ShopItemData itemData = shopDataManager.findItem(shopType, itemId);
 
-            // Create weapon via WeaponManager
-            RPGClass weaponClass = RPGClass.fromString(itemConfig.getString("class"));
-            WeaponTier weaponTier = WeaponTier.fromString(itemConfig.getString("tier"));
-            String name = itemConfig.getString("name", "§fWeapon");
-            List<String> lore = itemConfig.getStringList("lore");
-            double damage = itemConfig.getDouble("damage", 6.0);
-            double speed = itemConfig.getDouble("speed", 1.4);
+        // ---- Handle weapon purchase ----
+        if (itemData != null && itemData.isWeapon()) {
+            economyManager.removeShards(uuid, priceShards);
+            economyManager.removeGems(uuid, priceGems);
+
+            RPGClass weaponClass = RPGClass.fromString(itemData.getRpgClass());
+            WeaponTier weaponTier = WeaponTier.fromString(itemData.getTier());
+            String name = itemData.getName();
+            List<String> lore = itemData.getLore();
+            double damage = itemData.getDamage();
+            double speed = itemData.getSpeed();
 
             if (weaponClass != null && weaponTier != null) {
                 ItemStack weapon = weaponManager.createWeapon(weaponClass, weaponTier, name, lore, damage, speed);
                 giveItem(player, weapon);
                 player.sendMessage("§a§l[Kingdom] §7Purchased " + name + "§7!");
+                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
             }
             return;
         }
 
         // ---- Handle enchanted book purchase ----
-        if (itemConfig != null && itemConfig.contains("enchant")) {
-            if (priceShards > 0) economyManager.removeShards(uuid, priceShards);
-            if (priceGems > 0) economyManager.removeGems(uuid, priceGems);
+        if (itemData != null && itemData.isEnchantedBook()) {
+            economyManager.removeShards(uuid, priceShards);
+            economyManager.removeGems(uuid, priceGems);
 
             ItemStack book = new ItemStack(Material.ENCHANTED_BOOK, 1);
             EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta) book.getItemMeta();
             if (bookMeta != null) {
-                String enchantName = itemConfig.getString("enchant", "");
-                int enchantLevel = itemConfig.getInt("enchant-level", 1);
-                Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(enchantName.toLowerCase()));
+                Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(itemData.getEnchant().toLowerCase()));
                 if (enchantment != null) {
-                    bookMeta.addStoredEnchant(enchantment, enchantLevel, true);
+                    bookMeta.addStoredEnchant(enchantment, itemData.getEnchantLevel(), true);
                 }
                 book.setItemMeta(bookMeta);
             }
             giveItem(player, book);
-            String itemName = itemConfig.getString("name", "Enchanted Book");
-            player.sendMessage("§a§l[Kingdom] §7Purchased " + itemName + "§7!");
+            player.sendMessage("§a§l[Kingdom] §7Purchased " + itemData.getName() + "§7!");
+            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
             return;
         }
 
         // ---- Handle normal item purchase ----
-        if (priceShards > 0) economyManager.removeShards(uuid, priceShards);
-        if (priceGems > 0) economyManager.removeGems(uuid, priceGems);
+        economyManager.removeShards(uuid, priceShards);
+        economyManager.removeGems(uuid, priceGems);
 
         // Create a clean copy of the item (without shop PDC data)
         ItemStack purchased = new ItemStack(clickedItem.getType(), clickedItem.getAmount());
-        // Don't copy over the shop metadata to the purchased item
-        String itemName = meta.hasDisplayName() ? meta.getDisplayName() : clickedItem.getType().name();
-        player.sendMessage("§a§l[Kingdom] §7Purchased " + itemName + "§7!");
+        String displayName = (meta.hasDisplayName()) ? meta.getDisplayName() : clickedItem.getType().name();
+        
+        player.sendMessage("§a§l[Kingdom] §7Purchased §f" + purchased.getAmount() + "x " + displayName);
         giveItem(player, purchased);
-    }
-
-    private ConfigurationSection getItemConfig(ShopType shopType, String itemId) {
-        FileConfiguration shopConfig = plugin.getConfigManager().getShopConfig(shopType.getConfigKey());
-        return shopConfig != null ? shopConfig.getConfigurationSection("items." + itemId) : null;
+        player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
     }
 
     private void giveItem(Player player, ItemStack item) {

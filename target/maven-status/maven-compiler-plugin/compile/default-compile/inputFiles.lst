@@ -3,13 +3,12 @@ C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\aucti
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\bounty\BountyCommand.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\bounty\BountyListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\bounty\BountyManager.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\CombatListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\config\ConfigManager.java
-C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\config\ConfigWatcher.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\database\MongoManager.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\database\PlayerData.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\database\WebCommandManager.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\economy\EconomyManager.java
-C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\economy\KingdomEconomy.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\KingdomCore.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\PlayerJoinQuitListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\ClassListener.java
@@ -22,6 +21,8 @@ C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\score
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\shop\ConverterShop.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\shop\GUIListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\shop\ShopCommandHandler.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\shop\ShopDataManager.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\shop\ShopGUI.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\shop\ShopItemData.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\shop\ShopType.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\web\VerifyCommand.java

@@ -4,11 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import { WebUser } from "@/models/WebUser";
-import fs from "fs/promises";
-import path from "path";
-import YAML from "yaml";
-
-const SHOPS_DIR = path.join(process.cwd(), "..", "src", "main", "resources", "shops");
+import { ShopItem } from "@/models/ShopItem";
+import { PendingCommand } from "@/models/PendingCommand";
 
 async function isAdmin() {
   const session = await auth();
@@ -18,40 +15,151 @@ async function isAdmin() {
   return user?.isAdmin === true;
 }
 
-export async function GET() {
+// Valid shop types that match the Java ShopType enum
+const VALID_SHOP_TYPES = [
+  "wood", "stone", "fisherman", "fletcher", "redstone", "farming",
+  "blacksmith", "enchant", "potion", "nether", "end", "armor", "converter"
+];
+
+/**
+ * GET /api/admin/shops
+ * Fetch all shop items, optionally filtered by ?shopType=xxx
+ * Returns items grouped by shopType.
+ */
+export async function GET(req: NextRequest) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   try {
-    const files = await fs.readdir(SHOPS_DIR);
-    const shops: Record<string, any> = {};
+    await dbConnect();
+    const shopType = req.nextUrl.searchParams.get("shopType");
 
-    for (const file of files) {
-      if (file.endsWith(".yml")) {
-        const content = await fs.readFile(path.join(SHOPS_DIR, file), "utf-8");
-        shops[file.replace(".yml", "")] = YAML.parse(content);
-      }
+    const filter: any = {};
+    if (shopType && VALID_SHOP_TYPES.includes(shopType)) {
+      filter.shopType = shopType;
     }
 
-    return NextResponse.json(shops);
+    const items = await ShopItem.find(filter).sort({ shopType: 1, order: 1 }).lean();
+
+    // Group by shopType
+    const grouped: Record<string, any[]> = {};
+    for (const type of VALID_SHOP_TYPES) {
+      grouped[type] = [];
+    }
+    for (const item of items) {
+      if (!grouped[item.shopType]) grouped[item.shopType] = [];
+      grouped[item.shopType].push(item);
+    }
+
+    return NextResponse.json(grouped);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to read shop configs" }, { status: 500 });
+    console.error("Failed to fetch shop items:", error);
+    return NextResponse.json({ error: "Failed to fetch shop items" }, { status: 500 });
   }
 }
 
+/**
+ * POST /api/admin/shops
+ * Create a new shop item.
+ */
+export async function POST(req: NextRequest) {
+  if (!(await isAdmin())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  try {
+    await dbConnect();
+    const body = await req.json();
+
+    if (!body.shopType || !VALID_SHOP_TYPES.includes(body.shopType)) {
+      return NextResponse.json({ error: "Invalid shopType" }, { status: 400 });
+    }
+    if (!body.name || !body.material) {
+      return NextResponse.json({ error: "name and material are required" }, { status: 400 });
+    }
+
+    // Auto-generate itemKey if not provided
+    if (!body.itemKey) {
+      body.itemKey = body.name.toLowerCase().replace(/§./g, "").replace(/[^a-z0-9]/g, "_").replace(/_+/g, "_");
+    }
+
+    // Auto-assign order to the end
+    if (body.order === undefined) {
+      const maxOrder = await ShopItem.findOne({ shopType: body.shopType }).sort({ order: -1 }).select("order").lean();
+      body.order = maxOrder ? (maxOrder as any).order + 1 : 0;
+    }
+
+    const item = await ShopItem.create(body);
+    return NextResponse.json(item, { status: 201 });
+  } catch (error) {
+    console.error("Failed to create shop item:", error);
+    return NextResponse.json({ error: "Failed to create shop item" }, { status: 500 });
+  }
+}
+
+/**
+ * PUT /api/admin/shops
+ * Update an existing shop item by _id.
+ */
 export async function PUT(req: NextRequest) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   try {
-    const { shopId, content } = await req.json();
-    if (!shopId || !content) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    await dbConnect();
+    const body = await req.json();
+    const { _id, ...updateData } = body;
 
-    const filePath = path.join(SHOPS_DIR, `${shopId}.yml`);
-    const yamlStr = YAML.stringify(content);
+    if (!_id) return NextResponse.json({ error: "Missing _id" }, { status: 400 });
 
-    await fs.writeFile(filePath, yamlStr, "utf-8");
+    const updated = await ShopItem.findByIdAndUpdate(_id, updateData, { new: true }).lean();
+    if (!updated) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("Failed to update shop item:", error);
+    return NextResponse.json({ error: "Failed to update shop item" }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/admin/shops
+ * Delete a shop item by _id.
+ */
+export async function DELETE(req: NextRequest) {
+  if (!(await isAdmin())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  try {
+    await dbConnect();
+    const { _id } = await req.json();
+    if (!_id) return NextResponse.json({ error: "Missing _id" }, { status: 400 });
+
+    const deleted = await ShopItem.findByIdAndDelete(_id);
+    if (!deleted) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to save shop config" }, { status: 500 });
+    console.error("Failed to delete shop item:", error);
+    return NextResponse.json({ error: "Failed to delete shop item" }, { status: 500 });
+  }
+}
+
+/**
+ * PATCH /api/admin/shops
+ * Trigger a sync (reload) on the Minecraft server.
+ */
+export async function PATCH(req: NextRequest) {
+  if (!(await isAdmin())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  try {
+    await dbConnect();
+    
+    // Insert a reload command for the CONSOLE
+    await PendingCommand.create({
+      command: "shop reload",
+      uuid: "CONSOLE",
+      executed: false
+    });
+
+    return NextResponse.json({ success: true, message: "Sync command sent to server" });
+  } catch (error) {
+    console.error("Failed to trigger sync:", error);
+    return NextResponse.json({ error: "Failed to trigger sync" }, { status: 500 });
   }
 }

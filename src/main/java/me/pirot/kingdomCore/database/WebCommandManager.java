@@ -26,7 +26,7 @@ public class WebCommandManager {
 
     private void initCollection() {
         if (mongoManager.getDatabase() != null) {
-            this.pendingCommandsCollection = mongoManager.getDatabase().getCollection("pending_commands");
+            this.pendingCommandsCollection = mongoManager.getDatabase().getCollection("web_commands");
         } else {
             plugin.getLogger().warning("[KingdomCore] MongoDB Database is null. Cannot initialize WebCommandManager.");
         }
@@ -51,25 +51,31 @@ public class WebCommandManager {
         String uuidStr = doc.getString("uuid");
         ObjectId id = doc.getObjectId("_id");
 
-        if (command == null || uuidStr == null) {
+        if (command == null) {
             markExecuted(id);
             return;
         }
 
         try {
-            UUID uuid = UUID.fromString(uuidStr);
-            OfflinePlayer target = Bukkit.getOfflinePlayer(uuid);
-            String playerName = target.getName() != null ? target.getName() : "UnknownPlayer";
+            String finalCommand = command;
+            
+            if (uuidStr != null && !uuidStr.equalsIgnoreCase("CONSOLE")) {
+                UUID uuid = UUID.fromString(uuidStr);
+                OfflinePlayer target = Bukkit.getOfflinePlayer(uuid);
+                String playerName = target.getName() != null ? target.getName() : "UnknownPlayer";
 
-            // Parse placeholders
-            String finalCommand = command
-                    .replace("{player}", playerName)
-                    .replace("{uuid}", uuidStr);
+                // Parse placeholders
+                finalCommand = command
+                        .replace("{player}", playerName)
+                        .replace("{uuid}", uuidStr);
+            }
+
+            final String commandToExecute = finalCommand;
 
             // Execute on main thread
             Bukkit.getScheduler().runTask(plugin, () -> {
-                plugin.getLogger().info("[KingdomCore-Webstore] Executing command: " + finalCommand);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
+                plugin.getLogger().info("[KingdomCore-Webstore] Executing command: " + commandToExecute);
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
                 
                 // Mark as executed asynchronously after dispatching
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> markExecuted(id));

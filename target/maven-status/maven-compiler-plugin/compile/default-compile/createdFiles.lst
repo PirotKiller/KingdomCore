@@ -11,8 +11,6 @@ me\pirot\kingdomCore\rpg\WeaponTier.class
 me\pirot\kingdomCore\economy\EconomyManager.class
 me\pirot\kingdomCore\KingdomCore.class
 me\pirot\kingdomCore\rpg\RPGClass.class
-me\pirot\kingdomCore\shop\ConverterShop.class
-me\pirot\kingdomCore\config\ConfigWatcher.class
 me\pirot\kingdomCore\bounty\BountyListener.class
 me\pirot\kingdomCore\scoreboard\ScoreboardManager.class
 me\pirot\kingdomCore\auction\AuctionManager.class
@@ -21,7 +19,6 @@ me\pirot\kingdomCore\shop\ShopType.class
 me\pirot\kingdomCore\rpg\ClassListener.class
 me\pirot\kingdomCore\bounty\BountyManager.class
 me\pirot\kingdomCore\shop\ShopGUI.class
-me\pirot\kingdomCore\economy\KingdomEconomy.class
 me\pirot\kingdomCore\rpg\WeaponManager.class
 me\pirot\kingdomCore\shop\ShopGUI$1.class
 me\pirot\kingdomCore\rpg\ClassManager$1.class
@@ -29,5 +26,4 @@ me\pirot\kingdomCore\auction\AuctionManager$AuctionListing.class
 me\pirot\kingdomCore\PlayerJoinQuitListener.class
 me\pirot\kingdomCore\database\WebCommandManager.class
 me\pirot\kingdomCore\shop\ShopType$CurrencyMode.class
-me\pirot\kingdomCore\shop\ShopCommandHandler.class
 me\pirot\kingdomCore\shop\GUIListener.class

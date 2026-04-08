@@ -9,7 +9,6 @@ import me.pirot.kingdomCore.config.ConfigManager;
 import me.pirot.kingdomCore.database.MongoManager;
 import me.pirot.kingdomCore.database.WebCommandManager;
 import me.pirot.kingdomCore.economy.EconomyManager;
-import me.pirot.kingdomCore.economy.KingdomEconomy;
 import me.pirot.kingdomCore.rpg.ClassListener;
 import me.pirot.kingdomCore.rpg.ClassManager;
 import me.pirot.kingdomCore.rpg.WeaponManager;
@@ -17,7 +16,6 @@ import me.pirot.kingdomCore.scoreboard.ScoreboardCommand;
 import me.pirot.kingdomCore.scoreboard.ScoreboardManager;
 import me.pirot.kingdomCore.shop.*;
 import me.pirot.kingdomCore.web.VerifyCommand;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,7 +23,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class KingdomCore extends JavaPlugin {
 
     private ConfigManager configManager;
-    private me.pirot.kingdomCore.config.ConfigWatcher configWatcher;
     private MongoManager mongoManager;
     private EconomyManager economyManager;
     private ClassManager classManager;
@@ -34,6 +31,7 @@ public final class KingdomCore extends JavaPlugin {
     private ScoreboardManager scoreboardManager;
     private AuctionManager auctionManager;
     private WebCommandManager webCommandManager;
+    private ShopDataManager shopDataManager;
 
     @Override
     public void onEnable() {
@@ -44,10 +42,6 @@ public final class KingdomCore extends JavaPlugin {
         // 1. Load configurations
         configManager = new ConfigManager(this);
         configManager.load();
-        
-        // 1.5. Start Config Watcher
-        configWatcher = new me.pirot.kingdomCore.config.ConfigWatcher(this, configManager);
-        configWatcher.start();
 
         // 2. Initialize MongoDB
         mongoManager = new MongoManager(getLogger());
@@ -55,12 +49,10 @@ public final class KingdomCore extends JavaPlugin {
                 configManager.getMongoUri(),
                 configManager.getMongoDatabase(),
                 configManager.getMongoCollection(),
-                configManager.getAuctionCollection()
-        );
+                configManager.getAuctionCollection());
 
         // 4. Initialize Economy Manager
         economyManager = new EconomyManager(this, mongoManager);
-        registerEconomy();
 
         // 4. Initialize RPG Managers
         weaponManager = new WeaponManager(this);
@@ -70,16 +62,20 @@ public final class KingdomCore extends JavaPlugin {
         bountyManager = new BountyManager(economyManager);
 
         // 6. Initialize Scoreboard Manager
-        scoreboardManager = new ScoreboardManager(this, configManager, economyManager, bountyManager);
+        scoreboardManager = new ScoreboardManager(this, configManager, economyManager);
 
         // 7. Initialize Auction Manager
         auctionManager = new AuctionManager(this, mongoManager);
 
         // 8. Initialize Shop System
+        shopDataManager = new ShopDataManager(getLogger(), mongoManager);
+        shopDataManager.loadAll();
+
         ShopGUI shopGUI = new ShopGUI(this);
-        ConverterShop converterShop = new ConverterShop(this, configManager, economyManager);
-        ShopCommandHandler shopCommandHandler = new ShopCommandHandler(this, shopGUI, converterShop);
-        GUIListener guiListener = new GUIListener(this, shopGUI, economyManager, classManager, weaponManager);
+        shopGUI.setShopDataManager(shopDataManager);
+        ConverterShop converterShop = new ConverterShop(configManager, economyManager);
+        ShopCommandHandler shopCommandHandler = new ShopCommandHandler(this, shopGUI, converterShop, shopDataManager);
+        GUIListener guiListener = new GUIListener(this, shopGUI, economyManager, weaponManager, shopDataManager, shopCommandHandler);
 
         // 9. Register Commands
         getCommand("shop").setExecutor(shopCommandHandler);
@@ -114,6 +110,9 @@ public final class KingdomCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(shopCommandHandler, this);
         getServer().getPluginManager().registerEvents(bountyCommand, this);
 
+        CombatListener combatListener = new CombatListener(economyManager);
+        getServer().getPluginManager().registerEvents(combatListener, this);
+
         ClassListener classListener = new ClassListener(configManager, classManager, weaponManager);
         getServer().getPluginManager().registerEvents(classListener, this);
 
@@ -129,7 +128,7 @@ public final class KingdomCore extends JavaPlugin {
         mongoManager.startPlayerWatchStream(economyManager);
         scoreboardManager.startUpdateTask();
         bountyListener.startCompassTask();
-        
+
         // Initialize Webstore Command Polling
         this.webCommandManager = new WebCommandManager(this, mongoManager);
 
@@ -154,11 +153,6 @@ public final class KingdomCore extends JavaPlugin {
             } catch (Exception e) {
                 getLogger().severe("[KingdomCore] Error saving player data on shutdown: " + e.getMessage());
             }
-        }
-
-        // Stop Watchers
-        if (configWatcher != null) {
-            configWatcher.stop();
         }
 
         // Close MongoDB
@@ -201,14 +195,6 @@ public final class KingdomCore extends JavaPlugin {
 
     public AuctionManager getAuctionManager() {
         return auctionManager;
-    }
-
-    private void registerEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) return;
-        
-        KingdomEconomy economyImplementation = new KingdomEconomy(economyManager);
-        getServer().getServicesManager().register(Economy.class, economyImplementation, this, org.bukkit.plugin.ServicePriority.High);
-        getLogger().info("[KingdomCore] Registered self-hosted Vault Economy Provider (Shards).");
     }
 
     public void sendResourcePack(Player player) {

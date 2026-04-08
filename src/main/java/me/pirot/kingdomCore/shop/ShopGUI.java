@@ -4,8 +4,6 @@ import me.pirot.kingdomCore.KingdomCore;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -18,20 +16,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Builds shop GUI inventories from YAML configuration.
- * Enhanced with themed borders, decorative separators, and rich lore.
+ * Builds paginated shop GUI inventories (double chest, 54 slots) from MongoDB data.
+ * Layout per page:
+ *   Row 0 (slots 0-8):   Border + Info item at slot 4
+ *   Rows 1-4 (slots 9-44): Border on cols 0,8 — items in cols 1-7 (28 slots)
+ *   Row 5 (slots 45-53): Navigation bar (prev, page info, next)
  */
 public class ShopGUI {
 
     private final KingdomCore plugin;
+    private ShopDataManager shopDataManager;
 
     public final NamespacedKey SHOP_ITEM_KEY;
     public final NamespacedKey SHOP_TYPE_KEY;
     public final NamespacedKey SHOP_PRICE_SHARDS_KEY;
     public final NamespacedKey SHOP_PRICE_GEMS_KEY;
+    public final NamespacedKey SHOP_NAV_KEY;
+    public final NamespacedKey SHOP_BACK_KEY;
 
     // Prefix used to identify shop inventories
     public static final String SHOP_IDENTIFIER = "§8§l[";
+
+    // 28 item slots per page (rows 1-4, cols 1-7)
+    private static final int ITEMS_PER_PAGE = 28;
 
     public ShopGUI(KingdomCore plugin) {
         this.plugin = plugin;
@@ -39,91 +46,118 @@ public class ShopGUI {
         this.SHOP_TYPE_KEY = new NamespacedKey(plugin, "shop_type");
         this.SHOP_PRICE_SHARDS_KEY = new NamespacedKey(plugin, "shop_price_shards");
         this.SHOP_PRICE_GEMS_KEY = new NamespacedKey(plugin, "shop_price_gems");
+        this.SHOP_NAV_KEY = new NamespacedKey(plugin, "shop_nav");
+        this.SHOP_BACK_KEY = new NamespacedKey(plugin, "shop_back");
+    }
+
+    public void setShopDataManager(ShopDataManager shopDataManager) {
+        this.shopDataManager = shopDataManager;
     }
 
     /**
-     * Build and return a shop inventory for the given shop type.
+     * Build and return a paginated shop inventory for the given shop type and page.
      */
-    public Inventory buildShopInventory(ShopType shopType) {
-        FileConfiguration shopConfig = plugin.getConfigManager().getShopConfig(shopType.getConfigKey());
-
-        if (shopConfig == null) {
-            plugin.getLogger().warning("No config found for shop: " + shopType.getConfigKey());
+    public Inventory buildShopInventory(ShopType shopType, int page) {
+        if (shopDataManager == null) {
+            plugin.getLogger().warning("ShopDataManager not initialized!");
             return Bukkit.createInventory(null, 27, "§cShop not configured");
         }
 
-        String title = shopConfig.getString("title", "§8Shop");
-        int size = shopConfig.getInt("size", 27);
-        // Ensure size is multiple of 9
-        size = Math.min(54, Math.max(9, (size / 9) * 9));
+        List<ShopItemData> allItems = shopDataManager.getItems(shopType);
 
-        Inventory inv = Bukkit.createInventory(null, size, title);
+        // Build title from ShopType
+        String title = getShopTitle(shopType);
 
-        // Fill borders with themed glass panes
-        fillBorder(inv, size, shopType);
+        int totalItems = allItems.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / ITEMS_PER_PAGE));
+
+        // Clamp page
+        page = Math.max(0, Math.min(page, totalPages - 1));
+
+        // Always 54 slots (double chest)
+        Inventory inv = Bukkit.createInventory(null, 54, title);
+
+        // Fill borders
+        fillBorder(inv, shopType);
 
         // Add info item at top center
-        addInfoItem(inv, shopType, shopConfig);
+        addInfoItem(inv, shopType, page, totalPages);
 
-        // Add items
-        ConfigurationSection itemsSection = shopConfig.getConfigurationSection("items");
-        if (itemsSection == null) return inv;
+        // Place items for this page
+        if (!allItems.isEmpty()) {
+            int startIndex = page * ITEMS_PER_PAGE;
+            int endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
 
-        placeItemsSequential(inv, itemsSection, shopType, size);
+            List<ShopItemData> pageItems = allItems.subList(startIndex, endIndex);
+            placeItemsInGrid(inv, pageItems, shopType);
+        }
+
+        // Add navigation bar
+        addNavigationBar(inv, shopType, page, totalPages);
 
         return inv;
     }
+
     /**
-     * Place items sequentially in the GUI (standard shops).
+     * Overload for backwards compatibility — opens page 0.
      */
-    private void placeItemsSequential(Inventory inv, ConfigurationSection itemsSection,
-                                      ShopType shopType, int size) {
-        int slot = 10; // Start placing items inside the border
-        for (String key : itemsSection.getKeys(false)) {
-            ConfigurationSection itemConfig = itemsSection.getConfigurationSection(key);
-            if (itemConfig == null) continue;
+    public Inventory buildShopInventory(ShopType shopType) {
+        return buildShopInventory(shopType, 0);
+    }
 
-            // Skip border slots
-            while (isBorderSlot(slot, size) && slot < size) slot++;
-            if (slot >= size) break;
+    /**
+     * Place items in the inner grid (rows 1-4, cols 1-7).
+     */
+    private void placeItemsInGrid(Inventory inv, List<ShopItemData> items, ShopType shopType) {
+        int gridIndex = 0;
+        for (ShopItemData itemData : items) {
+            int slot = gridIndexToSlot(gridIndex);
+            if (slot == -1) break; // Exceeded grid capacity
 
-            ItemStack shopItem = createShopItem(key, itemConfig, shopType);
+            ItemStack shopItem = createShopItem(itemData, shopType);
             if (shopItem != null) {
                 inv.setItem(slot, shopItem);
             }
-
-            slot++;
+            gridIndex++;
         }
     }
 
     /**
-     * Create a single shop item from config with enhanced lore formatting.
+     * Maps a sequential grid index (0-27) to the actual slot in the 54-slot inventory.
      */
-    private ItemStack createShopItem(String key, ConfigurationSection config, ShopType shopType) {
-        String materialName = config.getString("material", "STONE");
+    private int gridIndexToSlot(int index) {
+        if (index < 0 || index >= ITEMS_PER_PAGE) return -1;
+        int row = (index / 7) + 1; // Rows 1-4
+        int col = (index % 7) + 1; // Cols 1-7
+        return row * 9 + col;
+    }
+
+    /**
+     * Create a single shop item from ShopItemData.
+     */
+    private ItemStack createShopItem(ShopItemData data, ShopType shopType) {
         Material material;
         try {
-            material = Material.valueOf(materialName.toUpperCase());
+            material = Material.valueOf(data.getMaterial().toUpperCase());
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Invalid material: " + materialName + " for shop item: " + key);
+            plugin.getLogger().warning("Invalid material: " + data.getMaterial() + " for shop item: " + data.getItemKey());
             return null;
         }
 
-        int amount = config.getInt("amount", 1);
+        int amount = data.getAmount();
         ItemStack item = new ItemStack(material, amount);
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return null;
 
         // Display name
-        String name = config.getString("name", "§f" + key);
-        meta.setDisplayName(name);
+        meta.setDisplayName(data.getName());
 
         // Build enhanced lore
         List<String> lore = new ArrayList<>();
 
-        // Item description/stats from config
-        if (config.contains("lore")) {
-            lore.addAll(config.getStringList("lore"));
+        // Item description from data
+        if (data.getLore() != null && !data.getLore().isEmpty()) {
+            lore.addAll(data.getLore());
         }
 
         // Separator line
@@ -131,7 +165,7 @@ public class ShopGUI {
         lore.add("§8§m                              ");
 
         // Price section with icons
-        addPriceLore(lore, config, shopType);
+        addPriceLore(lore, data, shopType);
 
         // Click instruction
         lore.add("");
@@ -139,23 +173,21 @@ public class ShopGUI {
 
         meta.setLore(lore);
 
-        // Custom model data for weapons
-        if (config.contains("cmd")) {
-            meta.setCustomModelData(config.getInt("cmd"));
+        // Custom model data
+        if (data.getCmd() > 0) {
+            meta.setCustomModelData(data.getCmd());
         }
 
         // Enchanted book handling
-        if (material == Material.ENCHANTED_BOOK && config.contains("enchant")) {
-            String enchantName = config.getString("enchant", "");
-            int enchantLevel = config.getInt("enchant-level", 1);
-            Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(enchantName.toLowerCase()));
+        if (data.isEnchantedBook()) {
+            Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(data.getEnchant().toLowerCase()));
             if (enchantment != null && meta instanceof EnchantmentStorageMeta esMeta) {
-                esMeta.addStoredEnchant(enchantment, enchantLevel, true);
+                esMeta.addStoredEnchant(enchantment, data.getEnchantLevel(), true);
             }
         }
 
         // PDC: store shop metadata
-        meta.getPersistentDataContainer().set(SHOP_ITEM_KEY, PersistentDataType.STRING, key);
+        meta.getPersistentDataContainer().set(SHOP_ITEM_KEY, PersistentDataType.STRING, data.getItemKey());
         meta.getPersistentDataContainer().set(SHOP_TYPE_KEY, PersistentDataType.STRING, shopType.name());
 
         // Store prices in PDC for purchase handler
@@ -163,14 +195,14 @@ public class ShopGUI {
         int priceGems = 0;
         switch (shopType.getCurrencyMode()) {
             case SHARDS:
-                priceShards = config.getInt("price", 0);
+                priceShards = data.getPriceShards();
                 break;
             case GEMS:
-                priceGems = config.getInt("price", 0);
+                priceGems = data.getPriceGems();
                 break;
             case DUAL:
-                priceShards = config.getInt("price-shards", 0);
-                priceGems = config.getInt("price-gems", 0);
+                priceShards = data.getPriceShards();
+                priceGems = data.getPriceGems();
                 break;
         }
         meta.getPersistentDataContainer().set(SHOP_PRICE_SHARDS_KEY, PersistentDataType.INTEGER, priceShards);
@@ -182,19 +214,17 @@ public class ShopGUI {
         return item;
     }
 
-    private void addPriceLore(List<String> lore, ConfigurationSection config, ShopType shopType) {
+    private void addPriceLore(List<String> lore, ShopItemData data, ShopType shopType) {
         switch (shopType.getCurrencyMode()) {
             case SHARDS:
-                int priceShards = config.getInt("price", 0);
-                lore.add("§6✦ §ePrice: §a" + formatNumber(priceShards) + " Shards");
+                lore.add("§6✦ §ePrice: §a" + formatNumber(data.getPriceShards()) + " Shards");
                 break;
             case GEMS:
-                int priceGems = config.getInt("price", 0);
-                lore.add("§b✦ §ePrice: §b" + formatNumber(priceGems) + " Gems");
+                lore.add("§b✦ §ePrice: §b" + formatNumber(data.getPriceGems()) + " Gems");
                 break;
             case DUAL:
-                int shards = config.getInt("price-shards", 0);
-                int gems = config.getInt("price-gems", 0);
+                int shards = data.getPriceShards();
+                int gems = data.getPriceGems();
                 if (shards > 0) lore.add("§6✦ §eShards: §a" + formatNumber(shards));
                 if (gems > 0)   lore.add("§b✦ §eGems:   §b" + formatNumber(gems));
                 if (shards == 0 && gems == 0) lore.add("§a✦ Free");
@@ -205,19 +235,20 @@ public class ShopGUI {
     /**
      * Add an info item at the top center of the GUI.
      */
-    private void addInfoItem(Inventory inv, ShopType shopType, FileConfiguration shopConfig) {
+    private void addInfoItem(Inventory inv, ShopType shopType, int page, int totalPages) {
         Material infoMaterial = getInfoMaterial(shopType);
         ItemStack info = new ItemStack(infoMaterial);
         ItemMeta meta = info.getItemMeta();
         if (meta != null) {
-            String shopName = shopConfig.getString("title", shopType.name());
-            // Strip the §8§l[ ... ] wrapper for a clean display name
-            meta.setDisplayName("§f§l" + stripBrackets(shopName));
+            meta.setDisplayName("§f§l" + getShopTitle(shopType).replaceAll("§.§.\\[\\s*", "").replaceAll("\\s*§.§.\\]", "").trim());
 
             List<String> lore = new ArrayList<>();
             lore.add("§8§m                              ");
             lore.add("");
             lore.add(getCurrencyHint(shopType));
+            if (totalPages > 1) {
+                lore.add("§7Page §f" + (page + 1) + " §7of §f" + totalPages);
+            }
             lore.add("");
             lore.add("§7Browse the items below to");
             lore.add("§7find what you need!");
@@ -227,6 +258,97 @@ public class ShopGUI {
             info.setItemMeta(meta);
         }
         inv.setItem(4, info);
+    }
+
+    /**
+     * Add navigation bar on the bottom row (row 5, slots 45-53).
+     */
+    private void addNavigationBar(Inventory inv, ShopType shopType, int page, int totalPages) {
+        Material borderMat = getBorderMaterial(shopType);
+        for (int i = 45; i <= 53; i++) {
+            inv.setItem(i, createDecoPane(borderMat, " "));
+        }
+
+        // Back to Menu button at the end of the navigation bar
+        ItemStack back = new ItemStack(Material.OAK_DOOR);
+        ItemMeta backMeta = back.getItemMeta();
+        if (backMeta != null) {
+            backMeta.setDisplayName("§c§l◀ Return to Menu");
+            List<String> lore = new ArrayList<>();
+            lore.add("§8§m                              ");
+            lore.add("§7Exit this shop and");
+            lore.add("§7select a different one.");
+            lore.add("");
+            lore.add("§e▸ Click to go back");
+            backMeta.setLore(lore);
+            backMeta.getPersistentDataContainer().set(SHOP_BACK_KEY, PersistentDataType.BOOLEAN, true);
+            back.setItemMeta(backMeta);
+        }
+        inv.setItem(53, back);
+
+        if (totalPages <= 1) return;
+
+        if (page > 0) {
+            ItemStack prev = new ItemStack(Material.ARROW);
+            ItemMeta prevMeta = prev.getItemMeta();
+            if (prevMeta != null) {
+                prevMeta.setDisplayName("§a◀ Previous Page");
+                List<String> lore = new ArrayList<>();
+                lore.add("§7Go to page §f" + page);
+                prevMeta.setLore(lore);
+                prevMeta.getPersistentDataContainer().set(SHOP_NAV_KEY, PersistentDataType.STRING,
+                        shopType.name() + ":" + (page - 1));
+                prev.setItemMeta(prevMeta);
+            }
+            inv.setItem(48, prev);
+        }
+
+        ItemStack pageInfo = new ItemStack(Material.BOOK);
+        ItemMeta pageMeta = pageInfo.getItemMeta();
+        if (pageMeta != null) {
+            pageMeta.setDisplayName("§e§lPage " + (page + 1) + " §7/ §e§l" + totalPages);
+            List<String> lore = new ArrayList<>();
+            lore.add("§8§m                              ");
+            lore.add("§7Use the arrows to");
+            lore.add("§7navigate between pages.");
+            pageMeta.setLore(lore);
+            pageMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+            pageInfo.setItemMeta(pageMeta);
+        }
+        inv.setItem(49, pageInfo);
+
+        if (page < totalPages - 1) {
+            ItemStack next = new ItemStack(Material.ARROW);
+            ItemMeta nextMeta = next.getItemMeta();
+            if (nextMeta != null) {
+                nextMeta.setDisplayName("§aNext Page ▶");
+                List<String> lore = new ArrayList<>();
+                lore.add("§7Go to page §f" + (page + 2));
+                nextMeta.setLore(lore);
+                nextMeta.getPersistentDataContainer().set(SHOP_NAV_KEY, PersistentDataType.STRING,
+                        shopType.name() + ":" + (page + 1));
+                next.setItemMeta(nextMeta);
+            }
+            inv.setItem(50, next);
+        }
+    }
+
+    private String getShopTitle(ShopType shopType) {
+        return switch (shopType) {
+            case BLACKSMITH -> "§8§l[ §7§lBlacksmith §8§l]";
+            case ENCHANT -> "§8§l[ §9§lEnchantments §8§l]";
+            case POTION -> "§8§l[ §d§lPotions §8§l]";
+            case NETHER -> "§8§l[ §4§lNether Shop §8§l]";
+            case END -> "§8§l[ §e§lEnd Shop §8§l]";
+            case ARMOR -> "§8§l[ §b§lArmor Shop §8§l]";
+            case WOOD -> "§8§l[ §a§lWood Shop §8§l]";
+            case STONE -> "§8§l[ §7§lStone Shop §8§l]";
+            case FISHERMAN -> "§8§l[ §3§lFisherman §8§l]";
+            case FLETCHER -> "§8§l[ §a§lFletcher §8§l]";
+            case REDSTONE -> "§8§l[ §c§lRedstone Shop §8§l]";
+            case FARMING -> "§8§l[ §e§lFarming Shop §8§l]";
+            case CONVERTER -> "§8§l[ §a§lOre Converter §8§l]";
+        };
     }
 
     private String getCurrencyHint(ShopType shopType) {
@@ -255,16 +377,16 @@ public class ShopGUI {
         };
     }
 
-    private void fillBorder(Inventory inv, int size, ShopType shopType) {
+    private void fillBorder(Inventory inv, ShopType shopType) {
         Material borderMaterial = getBorderMaterial(shopType);
         Material cornerMaterial = getCornerMaterial(shopType);
 
         ItemStack border = createDecoPane(borderMaterial, " ");
         ItemStack corner = createDecoPane(cornerMaterial, " ");
 
-        for (int i = 0; i < size; i++) {
-            if (isBorderSlot(i, size)) {
-                if (isCornerSlot(i, size)) {
+        for (int i = 0; i < 45; i++) {
+            if (isBorderSlot(i)) {
+                if (isCornerSlot(i)) {
                     inv.setItem(i, corner);
                 } else {
                     inv.setItem(i, border);
@@ -309,16 +431,14 @@ public class ShopGUI {
         };
     }
 
-    private boolean isCornerSlot(int slot, int size) {
-        int maxRow = (size / 9) - 1;
-        return (slot == 0 || slot == 8 || slot == maxRow * 9 || slot == maxRow * 9 + 8);
-    }
-
-    private boolean isBorderSlot(int slot, int size) {
+    private boolean isBorderSlot(int slot) {
         int row = slot / 9;
         int col = slot % 9;
-        int maxRow = (size / 9) - 1;
-        return row == 0 || row == maxRow || col == 0 || col == 8;
+        return row == 0 || col == 0 || col == 8;
+    }
+
+    private boolean isCornerSlot(int slot) {
+        return (slot == 0 || slot == 8);
     }
 
     private ItemStack createDecoPane(Material material, String name) {
@@ -329,10 +449,6 @@ public class ShopGUI {
             pane.setItemMeta(meta);
         }
         return pane;
-    }
-
-    private String stripBrackets(String title) {
-        return title.replaceAll("§.§.\\[\\s*", "").replaceAll("\\s*§.§.\\]", "").trim();
     }
 
     private String formatNumber(int number) {

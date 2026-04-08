@@ -1,7 +1,8 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface StoreItemData {
   _id: string;
@@ -20,8 +21,13 @@ export default function StoreCard({ item }: { item: StoreItemData }) {
   const [loading, setLoading] = useState(false);
 
   const handleBuy = async () => {
-    if (!session) return;
+    if (!session) {
+      signIn("discord");
+      return;
+    }
+    
     setLoading(true);
+    const loadingToast = toast.loading("Preparing checkout...");
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -30,12 +36,13 @@ export default function StoreCard({ item }: { item: StoreItemData }) {
       });
       const data = await res.json();
       if (data.url) {
+        toast.success("Redirecting to checkout...", { id: loadingToast });
         window.location.href = data.url;
       } else {
-        alert(data.error || "Something went wrong");
+        toast.error(data.error || "Something went wrong", { id: loadingToast });
       }
     } catch (err) {
-      alert("Failed to start checkout");
+      toast.error("Failed to start checkout", { id: loadingToast });
     } finally {
       setLoading(false);
     }
@@ -108,10 +115,10 @@ export default function StoreCard({ item }: { item: StoreItemData }) {
           
           <button
             onClick={handleBuy}
-            disabled={loading || !session}
+            disabled={loading}
             className="relative overflow-hidden px-6 py-3 text-sm font-bold rounded-xl bg-white text-black transition-all hover:pr-10 disabled:opacity-50 disabled:cursor-not-allowed group/btn"
           >
-            <span className="relative z-10">{loading ? "Wait..." : session ? "Buy Now" : "Login First"}</span>
+            <span className="relative z-10">{loading ? "Wait..." : session ? "Buy Now" : "Login to Buy"}</span>
             <span className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 -translate-x-2 transition-all duration-300">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />

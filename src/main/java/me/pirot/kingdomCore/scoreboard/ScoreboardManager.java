@@ -2,7 +2,6 @@ package me.pirot.kingdomCore.scoreboard;
 
 import fr.mrmicky.fastboard.FastBoard;
 import me.pirot.kingdomCore.KingdomCore;
-import me.pirot.kingdomCore.bounty.BountyManager;
 import me.pirot.kingdomCore.config.ConfigManager;
 import me.pirot.kingdomCore.database.PlayerData;
 import me.pirot.kingdomCore.economy.EconomyManager;
@@ -10,30 +9,29 @@ import me.pirot.kingdomCore.rpg.RPGClass;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages FastBoard scoreboards per player with auto-refresh.
+ * Redesigned to match the premium KingdomSMP aesthetic.
  */
 public class ScoreboardManager {
 
     private final KingdomCore plugin;
     private final ConfigManager configManager;
     private final EconomyManager economyManager;
-    private final BountyManager bountyManager;
 
     private final Map<UUID, FastBoard> boards = new ConcurrentHashMap<>();
-    private final String title;
 
     public ScoreboardManager(KingdomCore plugin, ConfigManager configManager,
-                             EconomyManager economyManager, BountyManager bountyManager) {
+                             EconomyManager economyManager) {
         this.plugin = plugin;
         this.configManager = configManager;
         this.economyManager = economyManager;
-        this.bountyManager = bountyManager;
-        this.title = configManager.getScoreboardTitle();
     }
 
     /**
@@ -44,13 +42,14 @@ public class ScoreboardManager {
         if (data == null || !data.isScoreboardEnabled()) return;
 
         FastBoard board = new FastBoard(player);
-        board.updateTitle(title);
+        board.updateTitle("§e§l¥ KingdomSMP ¥");
         boards.put(player.getUniqueId(), board);
         updateBoard(player);
     }
 
     /**
      * Update the scoreboard lines for a player.
+     * Matches the design: Player, Class, Level, XP, Shards, Gems, K/D, Bounty, Online.
      */
     public void updateBoard(Player player) {
         FastBoard board = boards.get(player.getUniqueId());
@@ -62,47 +61,27 @@ public class ScoreboardManager {
         RPGClass rpgClass = RPGClass.fromString(data.getClassName());
         String className = rpgClass != null ? rpgClass.getColoredName() : "§7None";
 
-        // Top bounty info
-        Player topBounty = bountyManager.getTopBountyPlayer();
+        int xp = data.getXp();
+        int xpNeeded = data.getXpNeeded();
+        int onlineCount = Bukkit.getOnlinePlayers().size();
 
-        // XP progress bar (Premium Look)
-        int xpNeeded = data.getLevel() * 1000;
-        if (xpNeeded <= 0) xpNeeded = 1000; // Default case
-        int xpProgress = data.getXp();
-        int totalBars = 10;
-        int filledBars = (int) Math.min(totalBars, Math.max(0, ((double) xpProgress / xpNeeded) * totalBars));
+        List<String> lines = new ArrayList<>();
+        lines.add("§1 "); // 14
+        lines.add("§fPlayer: §f" + player.getName()); // 13
+        lines.add("§fClass: " + className); // 12
+        lines.add("§fLevel: §b" + data.getLevel()); // 11
+        lines.add("§fXP: §e" + xp + "/" + xpNeeded); // 10
+        lines.add("§2 "); // 9
+        lines.add("§a✦ Shards: §f" + formatNumber(data.getShards())); // 8
+        lines.add("§b✦ Gems: §f" + formatNumber(data.getGems())); // 7
+        lines.add("§3 "); // 6
+        lines.add("§c⚔ K/D: §f" + data.getKills() + "/" + data.getDeaths()); // 5
+        lines.add("§6☠ Bounty: §e" + formatNumber(data.getBounty())); // 4
+        lines.add("§4 "); // 3
+        lines.add("§fOnline: §f" + onlineCount); // 2
+        lines.add("§7play.kingdom.com"); // 1
 
-        StringBuilder xpBar = new StringBuilder("§a");
-        for (int i = 0; i < totalBars; i++) {
-            if (i == filledBars) xpBar.append("§8");
-            xpBar.append("■");
-        }
-        xpBar.append("§r");
-
-        String topBountyName = "None";
-        String topBountyVal = "0";
-        if (topBounty != null) {
-            topBountyName = topBounty.getName();
-            topBountyVal = String.valueOf(bountyManager.getTopBountyAmount());
-        }
-
-        board.updateLines(
-                "§8§m------------------------",
-                "§6❖ §lPlayer Info",
-                "  §7Class: " + className,
-                "  §7Level: §a" + data.getLevel(),
-                "  §7Prog:  " + xpBar,
-                "",
-                "§e❖ §lTreasury",
-                "  §6Shards: §f" + data.getShards() + " ✦",
-                "  §bGems:   §f" + data.getGems() + " ✦",
-                " ",
-                "§c❖ §lLeaderboard",
-                "  §fTop Bnt: §c" + topBountyName,
-                "  §7Value: §a" + topBountyVal,
-                "§8§m------------------------",
-                "  §epic.thekingdom.net"
-        );
+        board.updateLines(lines);
     }
 
     /**
@@ -114,12 +93,10 @@ public class ScoreboardManager {
         if (data == null) return;
 
         if (boards.containsKey(uuid)) {
-            // Currently showing — hide it
             removeBoard(player);
             data.setScoreboardEnabled(false);
             player.sendMessage("§a§l[Kingdom] §7Scoreboard §cdisabled§7.");
         } else {
-            // Currently hidden — show it
             data.setScoreboardEnabled(true);
             createBoard(player);
             player.sendMessage("§a§l[Kingdom] §7Scoreboard §aenabled§7.");
@@ -148,5 +125,11 @@ public class ScoreboardManager {
                 }
             }
         }, ticks, ticks);
+    }
+
+    private String formatNumber(int number) {
+        if (number >= 1000000) return String.format("%.1fM", number / 1000000.0);
+        if (number >= 1000) return String.format("%.1fK", number / 1000.0);
+        return String.valueOf(number);
     }
 }

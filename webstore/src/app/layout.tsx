@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "KingdomStore — Premium Minecraft Store",
@@ -17,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <Providers>
           <Navbar />
           <main className="pt-16 min-h-screen">{children}</main>
@@ -25,6 +26,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p>© 2026 The Kingdom — All rights reserved.</p>
             <p className="mt-1">Not affiliated with Mojang AB.</p>
           </footer>
+          <Toaster 
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: '#1a1b23',
+                color: '#fff',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+              },
+            }}
+          />
         </Providers>
       </body>
     </html>

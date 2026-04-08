@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import StoreCard from "@/components/StoreCard";
+import { useSession, signIn } from "next-auth/react";
 
 interface StoreItemData {
   _id: string;
@@ -27,6 +28,9 @@ export default function StorePage() {
   const [items, setItems] = useState<StoreItemData[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("default");
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const params = activeCategory === "all" ? "" : `?category=${activeCategory}`;
@@ -53,6 +57,25 @@ export default function StorePage() {
             Back to Home
           </Link>
         </div>
+
+        {/* Login Banner for Guests */}
+        {!session && status !== "loading" && (
+          <div className="mb-10 p-4 border border-amber-500/20 bg-amber-500/10 rounded-2xl flex items-center justify-between glass-card animate-fade-in">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">👋</span>
+              <div>
+                <h3 className="text-white font-bold">Welcome Traveler!</h3>
+                <p className="text-sm text-white/70">Connect your Discord account to purchase ranks and items.</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => signIn("discord")}
+              className="px-5 py-2 bg-indigo-500 text-white rounded-xl font-bold hover:bg-indigo-600 transition-colors"
+            >
+              Sign In
+            </button>
+          </div>
+        )}
 
         {/* Hero Section */}
         <div className="text-center mb-16 space-y-4">
@@ -88,6 +111,30 @@ export default function StorePage() {
           </div>
         </div>
 
+        {/* Search and Sort Toolbar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+          <div className="relative w-full sm:w-96">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🔍</span>
+            <input 
+              type="text" 
+              placeholder="Search items..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 px-12 py-3 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-colors"
+            />
+          </div>
+          <select 
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="w-full sm:w-48 bg-white/5 border border-white/10 px-4 py-3 rounded-xl text-white focus:outline-none focus:border-[var(--accent)] transition-colors appearance-none"
+          >
+            <option value="default" className="bg-[#1a1b23]">Sort Custom</option>
+            <option value="price-asc" className="bg-[#1a1b23]">Price: Low to High</option>
+            <option value="price-desc" className="bg-[#1a1b23]">Price: High to Low</option>
+            <option value="name-asc" className="bg-[#1a1b23]">Name: A-Z</option>
+          </select>
+        </div>
+
         {/* Items Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -108,7 +155,15 @@ export default function StorePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
-            {items.map((item) => (
+            {[...items]
+              .filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+              .sort((a, b) => {
+                if (sortOption === "price-asc") return a.price - b.price;
+                if (sortOption === "price-desc") return b.price - a.price;
+                if (sortOption === "name-asc") return a.name.localeCompare(b.name);
+                return 0;
+              })
+              .map((item) => (
               <StoreCard key={item._id} item={item} />
             ))}
           </div>

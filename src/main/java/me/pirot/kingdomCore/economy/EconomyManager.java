@@ -76,7 +76,7 @@ public class EconomyManager {
         return cache.get(uuid);
     }
 
-    // ---- Shard Operations (Vault) ----
+    // ---- Shard Operations ----
 
     public int getShards(UUID uuid) {
         PlayerData data = cache.get(uuid);
@@ -125,6 +125,15 @@ public class EconomyManager {
     public boolean removeGems(UUID uuid, int amount) {
         PlayerData data = cache.get(uuid);
         return data != null && data.removeGems(amount);
+    }
+
+    /**
+     * Check if player has enough shards and gems.
+     */
+    public boolean hasBalance(UUID uuid, int shards, int gems) {
+        PlayerData data = cache.get(uuid);
+        if (data == null) return false;
+        return data.getShards() >= shards && data.getGems() >= gems;
     }
 
     // ---- XP/Level ----

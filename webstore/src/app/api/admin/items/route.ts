@@ -14,14 +14,37 @@ async function isAdmin() {
   return user?.isAdmin === true;
 }
 
-// GET — list all store items
-export async function GET() {
+// GET — list store items with search and pagination
+export async function GET(req: NextRequest) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  const { searchParams } = new URL(req.url);
+  const search = searchParams.get("search") || "";
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "20");
+  const skip = (page - 1) * limit;
+
   await dbConnect();
-  const items = await StoreItem.find().sort({ createdAt: -1 });
-  return NextResponse.json(items);
+
+  const filter: any = {};
+  if (search) {
+    filter.name = { $regex: search, $options: "i" };
+  }
+
+  const total = await StoreItem.countDocuments(filter);
+  const items = await StoreItem.find(filter)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  return NextResponse.json({
+    items,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  });
 }
 
 // POST — create new store item
@@ -45,6 +68,29 @@ export async function PUT(req: NextRequest) {
   const { _id, ...updates } = body;
   const item = await StoreItem.findByIdAndUpdate(_id, updates, { new: true });
   return NextResponse.json(item);
+}
+
+// PATCH — quick-toggle active or featured
+export async function PATCH(req: NextRequest) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  await dbConnect();
+  const { id, field } = await req.json();
+
+  if (!["active", "featured"].includes(field)) {
+    return NextResponse.json({ error: "Invalid field" }, { status: 400 });
+  }
+
+  const item = await StoreItem.findById(id);
+  if (!item) {
+    return NextResponse.json({ error: "Item not found" }, { status: 404 });
+  }
+
+  item[field] = !item[field];
+  await item.save();
+
+  return NextResponse.json({ success: true, [field]: item[field] });
 }
 
 // DELETE — delete store item

@@ -4,7 +4,6 @@ version: '${project.version}'
 
 main: me.pirot.kingdomCore.KingdomCore
 api-version: '1.21'
-depend: [Vault]
 
 authors: [ Pirot ]
 description: RPG Kingdom plugin with shops, classes, bounties, and more.

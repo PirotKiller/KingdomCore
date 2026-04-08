@@ -1,61 +1,32 @@
 package me.pirot.kingdomCore.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-
 /**
- * Manages loading of config.yml and prices.yml.
+ * Manages loading of config.yml.
+ * Shop data is now managed via MongoDB (ShopDataManager).
  */
 public class ConfigManager {
 
     private final JavaPlugin plugin;
     private FileConfiguration config;
-    private java.util.Map<String, FileConfiguration> shopConfigs = new java.util.HashMap<>();
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
     /**
-     * Load both config files. Call from onEnable.
+     * Load config.yml. Call from onEnable.
      */
     public void load() {
-        // config.yml
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
         this.config = plugin.getConfig();
-
-        // Load all shops
-        for (me.pirot.kingdomCore.shop.ShopType type : me.pirot.kingdomCore.shop.ShopType.values()) {
-            String key = type.getConfigKey();
-            File shopFile = new File(plugin.getDataFolder(), "shops/" + key + ".yml");
-            if (!shopFile.exists()) {
-                plugin.saveResource("shops/" + key + ".yml", false);
-            }
-            shopConfigs.put(key, YamlConfiguration.loadConfiguration(shopFile));
-        }
     }
 
     public FileConfiguration getConfig() {
         return config;
-    }
-
-    public FileConfiguration getShopConfig(String key) {
-        return shopConfigs.get(key);
-    }
-
-    /**
-     * Reload a single shop configuration from its file.
-     */
-    public void reloadShop(String key) {
-        File shopFile = new File(plugin.getDataFolder(), "shops/" + key + ".yml");
-        if (shopFile.exists()) {
-            shopConfigs.put(key, YamlConfiguration.loadConfiguration(shopFile));
-            plugin.getLogger().info("[KingdomCore] Automatically reloaded shop config: " + key + ".yml");
-        }
     }
 
     // ---- Convenience getters for config.yml ----

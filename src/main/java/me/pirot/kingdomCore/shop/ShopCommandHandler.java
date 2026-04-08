@@ -36,6 +36,7 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
     private final KingdomCore plugin;
     private final ShopGUI shopGUI;
     private final ConverterShop converterShop;
+    private final ShopDataManager shopDataManager;
 
     private static final String MAIN_SHOP_TITLE = "§8§l[ §5§lKingdom Shops §8§l]";
     private final NamespacedKey ACTION_KEY;
@@ -44,30 +45,45 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
     private static final List<String> SUBCOMMANDS = Arrays.asList(
             "wood", "stone", "fisherman", "fletcher", "redstone", "farming",
             "blacksmith", "enchant", "potion", "nether", "end", "armor",
-            "sell", "convert"
+            "sell", "convert", "reload"
     );
 
-    public ShopCommandHandler(KingdomCore plugin, ShopGUI shopGUI, ConverterShop converterShop) {
+    public ShopCommandHandler(KingdomCore plugin, ShopGUI shopGUI, ConverterShop converterShop, ShopDataManager shopDataManager) {
         this.plugin = plugin;
         this.shopGUI = shopGUI;
         this.converterShop = converterShop;
+        this.shopDataManager = shopDataManager;
         this.ACTION_KEY = new NamespacedKey(plugin, "shop_action");
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                              @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("§cOnly players can use this command!");
-            return true;
-        }
-
         if (args.length == 0) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage("§cOnly players can use this command!");
+                return true;
+            }
             openMainMenu(player);
             return true;
         }
 
         String sub = args[0].toLowerCase();
+
+        if (sub.equals("reload")) {
+            if (sender instanceof Player player && !player.hasPermission("kingdomcore.admin")) {
+                player.sendMessage("§c§l[Kingdom] §7You do not have permission to reload shops.");
+                return true;
+            }
+            shopDataManager.reload();
+            sender.sendMessage("§a§l[Kingdom] §7Shops have been reloaded from MongoDB!");
+            return true;
+        }
+
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cOnly players can use this command!");
+            return true;
+        }
 
         // Handle special redirects
         if (sub.equals("sell") || sub.equals("convert")) {
@@ -108,7 +124,7 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
     /**
      * Opens the visual Main Menu GUI.
      */
-    private void openMainMenu(Player player) {
+    public void openMainMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54, MAIN_SHOP_TITLE);
 
         fillMainMenuBorder(inv);
@@ -147,6 +163,7 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
         inv.setItem(40, getPlayerProfileIcon(player));
 
         player.openInventory(inv);
+        player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_CHEST_OPEN, 1f, 1.2f);
     }
 
     private ItemStack getPlayerProfileIcon(Player player) {

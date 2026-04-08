@@ -26,6 +26,7 @@ public class MongoManager {
     private MongoDatabase database;
     private MongoCollection<Document> playerCollection;
     private MongoCollection<Document> auctionCollection;
+    private MongoCollection<Document> shopsCollection;
     private com.mongodb.client.ChangeStreamIterable<Document> playerChangeStream;
     private final ExecutorService executor;
 
@@ -43,6 +44,7 @@ public class MongoManager {
             this.database = mongoClient.getDatabase(dbName);
             this.playerCollection = database.getCollection(playerCollName);
             this.auctionCollection = database.getCollection(auctionCollName);
+            this.shopsCollection = database.getCollection("shops");
             logger.info("[KingdomCore] Connected to MongoDB: " + dbName);
         } catch (Exception e) {
             logger.severe("[KingdomCore] Failed to connect to MongoDB: " + e.getMessage());
@@ -153,6 +155,10 @@ public class MongoManager {
         return auctionCollection;
     }
 
+    public MongoCollection<Document> getShopsCollection() {
+        return shopsCollection;
+    }
+
     public ExecutorService getExecutor() {
         return executor;
     }
@@ -187,6 +193,8 @@ public class MongoManager {
                 .append("xp", data.getXp())
                 .append("level", data.getLevel())
                 .append("bounty", data.getBounty())
+                .append("kills", data.getKills())
+                .append("deaths", data.getDeaths())
                 .append("scoreboardEnabled", data.isScoreboardEnabled())
                 .append("online", data.isOnline());
     }
@@ -201,6 +209,8 @@ public class MongoManager {
                 doc.getInteger("xp", 0),
                 doc.getInteger("level", 1),
                 doc.getInteger("bounty", 0),
+                doc.getInteger("kills", 0),
+                doc.getInteger("deaths", 0),
                 doc.getBoolean("scoreboardEnabled", true),
                 doc.getBoolean("online", false)
         );

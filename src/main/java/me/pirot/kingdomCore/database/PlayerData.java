@@ -5,6 +5,7 @@ import java.util.UUID;
 /**
  * POJO representing a player's persisted RPG state.
  * Directly maps to/from MongoDB documents.
+ * Tracks level, XP, currencies, and combat stats.
  */
 public class PlayerData {
 
@@ -16,6 +17,8 @@ public class PlayerData {
     private int xp;
     private int level;
     private int bounty;
+    private int kills;
+    private int deaths;
     private boolean scoreboardEnabled;
     private boolean online;
 
@@ -28,12 +31,15 @@ public class PlayerData {
         this.xp = 0;
         this.level = 1;
         this.bounty = 0;
+        this.kills = 0;
+        this.deaths = 0;
         this.scoreboardEnabled = true;
         this.online = false;
     }
 
     public PlayerData(UUID uuid, String lastKnownName, String className, int shards, int gems,
-                      int xp, int level, int bounty, boolean scoreboardEnabled, boolean online) {
+                      int xp, int level, int bounty, int kills, int deaths,
+                      boolean scoreboardEnabled, boolean online) {
         this.uuid = uuid;
         this.lastKnownName = lastKnownName;
         this.className = className;
@@ -42,8 +48,20 @@ public class PlayerData {
         this.xp = xp;
         this.level = level;
         this.bounty = bounty;
+        this.kills = kills;
+        this.deaths = deaths;
         this.scoreboardEnabled = scoreboardEnabled;
         this.online = online;
+    }
+
+    // ---- Status Check ----
+
+    /**
+     * @return the XP required to reach the next level.
+     * Formula based on screenshot analysis: Level * 100
+     */
+    public int getXpNeeded() {
+        return Math.max(100, this.level * 100);
     }
 
     // ---- Getters & Setters ----
@@ -118,9 +136,9 @@ public class PlayerData {
 
     public void addXp(int amount) {
         this.xp += amount;
-        // Level up every 1000 XP
-        while (this.xp >= this.level * 1000) {
-            this.xp -= this.level * 1000;
+        // Level up check
+        while (this.xp >= getXpNeeded()) {
+            this.xp -= getXpNeeded();
             this.level++;
         }
     }
@@ -143,6 +161,30 @@ public class PlayerData {
 
     public void addBounty(int amount) {
         this.bounty += amount;
+    }
+
+    public int getKills() {
+        return kills;
+    }
+
+    public void addKills(int amount) {
+        this.kills += amount;
+    }
+
+    public void setKills(int kills) {
+        this.kills = kills;
+    }
+
+    public int getDeaths() {
+        return deaths;
+    }
+
+    public void addDeaths(int amount) {
+        this.deaths += amount;
+    }
+
+    public void setDeaths(int deaths) {
+        this.deaths = deaths;
     }
 
     public boolean isScoreboardEnabled() {
