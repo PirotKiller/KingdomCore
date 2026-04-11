@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { MINECRAFT_MATERIALS } from "@/lib/materials";
 
 const SHOP_TYPES = [
   { key: "armor", label: "Armor Shop", icon: "🛡️" },
@@ -79,6 +80,10 @@ export default function AdminShopsPage() {
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
+  // Material selection
+  const [materialSearch, setMaterialSearch] = useState("");
+  const [showMaterialList, setShowMaterialList] = useState(false);
+
   // Lore editing
   const [loreInput, setLoreInput] = useState("");
 
@@ -111,12 +116,15 @@ export default function AdminShopsPage() {
     setEditingItem(item);
     setForm({ ...item });
     setLoreInput(item.lore?.join("\n") || "");
+    setMaterialSearch(item.material);
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
     setEditingItem(null);
+    setMaterialSearch("");
+    setShowMaterialList(false);
   };
 
   const handleSave = async () => {
@@ -128,7 +136,7 @@ export default function AdminShopsPage() {
     setSaving(true);
     const payload = {
       ...form,
-      lore: loreInput.split("\n").filter(l => l.trim() !== ""),
+      lore: loreInput.split("\n").filter((l: string) => l.trim() !== ""),
     };
 
     try {
@@ -310,7 +318,7 @@ export default function AdminShopsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
-                  {currentItems.map((item) => (
+                  {currentItems.map((item: ShopItemData) => (
                     <tr key={item._id} className="hover:bg-[var(--bg-card-hover)] transition-colors group">
                       <td className="px-5 py-4">
                         <div className="font-bold text-white group-hover:text-[var(--accent)] transition-colors">
@@ -411,16 +419,71 @@ export default function AdminShopsPage() {
                 />
               </div>
 
-              {/* Material */}
-              <div>
+              {/* Material Dropdown */}
+              <div className="relative">
                 <label className="block text-xs uppercase tracking-widest font-bold text-[var(--text-muted)] mb-2">Material ID</label>
-                <input
-                  type="text"
-                  value={form.material}
-                  onChange={e => setForm({ ...form, material: e.target.value.toUpperCase() })}
-                  placeholder="e.g. GOLDEN_SHOVEL"
-                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent)] font-mono"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={materialSearch}
+                    onChange={e => {
+                      const val = e.target.value.toUpperCase();
+                      setMaterialSearch(val);
+                      setForm({ ...form, material: val });
+                      setShowMaterialList(true);
+                    }}
+                    onFocus={() => setShowMaterialList(true)}
+                    placeholder="Search material... (e.g. DIAMOND)"
+                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent)] font-mono pr-10"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {showMaterialList && (
+                  <div className="absolute left-0 right-0 mt-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl shadow-2xl z-[60] overflow-hidden backdrop-blur-xl">
+                    <div className="max-h-60 overflow-y-auto">
+                      {MINECRAFT_MATERIALS.filter(m => 
+                        m.id.toLowerCase().includes(materialSearch.toLowerCase()) || 
+                        m.name.toLowerCase().includes(materialSearch.toLowerCase())
+                      ).slice(0, 50).map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => {
+                            setMaterialSearch(m.id);
+                            setForm({ ...form, material: m.id });
+                            setShowMaterialList(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 hover:bg-[var(--accent)]/10 flex items-center justify-between transition-colors border-b border-[var(--border)] last:border-0 group"
+                        >
+                          <div>
+                            <div className="text-sm font-bold text-white group-hover:text-[var(--accent)]">{m.name}</div>
+                            <div className="text-[10px] text-[var(--text-muted)] font-mono">{m.id}</div>
+                          </div>
+                          <div className="text-xs text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity">Select</div>
+                        </button>
+                      ))}
+                      {MINECRAFT_MATERIALS.filter(m => 
+                        m.id.toLowerCase().includes(materialSearch.toLowerCase()) || 
+                        m.name.toLowerCase().includes(materialSearch.toLowerCase())
+                      ).length === 0 && (
+                        <div className="p-4 text-center text-sm text-[var(--text-muted)] italic">
+                          No matching materials found.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* Click outside to close */}
+                {showMaterialList && (
+                  <div 
+                    className="fixed inset-0 z-50 pointer-events-auto" 
+                    onClick={() => setShowMaterialList(false)}
+                  />
+                )}
               </div>
 
               {/* Quantity */}

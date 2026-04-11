@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Pagination from "@/components/Pagination";
 
 interface PlayerData {
   _id: string;
@@ -20,15 +21,24 @@ export default function AdminPlayersPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<PlayerData | null>(null);
   const [form, setForm] = useState({ shards: 0, gems: 0, level: 1, bounty: 0 });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const loadPlayers = () => {
-    fetch("/api/admin/players")
+    setLoading(true);
+    fetch(`/api/admin/players?page=${page}`)
       .then((r) => r.json())
-      .then((data) => { setPlayers(data); setLoading(false); })
+      .then((data) => { 
+        setPlayers(data.players || []); 
+        setTotalPages(data.totalPages || 1);
+        setTotal(data.total || 0);
+        setLoading(false); 
+      })
       .catch(() => setLoading(false));
   };
 
-  useEffect(loadPlayers, []);
+  useEffect(loadPlayers, [page]);
 
   const handleEdit = (player: PlayerData) => {
     setEditing(player);
@@ -50,7 +60,7 @@ export default function AdminPlayersPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">
         <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">In-Game Players</span>
-        <span className="ml-3 text-sm text-[var(--text-muted)] font-normal">{players.length} synced</span>
+        <span className="ml-3 text-sm text-[var(--text-muted)] font-normal">{total} synced</span>
       </h1>
 
       <div className="glass-card overflow-hidden">
@@ -130,6 +140,15 @@ export default function AdminPlayersPage() {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          page={page}
+          total={total}
+          totalPages={totalPages}
+          limit={20}
+          onPageChange={setPage}
+          loading={loading}
+        />
       </div>
 
       {/* Edit Modal */}

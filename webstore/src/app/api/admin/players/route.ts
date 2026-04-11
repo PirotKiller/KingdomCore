@@ -14,11 +14,16 @@ async function isAdmin() {
   return user?.isAdmin === true;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "20");
+  const skip = (page - 1) * limit;
+
   await dbConnect();
   
   const db = mongoose.connection.db;
@@ -26,8 +31,20 @@ export async function GET() {
     return NextResponse.json({ error: "Database not connected" }, { status: 500 });
   }
   
-  const players = await db.collection("players").find().toArray();
-  return NextResponse.json(players);
+  const total = await db.collection("players").countDocuments();
+  const players = await db.collection("players")
+    .find()
+    .sort({ lastKnownName: 1 })
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+
+  return NextResponse.json({
+    players,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit)
+  });
 }
 
 export async function PUT(req: NextRequest) {

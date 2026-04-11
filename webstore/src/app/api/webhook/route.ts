@@ -6,6 +6,12 @@ import dbConnect from "@/lib/mongodb";
 import { Purchase } from "@/models/Purchase";
 import { StoreItem } from "@/models/StoreItem";
 import mongoose from "mongoose";
+import { randomBytes } from "crypto";
+
+const generateTransactionId = () => {
+  const chars = randomBytes(4).toString("hex").toUpperCase();
+  return `KC-${chars.slice(0, 4)}-${chars.slice(4, 8)}`;
+};
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -53,6 +59,7 @@ export async function POST(req: NextRequest) {
         price: session.amount_total || 0,
         currency: session.currency || "usd",
         stripeSessionId: session.id,
+        transactionId: generateTransactionId(),
         status: "completed",
       });
 

@@ -129,8 +129,17 @@ public final class KingdomCore extends JavaPlugin {
         scoreboardManager.startUpdateTask();
         bountyListener.startCompassTask();
 
-        // Initialize Webstore Command Polling
+        // Initialize Webstore Command Polling & Moderation
         this.webCommandManager = new WebCommandManager(this, mongoManager);
+        
+        me.pirot.kingdomCore.moderation.ModerationManager moderationManager = 
+                new me.pirot.kingdomCore.moderation.ModerationManager(this, mongoManager);
+        
+        getServer().getPluginManager().registerEvents(
+                new me.pirot.kingdomCore.moderation.PunishmentListener(moderationManager), this);
+                
+        getServer().getPluginManager().registerEvents(
+                new me.pirot.kingdomCore.moderation.GameLogger(this, mongoManager), this);
 
         // 12. Automated AH Purge (Every 1 hour)
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {

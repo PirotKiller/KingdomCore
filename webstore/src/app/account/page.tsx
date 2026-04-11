@@ -2,6 +2,7 @@
 
 import { useSession, signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
+import Pagination from "@/components/Pagination";
 
 export default function AccountPage() {
   const { data: session, status } = useSession();
@@ -10,6 +11,22 @@ export default function AccountPage() {
   const [linkStatus, setLinkStatus] = useState<{ verified: boolean; minecraftUsername: string | null } | null>(null);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loadingPurchases, setLoadingPurchases] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const loadPurchases = (p: number) => {
+    setLoadingPurchases(true);
+    fetch(`/api/account/purchases?page=${p}&limit=10`)
+      .then((r) => r.json())
+      .then((data) => {
+        setPurchases(data.purchases || []);
+        setTotalPages(data.totalPages || 1);
+        setTotal(data.total || 0);
+        setLoadingPurchases(false);
+      })
+      .catch(() => setLoadingPurchases(false));
+  };
 
   useEffect(() => {
     if (session) {
@@ -18,15 +35,9 @@ export default function AccountPage() {
         .then(setLinkStatus)
         .catch(() => {});
 
-      fetch("/api/account/purchases")
-        .then((r) => r.json())
-        .then((data) => {
-          setPurchases(Array.isArray(data) ? data : []);
-          setLoadingPurchases(false);
-        })
-        .catch(() => setLoadingPurchases(false));
+      loadPurchases(page);
     }
-  }, [session]);
+  }, [session, page]);
 
   const generateCode = async () => {
     setVerifyState("loading");
@@ -154,10 +165,12 @@ export default function AccountPage() {
             <div className="h-10 bg-[var(--bg-secondary)] rounded w-full"></div>
           </div>
         ) : purchases.length > 0 ? (
-          <div className="overflow-x-auto">
+          <>
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
+                  <th className="px-4 py-3 font-medium">Order ID</th>
                   <th className="px-4 py-3 font-medium">Item</th>
                   <th className="px-4 py-3 font-medium">Amount</th>
                   <th className="px-4 py-3 font-medium">Date</th>
@@ -167,6 +180,11 @@ export default function AccountPage() {
               <tbody>
                 {purchases.map((p) => (
                   <tr key={p._id} className="border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors">
+                    <td className="px-4 py-3">
+                      <code className="text-[10px] font-bold text-blue-400 bg-blue-400/5 px-2 py-0.5 rounded border border-blue-400/20">
+                        {p.transactionId || "LEGACY"}
+                      </code>
+                    </td>
                     <td className="px-4 py-3 font-medium text-white">{p.itemName}</td>
                     <td className="px-4 py-3 text-emerald-400">
                       {(p.price / 100).toLocaleString('en-US', { style: 'currency', currency: p.currency.toUpperCase() })}
@@ -184,6 +202,15 @@ export default function AccountPage() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={page}
+            total={total}
+            totalPages={totalPages}
+            limit={10}
+            onPageChange={setPage}
+            loading={loadingPurchases}
+          />
+        </>
         ) : (
           <p className="text-[var(--text-secondary)] text-sm">Your purchase history will appear here after your first purchase.</p>
         )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Pagination from "@/components/Pagination";
 
 interface Auction {
   _id: string;
@@ -18,15 +19,24 @@ export default function AdminAuctionsPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Auction | null>(null);
   const [form, setForm] = useState({ priceShards: 0, priceGems: 0 });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const loadAuctions = () => {
-    fetch("/api/admin/auctions")
+    setLoading(true);
+    fetch(`/api/admin/auctions?page=${page}`)
       .then((r) => r.json())
-      .then((data) => { setAuctions(data); setLoading(false); })
+      .then((data) => { 
+        setAuctions(data.auctions || []); 
+        setTotalPages(data.totalPages || 1);
+        setTotal(data.total || 0);
+        setLoading(false); 
+      })
       .catch(() => setLoading(false));
   };
 
-  useEffect(loadAuctions, []);
+  useEffect(loadAuctions, [page]);
 
   const handleEdit = (auction: Auction) => {
     setEditing(auction);
@@ -58,7 +68,7 @@ export default function AdminAuctionsPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">
         <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Live Auctions</span>
-        <span className="ml-3 text-sm text-[var(--text-muted)] font-normal">{auctions.length} active listings</span>
+        <span className="ml-3 text-sm text-[var(--text-muted)] font-normal">{total} active listings</span>
       </h1>
 
       <div className="glass-card overflow-hidden">
@@ -137,6 +147,15 @@ export default function AdminAuctionsPage() {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          page={page}
+          total={total}
+          totalPages={totalPages}
+          limit={20}
+          onPageChange={setPage}
+          loading={loading}
+        />
       </div>
 
       {/* Edit Modal */}

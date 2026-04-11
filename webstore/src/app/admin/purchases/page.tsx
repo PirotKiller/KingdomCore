@@ -1,28 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Pagination from "@/components/Pagination";
 
 interface PurchaseData {
   _id: string;
   discordId: string;
   minecraftUuid: string;
+  userId?: {
+    minecraftUsername?: string;
+  };
   itemName: string;
   price: number;
   currency: string;
   status: string;
+  transactionId?: string;
   createdAt: string;
 }
 
 export default function AdminPurchasesPage() {
   const [purchases, setPurchases] = useState<PurchaseData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
   const fetchPurchases = (p: number) => {
     setLoading(true);
-    fetch(`/api/admin/purchases?page=${p}`)
+    fetch(`/api/admin/purchases?page=${p}&search=${encodeURIComponent(search)}`)
       .then((r) => r.json())
       .then((data) => {
         setPurchases(data.purchases || []);
@@ -34,8 +40,11 @@ export default function AdminPurchasesPage() {
   };
 
   useEffect(() => {
-    fetchPurchases(page);
-  }, [page]);
+    const timer = setTimeout(() => {
+        fetchPurchases(page);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, search]);
 
   const statusColors: Record<string, string> = {
     completed: "bg-blue-400/10 text-blue-400",
@@ -61,16 +70,34 @@ export default function AdminPurchasesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">
-        <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Purchases</span>
-        <span className="ml-3 text-sm text-[var(--text-muted)] font-normal">{total} total transactions</span>
-      </h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">
+          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Purchases</span>
+          <span className="ml-3 text-sm text-[var(--text-muted)] font-normal">{total} total transactions</span>
+        </h1>
+
+        <div className="relative group max-w-md w-full">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="w-4 h-4 text-[var(--text-muted)] group-focus-within:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search Order ID, Item, or Player..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="w-full pl-10 pr-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+          />
+        </div>
+      </div>
 
       <div className="glass-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)] bg-white/5">
+                <th className="px-6 py-4 font-bold uppercase tracking-wider">Transaction ID</th>
                 <th className="px-6 py-4 font-bold uppercase tracking-wider">Item</th>
                 <th className="px-6 py-4 font-bold uppercase tracking-wider">Player</th>
                 <th className="px-6 py-4 font-bold uppercase tracking-wider">Price</th>
@@ -89,16 +116,23 @@ export default function AdminPurchasesPage() {
                 ))
               ) : purchases.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-[var(--text-muted)] italic">No purchases yet</td>
+                  <td colSpan={6} className="px-6 py-12 text-center text-[var(--text-muted)] italic">No purchases yet</td>
                 </tr>
               ) : (
                 purchases.map((p) => (
                   <tr key={p._id} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="text-xs font-mono text-blue-400 font-bold bg-blue-400/5 px-2 py-1 rounded border border-blue-400/20">
+                        {p.transactionId || "LEGACY"}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 text-white font-medium">{p.itemName}</td>
                     <td className="px-6 py-4">
-                      <code className="text-xs text-[var(--text-secondary)] bg-white/5 px-2 py-1 rounded border border-white/5">
-                        {p.minecraftUuid?.slice(0, 13)}...
-                      </code>
+                      <div className="flex flex-col">
+                        <span className="text-white font-medium">{p.userId?.minecraftUsername || "Unknown Player"}</span>
+                        <span className="text-[10px] text-[var(--text-muted)] font-mono">{p.minecraftUuid}</span>
+                        <span className="text-[10px] text-blue-400/70">Discord: {p.discordId}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-emerald-400 font-mono tracking-tighter tabular-nums text-base">
                       ${(p.price / 100).toFixed(2)}
@@ -139,30 +173,14 @@ export default function AdminPurchasesPage() {
           </table>
         </div>
 
-        {/* Pagination Control */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-[var(--border)] flex items-center justify-between bg-white/[0.02]">
-            <span className="text-xs text-[var(--text-muted)]">
-              Showing page {page} of {totalPages}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1 || loading}
-                className="p-2 px-4 rounded-lg bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white disabled:opacity-30 transition-all font-black text-xs uppercase tracking-[0.2em]"
-              >
-                Prev
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages || loading}
-                className="p-2 px-4 rounded-lg bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white disabled:opacity-30 transition-all font-black text-xs uppercase tracking-[0.2em]"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          total={total}
+          totalPages={totalPages}
+          limit={20}
+          onPageChange={setPage}
+          loading={loading}
+        />
       </div>
     </div>
   );

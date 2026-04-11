@@ -9,6 +9,7 @@ const PurchaseSchema = new Schema({
   price: { type: Number, required: true },
   currency: { type: String, required: true },
   stripeSessionId: { type: String, required: true, unique: true },
+  transactionId: { type: String, sparse: true, unique: true }, // Sparse because existing records might not have it initially
   status: { type: String, enum: ["completed", "delivered", "failed"], default: "completed" },
   deliveredAt: { type: Date },
 }, { timestamps: true });

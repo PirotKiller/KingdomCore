@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Pagination from "@/components/Pagination";
 
 interface User {
   _id: string;
@@ -159,30 +160,14 @@ export default function AdminUsersPage() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-[var(--border)] flex items-center justify-between bg-white/[0.02]">
-            <span className="text-xs text-[var(--text-muted)]">
-              Showing page {page} of {totalPages}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1 || loading}
-                className="p-2 rounded-lg bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white disabled:opacity-30 transition-all font-bold text-xs uppercase tracking-widest"
-              >
-                Prev
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages || loading}
-                className="p-2 rounded-lg bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white disabled:opacity-30 transition-all font-bold text-xs uppercase tracking-widest"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          total={total}
+          totalPages={totalPages}
+          limit={20}
+          onPageChange={setPage}
+          loading={loading}
+        />
       </div>
     </div>
   );
