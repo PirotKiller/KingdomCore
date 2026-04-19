@@ -6,14 +6,8 @@
     "fallback": {
       "type": "minecraft:condition",
       "property": "minecraft:using_item",
-      "on_true": {
-        "type": "minecraft:model",
-        "model": "minecraft:item/shield_blocking"
-      },
-      "on_false": {
-        "type": "minecraft:model",
-        "model": "minecraft:item/shield"
-      }
+      "on_true": { "type": "minecraft:model", "model": "minecraft:item/shield_blocking" },
+      "on_false": { "type": "minecraft:model", "model": "minecraft:item/shield" }
     },
     "entries": [
       {
@@ -21,21 +15,8 @@
         "model": {
           "type": "minecraft:condition",
           "property": "minecraft:using_item",
-          "on_true": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/knight/goldshield/midas_shield_blocking"
-          },
-          "on_false": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/knight/goldshield/midas_shield"
-          }
-        }
-      },
-      {
-        "threshold": 2002.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
+          "on_true": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/goldshield/midas_shield_blocking" },
+          "on_false": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/goldshield/midas_shield" }
         }
       },
       {
@@ -43,35 +24,17 @@
         "model": {
           "type": "minecraft:condition",
           "property": "minecraft:using_item",
-          "on_true": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/knight/diamondshield/diamond_shield_blocking"
-          },
-          "on_false": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/knight/diamondshield/diamond_shield_blocking"
-          }
+          "on_true": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/diamondshield/diamond_shield_blocking" },
+          "on_false": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/diamondshield/diamond_shield" }
         }
       },
       {
         "threshold": 2003.0,
         "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
-        }
-      },
-      {
-        "threshold": 2003.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/custom_weapons/knight/endershield/midas_shield"
-        }
-      },
-      {
-        "threshold": 2004.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/endershield/midas_shield_blocking" },
+          "on_false": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/endershield/midas_shield" }
         }
       },
       {
@@ -79,35 +42,17 @@
         "model": {
           "type": "minecraft:condition",
           "property": "minecraft:using_item",
-          "on_true": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/knight/boneshield/bone_shield_blocking"
-          },
-          "on_false": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/knight/boneshield/bone_shield"
-          }
+          "on_true": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/boneshield/bone_shield_blocking" },
+          "on_false": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/boneshield/bone_shield" }
         }
       },
       {
         "threshold": 2005.0,
         "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
-        }
-      },
-      {
-        "threshold": 2005.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/custom_weapons/knight/chaosshield/shield_dark"
-        }
-      },
-      {
-        "threshold": 2006.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/chaosshield/shield_dark_blocking" },
+          "on_false": { "type": "minecraft:model", "model": "minecraft:item/custom_weapons/knight/chaosshield/shield_dark" }
         }
       }
     ]

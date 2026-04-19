@@ -245,11 +245,11 @@ public class BountyCommand implements CommandExecutor, TabCompleter, Listener {
         }
 
         if (bountyManager.placeBounty(source, target, amount)) {
-            Bukkit.broadcastMessage("§6§l[Bounty] §f" + source.getName() + " §7placed a §a" +
-                    amount + " Shard §7bounty on §f" + target.getName() + "§7!");
-
             int totalBounty = bountyManager.getBounty(target.getUniqueId());
-            Bukkit.broadcastMessage("§6§l[Bounty] §f" + target.getName() + "§7's total bounty: §a" + totalBounty + " Shards");
+            Bukkit.broadcastMessage("§6§l[Bounty] §f" + source.getName() + " §7added §a" +
+                    amount + " Shards §7to the bounty on §f" + target.getName() + "§7!");
+
+            Bukkit.broadcastMessage("§6§l[Bounty] §f" + target.getName() + "§7's new total bounty: §6" + totalBounty + " Shards");
         } else {
             source.sendMessage("§c§l[Kingdom] §7Not enough Shards!");
         }

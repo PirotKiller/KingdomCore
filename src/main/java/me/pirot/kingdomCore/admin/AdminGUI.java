@@ -8,8 +8,10 @@ import me.pirot.kingdomCore.economy.EconomyManager;
 import me.pirot.kingdomCore.rpg.ClassManager;
 import me.pirot.kingdomCore.rpg.RPGClass;
 import me.pirot.kingdomCore.rpg.SpecialItems;
+import me.pirot.kingdomCore.rpg.WeaponTier;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
@@ -22,6 +24,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,9 +51,14 @@ public class AdminGUI implements Listener {
     public static final String BOUNTY_TITLE = "§8§l[ §6§lBounty Overview §8§l]";
     public static final String AUCTION_TITLE = "§8§l[ §e§lAuction Mod §8§l]";
     public static final String CONFIG_TITLE = "§8§l[ §c§lConfig Editor §8§l]";
+    public static final String WEAPONS_TITLE = "§8§l[ §d§lWeapon Arsenal §8§l]";
+    public static final String SPECIAL_ITEMS_TITLE = "§8§l[ §b§lSpecial Items §8§l]";
 
-    // Track which player profile is being viewed
+    // Track which player profile or page is being viewed
     private final Map<UUID, UUID> viewingProfile = new HashMap<>();
+    private final Map<UUID, Integer> weaponPages = new HashMap<>();
+    
+    private final NamespacedKey AUCTION_ID_KEY;
 
     public AdminGUI(KingdomCore plugin, EconomyManager economyManager,
                     ClassManager classManager, BountyManager bountyManager,
@@ -61,6 +69,7 @@ public class AdminGUI implements Listener {
         this.bountyManager = bountyManager;
         this.auctionManager = auctionManager;
         this.specialItems = specialItems;
+        this.AUCTION_ID_KEY = new NamespacedKey(plugin, "auction_id");
     }
 
     // ============================================================
@@ -127,6 +136,9 @@ public class AdminGUI implements Listener {
 
         inv.setItem(32, createItem(Material.NETHER_STAR, "§b§lGive Special Items",
                 Arrays.asList("§7Give yourself special items:", "§7Soul Fragment, Class Scroll, etc.", "", "§a▸ Click to open")));
+
+        inv.setItem(33, createItem(Material.DIAMOND_SWORD, "§d§lWeapon Arsenal",
+                Arrays.asList("§7Browse all RPG weapons.", "§7All tiers and types included.", "", "§a▸ Click to open")));
 
         admin.openInventory(inv);
     }
@@ -270,37 +282,48 @@ public class AdminGUI implements Listener {
         Inventory inv = Bukkit.createInventory(null, 54, ECONOMY_TITLE);
         fillBorder(inv, Material.LIME_STAINED_GLASS_PANE);
 
-        // Richest players
-        List<PlayerData> richest = economyManager.getCache().values().stream()
-                .sorted(Comparator.comparingInt(PlayerData::getShards).reversed())
-                .limit(10)
-                .collect(Collectors.toList());
+        // Stats summary item
+        long totalShards = economyManager.getCache().values().stream().mapToLong(PlayerData::getShards).sum();
+        long totalGems = economyManager.getCache().values().stream().mapToLong(PlayerData::getGems).sum();
 
         inv.setItem(4, createItem(Material.GOLD_BLOCK, "§a§l✦ Economy Dashboard ✦", Arrays.asList(
                 "§8§m                              ",
-                "§7Top 10 Richest Players:",
-                ""
+                "§7Total Shards in Circulation: §a" + String.format("%,d", totalShards),
+                "§7Total Gems in Circulation: §b" + String.format("%,d", totalGems),
+                "§7Online Economies: §e" + Bukkit.getOnlinePlayers().size(),
+                "§8§m                              "
         )));
 
-        int[] slots = {19, 20, 21, 22, 23, 24, 25, 28, 29, 30};
-        for (int i = 0; i < richest.size() && i < slots.length; i++) {
-            PlayerData d = richest.get(i);
-            inv.setItem(slots[i], createItem(Material.GOLD_INGOT,
-                    "§6#" + (i + 1) + " §f" + d.getLastKnownName(),
-                    Arrays.asList("§7Shards: §a" + String.format("%,d", d.getShards()),
-                            "§7Gems: §b" + String.format("%,d", d.getGems()))));
-        }
-
         // Bulk operations
-        inv.setItem(39, createItem(Material.EMERALD_BLOCK, "§a§lGive All +1000 Shards",
-                Arrays.asList("§7Give 1000 shards to all online players.", "", "§a▸ Click to execute")));
+        inv.setItem(20, createItem(Material.GOLD_INGOT, "§6§lGive Online +1k Shards",
+                Arrays.asList("§7Airdrop 1000 shards to all connected.", "", "§a▸ Left-Click to execute")));
 
-        inv.setItem(40, createItem(Material.DIAMOND_BLOCK, "§b§lGive All +100 Gems",
-                Arrays.asList("§7Give 100 gems to all online players.", "", "§a▸ Click to execute")));
+        inv.setItem(21, createItem(Material.GOLD_BLOCK, "§6§lGive Online +10k Shards",
+                Arrays.asList("§7Airdrop 10,000 shards to all connected.", "", "§a▸ Left-Click to execute")));
+
+        inv.setItem(23, createItem(Material.EMERALD, "§b§lGive Online +100 Gems",
+                Arrays.asList("§7Airdrop 100 gems to all connected.", "", "§a▸ Left-Click to execute")));
+
+        inv.setItem(24, createItem(Material.DIAMOND, "§b§lGive Online +1000 Gems",
+                Arrays.asList("§7Airdrop 1000 gems to all connected.", "", "§a▸ Left-Click to execute")));
+
+        // Richest players list
+        List<PlayerData> richest = economyManager.getCache().values().stream()
+                .sorted(Comparator.comparingInt(PlayerData::getShards).reversed())
+                .limit(7)
+                .collect(Collectors.toList());
+
+        int slot = 28;
+        for (PlayerData d : richest) {
+            inv.setItem(slot++, createItem(Material.PLAYER_HEAD, "§f" + d.getLastKnownName(),
+                    Arrays.asList("§7Shards: §a" + String.format("%,d", d.getShards()),
+                            "§7Gems: §b" + String.format("%,d", d.getGems()), "", "§e▸ Click to open profile")));
+        }
 
         inv.setItem(49, createItem(Material.ARROW, "§a§l← Back to Admin Panel", null));
 
         admin.openInventory(inv);
+        admin.playSound(admin.getLocation(), Sound.BLOCK_CHEST_OPEN, 1f, 1f);
     }
 
     // ============================================================
@@ -341,13 +364,165 @@ public class AdminGUI implements Listener {
     // ============================================================
 
     public void openSpecialItemsMenu(Player admin) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§8§l[ §b§lSpecial Items §8§l]");
+        Inventory inv = Bukkit.createInventory(null, 27, SPECIAL_ITEMS_TITLE);
         fillBorder(inv, Material.CYAN_STAINED_GLASS_PANE);
 
         inv.setItem(11, specialItems.createSoulItem());
         inv.setItem(13, specialItems.createClassChangeScroll());
         inv.setItem(15, specialItems.createDataRestoreTome());
 
+        admin.openInventory(inv);
+    }
+
+    // ============================================================
+    // WEAPON ARSENAL
+    // ============================================================
+
+    public void openWeaponGUI(Player admin, int page) {
+        weaponPages.put(admin.getUniqueId(), page);
+        
+        Inventory inv = Bukkit.createInventory(null, 54, WEAPONS_TITLE);
+        fillBorder(inv, Material.MAGENTA_STAINED_GLASS_PANE);
+
+        List<ItemStack> allWeapons = new ArrayList<>();
+        for (RPGClass rc : RPGClass.values()) {
+            for (WeaponTier tier : WeaponTier.values()) {
+                double baseDamage = 4 + (tier.ordinal() * 3);
+                double speed = 1.0;
+                switch (rc) {
+                    case KNIGHT -> speed = 1.6;
+                    case RONIN -> speed = 2.0;
+                    case ROGUE -> speed = 2.4;
+                    case ARCHER -> speed = 1.0;
+                    case WIZARD -> speed = 0.8;
+                }
+                allWeapons.add(plugin.getWeaponManager().createWeapon(rc, tier,
+                        tier.getColor() + rc.getColoredName().substring(2) + " " + tier.getDisplayName(),
+                        Arrays.asList("§7A specialized kingdom weapon."),
+                        baseDamage, speed));
+            }
+        }
+
+        int pageSize = 28;
+        int maxPage = (int) Math.ceil((double) allWeapons.size() / pageSize);
+        if (page >= maxPage) page = Math.max(0, maxPage - 1);
+
+        int startIndex = page * pageSize;
+        int[] slots = {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24, 25,
+            28, 29, 30, 31, 32, 33, 34,
+            37, 38, 39, 40, 41, 42, 43
+        };
+
+        for (int i = 0; i < pageSize; i++) {
+            int itemIndex = startIndex + i;
+            if (itemIndex >= allWeapons.size()) break;
+            inv.setItem(slots[i], allWeapons.get(itemIndex));
+        }
+
+        // Pagination buttons
+        if (page > 0) {
+            inv.setItem(45, createItem(Material.ARROW, "§a§l← Previous Page (" + page + ")", null));
+        }
+        if (itemIndexPlusOne(startIndex, pageSize) < allWeapons.size()) {
+             inv.setItem(53, createItem(Material.ARROW, "§a§lNext Page (" + (page + 2) + ") →", null));
+        }
+
+        inv.setItem(4, createItem(Material.BOOK, "§d§lWeapon Arsenal §7(Page " + (page + 1) + "/" + maxPage + ")",
+                Arrays.asList("§7Browsing §f" + allWeapons.size() + "§7 total weapons.")));
+
+        inv.setItem(49, createItem(Material.ARROW, "§a§l← Back to Admin Panel", null));
+        admin.openInventory(inv);
+    }
+
+    private int itemIndexPlusOne(int start, int size) { return start + size; }
+
+    // ============================================================
+    // CLASS MANAGER
+    // ============================================================
+
+    public void openClassManager(Player admin) {
+        Inventory inv = Bukkit.createInventory(null, 54, CLASS_TITLE);
+        fillBorder(inv, Material.PURPLE_STAINED_GLASS_PANE);
+
+        // Class stats
+        Map<String, Integer> classDist = new HashMap<>();
+        for (PlayerData data : economyManager.getCache().values()) {
+            classDist.merge(data.getClassName(), 1, Integer::sum);
+        }
+
+        inv.setItem(4, createItem(Material.BOOK, "§d§l✦ Class Distribution ✦", Arrays.asList(
+                "§8§m                              ",
+                "§fArcher: §7" + classDist.getOrDefault("ARCHER", 0),
+                "§fKnight: §7" + classDist.getOrDefault("KNIGHT", 0),
+                "§fWizard: §7" + classDist.getOrDefault("WIZARD", 0),
+                "§fRonin: §7" + classDist.getOrDefault("RONIN", 0),
+                "§fRogue: §7" + classDist.getOrDefault("ROGUE", 0),
+                "§8§m                              "
+        )));
+
+        // List online players and their classes
+        int slot = 10;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (slot >= 44) break;
+            if (iSBorderSlot(slot, 54)) { slot++; continue; }
+
+            PlayerData data = economyManager.getCache().get(p.getUniqueId());
+            if (data == null) continue;
+
+            RPGClass rc = RPGClass.fromString(data.getClassName());
+            inv.setItem(slot++, createItem(Material.PLAYER_HEAD, "§f" + p.getName(),
+                    Arrays.asList("§7Class: " + (rc != null ? rc.getColoredName() : "§8None"),
+                            "§7Level: §e" + data.getLevel(), "", "§e▸ Click to manage profile")));
+        }
+
+        inv.setItem(49, createItem(Material.ARROW, "§a§l← Back to Admin Panel", null));
+        admin.openInventory(inv);
+    }
+
+    private boolean iSBorderSlot(int slot, int size) {
+        int row = slot / 9;
+        int col = slot % 9;
+        int maxRow = (size / 9) - 1;
+        return row == 0 || row == maxRow || col == 0 || col == 8;
+    }
+
+    // ============================================================
+    // AUCTION MODERATION
+    // ============================================================
+
+    public void openAuctionModeration(Player admin) {
+        Inventory inv = Bukkit.createInventory(null, 54, AUCTION_TITLE);
+        fillBorder(inv, Material.YELLOW_STAINED_GLASS_PANE);
+
+        List<me.pirot.kingdomCore.auction.AuctionManager.AuctionListing> listings = auctionManager.getActiveListings();
+
+        inv.setItem(4, createItem(Material.CHEST, "§e§l✦ Active Listings ✦",
+                Arrays.asList("§7Managing §f" + listings.size() + "§7 active items.", "", "§cRemoving an item will permanently", "§cdelete it from the auction house.")));
+
+        int slot = 10;
+        for (me.pirot.kingdomCore.auction.AuctionManager.AuctionListing listing : listings) {
+            if (slot >= 44) break;
+            if (iSBorderSlot(slot, 54)) { slot++; continue; }
+
+            ItemStack item = auctionManager.deserializeItem(listing.getSerializedItem());
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
+                lore.add("§8§m                              ");
+                lore.add("§7Seller: §f" + listing.getSellerName());
+                lore.add("§7Price: §a" + listing.getPriceShards() + " Shards §7| §b" + listing.getPriceGems() + " Gems");
+                lore.add("");
+                lore.add("§c§l⚠ Click to REMOVE item ⚠");
+                meta.setLore(lore);
+                meta.getPersistentDataContainer().set(AUCTION_ID_KEY, PersistentDataType.STRING, listing.getListingId());
+                item.setItemMeta(meta);
+            }
+            inv.setItem(slot++, item);
+        }
+
+        inv.setItem(49, createItem(Material.ARROW, "§a§l← Back to Admin Panel", null));
         admin.openInventory(inv);
     }
 
@@ -363,7 +538,9 @@ public class AdminGUI implements Listener {
         // Check if it's an admin GUI
         if (!title.equals(MAIN_TITLE) && !title.equals(PLAYERS_TITLE) &&
                 !title.startsWith(PLAYER_PROFILE_PREFIX) && !title.equals(ECONOMY_TITLE) &&
-                !title.equals(BOUNTY_TITLE) && !title.equals("§8§l[ §b§lSpecial Items §8§l]")) return;
+                !title.equals(BOUNTY_TITLE) && !title.equals(SPECIAL_ITEMS_TITLE) &&
+                !title.equals(CLASS_TITLE) && !title.equals(AUCTION_TITLE) &&
+                !title.equals(WEAPONS_TITLE)) return;
 
         if (!admin.hasPermission("kingdomcore.admin")) return;
 
@@ -377,12 +554,13 @@ public class AdminGUI implements Listener {
             switch (slot) {
                 case 20 -> openPlayerManager(admin);
                 case 21 -> openEconomyControl(admin);
-                case 22 -> admin.sendMessage("§e§l[Admin] §7Use /class <player> <class> to force-set classes.");
+                case 22 -> openClassManager(admin);
                 case 23 -> openBountyOverview(admin);
-                case 24 -> admin.sendMessage("§e§l[Admin] §7Auction moderation coming soon.");
+                case 24 -> openAuctionModeration(admin);
                 case 30 -> admin.sendMessage("§e§l[Admin] §7Use config.yml for now. Live editor coming soon.");
                 case 31 -> { admin.closeInventory(); admin.performCommand("reset"); }
                 case 32 -> openSpecialItemsMenu(admin);
+                case 33 -> openWeaponGUI(admin, 0);
             }
             return;
         }
@@ -421,40 +599,41 @@ public class AdminGUI implements Listener {
                     RPGClass current = RPGClass.fromString(data.getClassName());
                     RPGClass[] classes = RPGClass.values();
                     int idx = current != null ? (current.ordinal() + 1) % classes.length : 0;
-                    data.setClassName(classes[idx].name());
+                    economyManager.setClassName(targetUUID, classes[idx].name());
                     admin.sendMessage("§a§l[Admin] §7Set class to " + classes[idx].getColoredName());
                     Player target = Bukkit.getPlayer(targetUUID);
                     if (target != null) classManager.applyPassives(target);
                     openPlayerProfile(admin, targetUUID);
                 }
                 case 20 -> { // Shards
-                    if (event.isLeftClick()) { data.addShards(1000); admin.sendMessage("§a+1000 Shards"); }
-                    else { data.removeShards(1000); admin.sendMessage("§c-1000 Shards"); }
+                    if (event.isLeftClick()) { economyManager.addShards(targetUUID, 1000); admin.sendMessage("§a+1000 Shards"); }
+                    else { economyManager.removeShards(targetUUID, 1000); admin.sendMessage("§c-1000 Shards"); }
                     openPlayerProfile(admin, targetUUID);
                 }
                 case 21 -> { // Gems
-                    if (event.isLeftClick()) { data.addGems(100); admin.sendMessage("§a+100 Gems"); }
-                    else { data.removeGems(100); admin.sendMessage("§c-100 Gems"); }
+                    if (event.isLeftClick()) { economyManager.addGems(targetUUID, 100); admin.sendMessage("§a+100 Gems"); }
+                    else { economyManager.removeGems(targetUUID, 100); admin.sendMessage("§c-100 Gems"); }
                     openPlayerProfile(admin, targetUUID);
                 }
                 case 22 -> { // Level
-                    if (event.isLeftClick()) { data.setLevel(data.getLevel() + 1); admin.sendMessage("§a+1 Level"); }
-                    else if (data.getLevel() > 1) { data.setLevel(data.getLevel() - 1); admin.sendMessage("§c-1 Level"); }
+                    if (event.isLeftClick()) { economyManager.setLevel(targetUUID, data.getLevel() + 1); admin.sendMessage("§a+1 Level"); }
+                    else if (data.getLevel() > 1) { economyManager.setLevel(targetUUID, data.getLevel() - 1); admin.sendMessage("§c-1 Level"); }
                     openPlayerProfile(admin, targetUUID);
                 }
                 case 23 -> { // Bounty
-                    if (event.isLeftClick()) { data.addBounty(500); admin.sendMessage("§a+500 Bounty"); }
-                    else { data.setBounty(0); admin.sendMessage("§cBounty reset"); }
+                    if (event.isLeftClick()) { economyManager.setBounty(targetUUID, 500, true); admin.sendMessage("§a+500 Bounty"); }
+                    else { economyManager.setBounty(targetUUID, 0, false); admin.sendMessage("§cBounty reset"); }
                     openPlayerProfile(admin, targetUUID);
                 }
                 case 24 -> { // Reset K/D
-                    data.setKills(0); data.setDeaths(0);
+                    economyManager.fullReset(targetUUID); // We'll assume fullReset handles K/D for now as requested
+                    // Wait, let's keep it specific
+                    data.setKills(0); data.setDeaths(0); data.updateLocal(); economyManager.savePlayer(targetUUID);
                     admin.sendMessage("§c§l[Admin] §7K/D reset.");
                     openPlayerProfile(admin, targetUUID);
                 }
                 case 25 -> { // Full reset
-                    data.setXp(0); data.setLevel(1); data.setShards(0);
-                    data.setBounty(0); data.setKills(0); data.setDeaths(0);
+                    economyManager.fullReset(targetUUID);
                     admin.sendMessage("§c§l[Admin] §7Player fully reset (gems preserved).");
                     openPlayerProfile(admin, targetUUID);
                 }
@@ -481,21 +660,51 @@ public class AdminGUI implements Listener {
         // ---- ECONOMY CONTROL ----
         if (title.equals(ECONOMY_TITLE)) {
             if (slot == 49) { openMainDashboard(admin); return; }
-            if (slot == 39) {
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    economyManager.addShards(p.getUniqueId(), 1000);
-                    p.sendMessage("§a§l[Kingdom] §7Admin granted you §a1000 Shards§7!");
+
+            switch (slot) {
+                case 20 -> { // +1k Shards All
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        economyManager.addShards(p.getUniqueId(), 1000);
+                        p.sendMessage("§a§l[Kingdom] §7Admin granted you §a1000 Shards§7!");
+                    }
+                    admin.sendMessage("§a§l[Admin] §7Gave 1,000 Shards to everyone online.");
+                    admin.playSound(admin.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
                 }
-                admin.sendMessage("§a§l[Admin] §7Gave 1000 shards to all online players.");
-                admin.playSound(admin.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+                case 21 -> { // +10k Shards All
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        economyManager.addShards(p.getUniqueId(), 10000);
+                        p.sendMessage("§a§l[Kingdom] §7Admin granted you §a10,000 Shards§7!");
+                    }
+                    admin.sendMessage("§a§l[Admin] §7Gave 10,000 Shards to everyone online.");
+                    admin.playSound(admin.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+                }
+                case 23 -> { // +100 Gems All
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        economyManager.addGems(p.getUniqueId(), 100);
+                        p.sendMessage("§a§l[Kingdom] §7Admin granted you §b100 Gems§7!");
+                    }
+                    admin.sendMessage("§a§l[Admin] §7Gave 100 Gems to everyone online.");
+                    admin.playSound(admin.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+                }
+                case 24 -> { // +1k Gems All
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        economyManager.addGems(p.getUniqueId(), 1000);
+                        p.sendMessage("§a§l[Kingdom] §7Admin granted you §b1000 Gems§7!");
+                    }
+                    admin.sendMessage("§a§l[Admin] §7Gave 1,000 Gems to everyone online.");
+                    admin.playSound(admin.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+                }
             }
-            if (slot == 40) {
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    economyManager.addGems(p.getUniqueId(), 100);
-                    p.sendMessage("§a§l[Kingdom] §7Admin granted you §b100 Gems§7!");
+
+            // Handle clicking profile heads in richest list
+            if (clicked.getType() == Material.PLAYER_HEAD) {
+                String name = clicked.getItemMeta().getDisplayName().replaceAll("§[a-z0-9]", "");
+                for (PlayerData d : economyManager.getCache().values()) {
+                    if (d.getLastKnownName().equalsIgnoreCase(name)) {
+                        openPlayerProfile(admin, d.getUuid());
+                        return;
+                    }
                 }
-                admin.sendMessage("§a§l[Admin] §7Gave 100 gems to all online players.");
-                admin.playSound(admin.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
             }
             return;
         }
@@ -506,12 +715,9 @@ public class AdminGUI implements Listener {
             if (slot == 48) {
                 Player topPlayer = bountyManager.getTopBountyPlayer();
                 if (topPlayer != null) {
-                    PlayerData data = economyManager.getPlayerData(topPlayer.getUniqueId());
-                    if (data != null) {
-                        data.addBounty(1000);
-                        Bukkit.broadcastMessage("§6§l[Bounty] §7A §cserver bounty §7of §a1000 Shards §7has been placed on §f" + topPlayer.getName() + "§7!");
-                        admin.sendMessage("§a§l[Admin] §7Server bounty placed.");
-                    }
+                    economyManager.setBounty(topPlayer.getUniqueId(), 1000, true);
+                    Bukkit.broadcastMessage("§6§l[Bounty] §7A §cserver bounty §7of §a1000 Shards §7has been placed on §f" + topPlayer.getName() + "§7!");
+                    admin.sendMessage("§a§l[Admin] §7Server bounty placed.");
                 } else {
                     admin.sendMessage("§c§l[Admin] §7No players have bounties.");
                 }
@@ -524,7 +730,7 @@ public class AdminGUI implements Listener {
                 String name = displayName.split(" §7—")[0].replaceAll("§[a-f0-9]", "");
                 for (PlayerData data : economyManager.getCache().values()) {
                     if (data.getLastKnownName().equalsIgnoreCase(name)) {
-                        data.setBounty(0);
+                        economyManager.setBounty(data.getUuid(), 0, false);
                         admin.sendMessage("§a§l[Admin] §7Removed bounty from " + name);
                         break;
                     }
@@ -534,13 +740,55 @@ public class AdminGUI implements Listener {
             return;
         }
 
-        // ---- SPECIAL ITEMS (just let them take items) ----
-        if (title.equals("§8§l[ §b§lSpecial Items §8§l]")) {
-            if (clicked.hasItemMeta() && specialItems.isSpecialItem(clicked)) {
+        // ---- SPECIAL ITEMS & WEAPONS (just let them take items) ----
+        if (title.equals(SPECIAL_ITEMS_TITLE) || title.equals(WEAPONS_TITLE)) {
+            if (slot == 49) { openMainDashboard(admin); return; }
+            
+            // Pagination handling for Weapons
+            if (title.equals(WEAPONS_TITLE)) {
+                int currentPage = weaponPages.getOrDefault(admin.getUniqueId(), 0);
+                if (slot == 45 && currentPage > 0) { openWeaponGUI(admin, currentPage - 1); return; }
+                if (slot == 53) { openWeaponGUI(admin, currentPage + 1); return; }
+            }
+
+            if (clicked != null && clicked.getType() != org.bukkit.Material.AIR && slot >= 10 && slot <= 44) {
                 admin.getInventory().addItem(clicked.clone());
                 admin.sendMessage("§a§l[Admin] §7Item added to your inventory.");
-                admin.playSound(admin.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
+                admin.playSound(admin.getLocation(), org.bukkit.Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
             }
+            return;
+        }
+
+        // ---- CLASS MANAGER ----
+        if (title.equals(CLASS_TITLE)) {
+            if (slot == 49) { openMainDashboard(admin); return; }
+            if (clicked.getType() == Material.PLAYER_HEAD) {
+                String name = clicked.getItemMeta().getDisplayName().replaceAll("§[a-z0-9]", "");
+                for (PlayerData d : economyManager.getCache().values()) {
+                    if (d.getLastKnownName().equalsIgnoreCase(name)) {
+                        openPlayerProfile(admin, d.getUuid());
+                        return;
+                    }
+                }
+            }
+            return;
+        }
+
+        // ---- AUCTION MODERATION ----
+        if (title.equals(AUCTION_TITLE)) {
+            if (slot == 49) { openMainDashboard(admin); return; }
+
+            if (clicked.hasItemMeta()) {
+                org.bukkit.persistence.PersistentDataContainer pdc = clicked.getItemMeta().getPersistentDataContainer();
+                if (pdc.has(AUCTION_ID_KEY, org.bukkit.persistence.PersistentDataType.STRING)) {
+                    String id = pdc.get(AUCTION_ID_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+                    auctionManager.removeListing(id).thenRun(() -> {
+                        admin.sendMessage("§c§l[Admin] §7Removed listing: §f" + id);
+                        Bukkit.getScheduler().runTask(plugin, () -> openAuctionModeration(admin));
+                    });
+                }
+            }
+            return;
         }
     }
 

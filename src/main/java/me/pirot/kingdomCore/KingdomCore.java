@@ -139,7 +139,7 @@ public final class KingdomCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(craftingGUI, this);
         getServer().getPluginManager().registerEvents(adminGUI, this);
 
-        CombatListener combatListener = new CombatListener(economyManager, specialItems);
+        CombatListener combatListener = new CombatListener(economyManager, specialItems, weaponManager);
         getServer().getPluginManager().registerEvents(combatListener, this);
 
         ClassListener classListener = new ClassListener(configManager, classManager, weaponManager);
@@ -156,6 +156,13 @@ public final class KingdomCore extends JavaPlugin {
         PlayerJoinQuitListener joinQuitListener = new PlayerJoinQuitListener(
                 this, economyManager, classManager, scoreboardManager, shopGUI);
         getServer().getPluginManager().registerEvents(joinQuitListener, this);
+
+        // Special Items & Class Selection GUI
+        ClassSelectorGUI classSelectorGUI = new ClassSelectorGUI(this, classManager);
+        getServer().getPluginManager().registerEvents(classSelectorGUI, this);
+
+        SpecialItemsListener specialItemsListener = new SpecialItemsListener(this, specialItems, classSelectorGUI, economyManager);
+        getServer().getPluginManager().registerEvents(specialItemsListener, this);
 
         // 13. Start Async Tasks
         economyManager.startSyncTasks();

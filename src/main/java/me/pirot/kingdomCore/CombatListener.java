@@ -14,6 +14,10 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
+import me.pirot.kingdomCore.rpg.WeaponManager;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.ItemStack;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -24,10 +28,42 @@ public class CombatListener implements Listener {
 
     private final EconomyManager economyManager;
     private final SpecialItems specialItems;
+    private final WeaponManager weaponManager;
 
-    public CombatListener(EconomyManager economyManager, SpecialItems specialItems) {
+    public CombatListener(EconomyManager economyManager, SpecialItems specialItems, WeaponManager weaponManager) {
         this.economyManager = economyManager;
         this.specialItems = specialItems;
+        this.weaponManager = weaponManager;
+    }
+
+    /**
+     * Intercept damage to apply custom RPG weapon stats.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onWeaponDamage(EntityDamageByEntityEvent event) {
+        Player damager = null;
+
+        // 1. Melee detection (handled by Attributes mostly, but we can fine-tune here if needed)
+        if (event.getDamager() instanceof Player p) {
+            damager = p;
+            // Note: Melee attributes handle standard hits, we don't need to override event damage
+            // unless we want to add extra RPG logic like crit multipliers from levels.
+        }
+
+        // 2. Projectile detection (Archer bows)
+        if (event.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player p) {
+            damager = p;
+            ItemStack mainHand = p.getInventory().getItemInMainHand();
+            
+            if (weaponManager.isKingdomWeapon(mainHand)) {
+                double customDamage = weaponManager.getWeaponDamage(mainHand);
+                if (customDamage > 0) {
+                    // We set the damage to the bow's stat value.
+                    // Vanilla damage is replaced by the RPG damage.
+                    event.setDamage(customDamage);
+                }
+            }
+        }
     }
 
     /**
@@ -41,14 +77,15 @@ public class CombatListener implements Listener {
         // Track death and calculate shards
         PlayerData victimData = economyManager.getPlayerData(victim.getUniqueId());
         if (victimData != null) {
-            victimData.addDeaths(1);
+            economyManager.addDeath(victim.getUniqueId());
 
             // Calculate 5% shard loss
             int currentShards = victimData.getShards();
             if (currentShards > 0) {
                 int dropAmount = (int) (currentShards * 0.05);
                 if (dropAmount > 0) {
-                    victimData.removeShards(dropAmount);
+                    // Use economyManager to ensure sync-safe subtraction and immediate save
+                    economyManager.removeShards(victim.getUniqueId(), dropAmount);
                     victim.sendMessage("§c§l[Death Penalty] §7You lost §a" + dropAmount + " Shards§7!");
                     // Drop the shards as physical item
                     event.getDrops().add(specialItems.createPhysicalShard(dropAmount));
@@ -58,10 +95,8 @@ public class CombatListener implements Listener {
 
         // Track kill for killer
         if (killer != null && !killer.equals(victim)) {
-            PlayerData killerData = economyManager.getPlayerData(killer.getUniqueId());
-            if (killerData != null) {
-                killerData.addKills(1);
-            }
+            // Using EconomyManager adds to cache + saves to DB
+            economyManager.addKill(killer.getUniqueId());
         }
     }
 

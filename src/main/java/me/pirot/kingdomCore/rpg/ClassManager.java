@@ -42,16 +42,17 @@ public class ClassManager {
         // Set new class
         data.setClassName(rpgClass.name());
 
-        // Check if player has previous progress in this class
+        // New class always starts at Level 1 by default.
+        // Players must use a Data Restore Tome to retrieve previous progress.
+        data.setLevel(1);
+        data.setXp(0);
+        data.updateLocal(); // Lock local data for 10s to prevent sync revert
+        economyManager.savePlayer(uuid); // Sync to DB immediately
+
         PlayerData.ClassProgress saved = data.getClassProgress(rpgClass.name());
-        if (saved != null) {
-            data.setLevel(saved.level);
-            data.setXp(saved.xp);
-            player.sendMessage("§a§l[Kingdom] §7Previous progress restored — §eLevel " + saved.level + "§7!");
-        } else {
-            // New class, start fresh
-            data.setLevel(1);
-            data.setXp(0);
+        if (saved != null && saved.level > 1) {
+            player.sendMessage("§a§l[Kingdom] §7Saved progress found for this class (§eLevel " + saved.level + "§7).");
+            player.sendMessage("§a§l[Kingdom] §7Use a §dData Restore Tome §7to restore it!");
         }
 
         // Apply new passives

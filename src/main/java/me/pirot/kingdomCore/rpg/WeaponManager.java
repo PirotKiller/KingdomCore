@@ -3,6 +3,10 @@ package me.pirot.kingdomCore.rpg;
 import me.pirot.kingdomCore.KingdomCore;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -10,6 +14,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Creates custom weapon ItemStacks with Custom Model Data and PDC stats.
@@ -72,6 +77,23 @@ public class WeaponManager {
         pdc.set(SPEED_KEY, PersistentDataType.DOUBLE, speed);
         pdc.set(CLASS_KEY, PersistentDataType.STRING, rpgClass.name());
         pdc.set(TIER_KEY, PersistentDataType.STRING, tier.name());
+
+        // Apply attributes for melee weapons (Bows don't use attributes for projectile damage)
+        if (baseMaterial != Material.BOW) {
+            // Subtract base damage (1.0) and base speed (4.0) to get the delta modifier
+            // We use UUID-based modifiers for maximum compatibility with older Bukkit versions if needed
+            AttributeModifier damageMod = new AttributeModifier(UUID.randomUUID(), "kingdom_damage", 
+                    damage - 1.0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND);
+            AttributeModifier speedMod = new AttributeModifier(UUID.randomUUID(), "kingdom_speed", 
+                    speed - 4.0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND);
+            
+            meta.addAttributeModifier(Attribute.ATTACK_DAMAGE, damageMod);
+            meta.addAttributeModifier(Attribute.ATTACK_SPEED, speedMod);
+        }
+
+        // Hide default flags for a cleaner RPG look
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE);
+        meta.setUnbreakable(true);
 
         item.setItemMeta(meta);
         return item;

@@ -38,12 +38,16 @@ public class BountyListener implements Listener {
         if (killer == null) return;
         if (killer.equals(victim)) return;
 
+        // 1. Claim any existing bounty on the victim
         int claimed = bountyManager.claimBounty(killer, victim);
         if (claimed > 0) {
             Bukkit.broadcastMessage("§6§l[Bounty] §f" + killer.getName() + " §7claimed the §a" +
                     claimed + " Shard §7bounty on §f" + victim.getName() + "§7!");
             killer.sendMessage("§a§l[Kingdom] §7You earned §a" + claimed + " Shards §7from the bounty!");
         }
+
+        // 2. Increase the killer's OWN bounty for committing a kill
+        bountyManager.addKillBounty(killer);
     }
 
     /**

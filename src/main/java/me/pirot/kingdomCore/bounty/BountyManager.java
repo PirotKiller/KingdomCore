@@ -28,17 +28,13 @@ public class BountyManager {
     public boolean placeBounty(Player source, Player target, int amount) {
         UUID sourceUuid = source.getUniqueId();
 
-        // Deduct shards from source
+        // Use EconomyManager for safe deduction and save
         if (!economyManager.removeShards(sourceUuid, amount)) {
             return false;
         }
 
-        // Add to target's bounty
-        PlayerData targetData = economyManager.getPlayerData(target.getUniqueId());
-        if (targetData != null) {
-            targetData.addBounty(amount);
-        }
-
+        // Use EconomyManager for safe addition and sync protection
+        economyManager.setBounty(target.getUniqueId(), amount, true);
         return true;
     }
 
@@ -54,12 +50,22 @@ public class BountyManager {
         if (victimData == null || victimData.getBounty() <= 0) return 0;
 
         int bountyAmount = victimData.getBounty();
-        victimData.setBounty(0);
+        
+        // Reset victim bounty safely
+        economyManager.setBounty(victim.getUniqueId(), 0, false);
 
-        // Award shards to killer
+        // Award shards to killer safely
         economyManager.addShards(killer.getUniqueId(), bountyAmount);
 
         return bountyAmount;
+    }
+
+    /**
+     * Automatically increase a player's bounty when they kill someone.
+     */
+    public void addKillBounty(Player killer) {
+        // Default kill bounty: 50 shards (could be moved to config)
+        economyManager.setBounty(killer.getUniqueId(), 50, true);
     }
 
     /**

@@ -4,6 +4,7 @@ me\pirot\kingdomCore\auction\AuctionCommand.class
 me\pirot\kingdomCore\database\PlayerData.class
 me\pirot\kingdomCore\web\VerifyCommand.class
 me\pirot\kingdomCore\rpg\ClassListener$1.class
+me\pirot\kingdomCore\rpg\ClassSelectorGUI.class
 me\pirot\kingdomCore\rpg\SpecialItems.class
 me\pirot\kingdomCore\rpg\CraftingGUI$1.class
 me\pirot\kingdomCore\config\ConfigManager.class
@@ -44,5 +45,7 @@ me\pirot\kingdomCore\admin\AdminGUI.class
 me\pirot\kingdomCore\CombatListener.class
 me\pirot\kingdomCore\shop\ShopCommandHandler.class
 me\pirot\kingdomCore\admin\AdminCommand.class
+me\pirot\kingdomCore\rpg\SpecialItemsListener.class
 me\pirot\kingdomCore\shop\GUIListener.class
+me\pirot\kingdomCore\admin\AdminGUI$1.class
 me\pirot\kingdomCore\database\PlayerData$ClassProgress.class

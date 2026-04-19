@@ -20,6 +20,7 @@ import java.util.Arrays;
 public class SpecialItems {
 
     public final NamespacedKey SPECIAL_ITEM_KEY;
+    public final NamespacedKey SHARD_VALUE_KEY;
 
     public static final String CLASS_CHANGE_ID = "CLASS_CHANGE_SCROLL";
     public static final String DATA_RESTORE_ID = "DATA_RESTORE_TOME";
@@ -27,6 +28,7 @@ public class SpecialItems {
 
     public SpecialItems(KingdomCore plugin) {
         this.SPECIAL_ITEM_KEY = new NamespacedKey(plugin, "special_item");
+        this.SHARD_VALUE_KEY = new NamespacedKey(plugin, "shard_value");
     }
 
     /**
@@ -141,12 +143,6 @@ public class SpecialItems {
     // ==== PHYSICAL SHARD SYSTEM ====
 
     public static final String PHYSICAL_SHARD_ID = "PHYSICAL_SHARD";
-    public final NamespacedKey SHARD_VALUE_KEY;
-
-    {
-        // Added in init block or constructor
-        SHARD_VALUE_KEY = new NamespacedKey(org.bukkit.Bukkit.getPluginManager().getPlugin("KingdomCore"), "shard_value");
-    }
 
     /**
      * Creates a physical shard item that drops on the ground and can be picked up.

@@ -94,7 +94,11 @@ public class EconomyManager {
 
     public void addShards(UUID uuid, int amount) {
         PlayerData data = cache.get(uuid);
-        if (data != null) data.addShards(amount);
+        if (data != null) {
+            data.addShards(amount);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
     }
 
     /**
@@ -102,7 +106,12 @@ public class EconomyManager {
      */
     public boolean removeShards(UUID uuid, int amount) {
         PlayerData data = cache.get(uuid);
-        return data != null && data.removeShards(amount);
+        if (data != null && data.removeShards(amount)) {
+            data.updateLocal();
+            savePlayer(uuid);
+            return true;
+        }
+        return false;
     }
 
     // ---- Gem Operations ----
@@ -114,17 +123,30 @@ public class EconomyManager {
 
     public void setGems(UUID uuid, int amount) {
         PlayerData data = cache.get(uuid);
-        if (data != null) data.setGems(amount);
+        if (data != null) {
+            data.setGems(amount);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
     }
 
     public void addGems(UUID uuid, int amount) {
         PlayerData data = cache.get(uuid);
-        if (data != null) data.addGems(amount);
+        if (data != null) {
+            data.addGems(amount);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
     }
 
     public boolean removeGems(UUID uuid, int amount) {
         PlayerData data = cache.get(uuid);
-        return data != null && data.removeGems(amount);
+        if (data != null && data.removeGems(amount)) {
+            data.updateLocal();
+            savePlayer(uuid);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -140,7 +162,73 @@ public class EconomyManager {
 
     public void addXp(UUID uuid, int amount) {
         PlayerData data = cache.get(uuid);
-        if (data != null) data.addXp(amount);
+        if (data != null) {
+            data.addXp(amount);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
+    }
+
+    // ---- Stat Operations ----
+
+    public void addKill(UUID uuid) {
+        PlayerData data = cache.get(uuid);
+        if (data != null) {
+            data.addKills(1);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
+    }
+
+    public void addDeath(UUID uuid) {
+        PlayerData data = cache.get(uuid);
+        if (data != null) {
+            data.addDeaths(1);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
+    }
+
+    public void setLevel(UUID uuid, int level) {
+        PlayerData data = cache.get(uuid);
+        if (data != null) {
+            data.setLevel(level);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
+    }
+
+    public void setBounty(UUID uuid, int amount, boolean add) {
+        PlayerData data = cache.get(uuid);
+        if (data != null) {
+            if (add) data.addBounty(amount);
+            else data.setBounty(amount);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
+    }
+
+    public void setClassName(UUID uuid, String className) {
+        PlayerData data = cache.get(uuid);
+        if (data != null) {
+            data.setClassName(className);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
+    }
+
+    public void fullReset(UUID uuid) {
+        PlayerData data = cache.get(uuid);
+        if (data != null) {
+            data.setXp(0);
+            data.setLevel(1);
+            data.setShards(0);
+            data.setBounty(0);
+            data.setKills(0);
+            data.setDeaths(0);
+            data.updateLocal();
+            savePlayer(uuid);
+        }
     }
 
     // ---- Currency Sync Task ----
@@ -162,6 +250,12 @@ public class EconomyManager {
                     
                     PlayerData data = cache.get(uuid);
                     if (data == null) return;
+
+                    // If we updated locally in the last 10 seconds, ignore the sync to avoid reverts
+                    // while MongoDB is catching up with our recent saves.
+                    if (System.currentTimeMillis() - data.getLastLocalUpdate() < 10000) {
+                        return;
+                    }
 
                     int webGems = doc.getInteger("gems", 0);
                     int webShards = doc.getInteger("shards", 0);
@@ -193,12 +287,7 @@ public class EconomyManager {
                     }
 
                     if (updated) {
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            if (player.isOnline()) {
-                                player.sendMessage("§a§l[Kingdom] §7Your stats have been updated from the web panel!");
-                                player.sendMessage("§6✦ §eLevel: §f" + data.getLevel() + " §7| §eGems: §b" + data.getGems() + " §7| §eShards: §a" + data.getShards());
-                            }
-                        });
+                        // Silent update
                     }
                 });
             }

@@ -180,8 +180,25 @@ public class MongoManager {
                                     
                                     // Update on main thread
                                     Bukkit.getScheduler().runTask(economyManager.getPlugin(), () -> {
-                                        if (economyManager.getCache().containsKey(uuid)) {
-                                            economyManager.getCache().put(uuid, updatedData);
+                                        PlayerData localData = economyManager.getCache().get(uuid);
+                                        if (localData != null) {
+                                            // If we updated locally in the last 10 seconds, ignore the sync
+                                            if (System.currentTimeMillis() - localData.getLastLocalUpdate() < 10000) {
+                                                return;
+                                            }
+                                            
+                                            // Merge fields instead of replacing the entire object
+                                            PlayerData dbData = documentToPlayerData(fullDoc);
+                                            localData.setShards(dbData.getShards());
+                                            localData.setGems(dbData.getGems());
+                                            localData.setXp(dbData.getXp());
+                                            localData.setLevel(dbData.getLevel());
+                                            localData.setBounty(dbData.getBounty());
+                                            localData.setClassName(dbData.getClassName());
+                                            localData.setKills(dbData.getKills());
+                                            localData.setDeaths(dbData.getDeaths());
+                                            localData.setLastKnownName(dbData.getLastKnownName());
+                                            // Note: We don't update lastLocalUpdate here because this IS a sync update
                                         }
                                     });
                                 } catch (IllegalArgumentException e) {

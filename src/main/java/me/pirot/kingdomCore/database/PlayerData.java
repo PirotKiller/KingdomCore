@@ -23,6 +23,7 @@ public class PlayerData {
     private int deaths;
     private boolean scoreboardEnabled;
     private boolean online;
+    private long lastLocalUpdate; // Local timestamp of last in-game change
 
     // Per-class progress: stores level & XP for each class the player has played
     // Key = class name (e.g. "ARCHER"), Value = {level, xp}
@@ -41,6 +42,7 @@ public class PlayerData {
         this.deaths = 0;
         this.scoreboardEnabled = true;
         this.online = false;
+        this.lastLocalUpdate = 0;
         this.classProgress = new HashMap<>();
     }
 
@@ -59,7 +61,20 @@ public class PlayerData {
         this.deaths = deaths;
         this.scoreboardEnabled = scoreboardEnabled;
         this.online = online;
+        this.lastLocalUpdate = 0;
         this.classProgress = new HashMap<>();
+    }
+
+    /**
+     * Mark that a value was updated locally in-game.
+     * Prevents sync-back from DB for a short period.
+     */
+    public void updateLocal() {
+        this.lastLocalUpdate = System.currentTimeMillis();
+    }
+
+    public long getLastLocalUpdate() {
+        return lastLocalUpdate;
     }
 
     // ---- XP Formula ----
