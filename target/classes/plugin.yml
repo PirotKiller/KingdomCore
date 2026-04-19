@@ -31,6 +31,18 @@ commands:
     description: Download the server resource pack.
     usage: /resourcepack
     aliases: [rp]
+  admin:
+    description: Open the in-game admin panel
+    usage: /admin [player <name>]
+    permission: kingdomcore.admin
+  reset:
+    description: Server reset (admin only)
+    usage: /reset [confirm]
+    permission: kingdomcore.admin
+  craft:
+    description: Open the Soul Forge crafting GUI
+    usage: /craft
+    aliases: [forge, soulforge]
 
 permissions:
   kingdomcore.shop:
@@ -47,6 +59,9 @@ permissions:
     default: true
   kingdomcore.verify:
     description: Verify webstore account
+    default: true
+  kingdomcore.craft:
+    description: Access the Soul Forge
     default: true
   kingdomcore.admin:
     description: Admin permissions

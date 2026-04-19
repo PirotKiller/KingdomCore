@@ -105,8 +105,17 @@ export default function AdminAuctionsPage() {
               ) : (
                 auctions.map((auction) => {
                   const timeLeftMs = auction.expireTime - Date.now();
-                  const hoursLeft = Math.max(0, Math.floor(timeLeftMs / (1000 * 60 * 60)));
                   const isExpired = timeLeftMs <= 0;
+
+                  const formatTime = (ms: number) => {
+                    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+                    if (hours > 0) return `${hours}h ${minutes}m`;
+                    return `${minutes}m`;
+                  };
 
                   return (
                     <tr key={auction._id} className="border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors">
@@ -125,9 +134,9 @@ export default function AdminAuctionsPage() {
                       </td>
                       <td className="px-4 py-3">
                         {isExpired ? (
-                          <span className="text-red-400 text-xs font-semibold">Expired</span>
+                          <span className="text-red-400 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-400/10 border border-red-400/20">Expired</span>
                         ) : (
-                          <span className="text-amber-400 text-xs font-medium">{hoursLeft}h left</span>
+                          <span className="text-amber-400 text-xs font-medium tabular-nums">{formatTime(timeLeftMs)} left</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">

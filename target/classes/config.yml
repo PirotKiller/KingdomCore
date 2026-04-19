@@ -58,6 +58,16 @@ weapons:
 bounty:
   min-amount: 50
   compass-update-ticks: 100
+  daily-survival-reward: 100
+
+# ============================================
+# XP Settings
+# ============================================
+xp:
+  mob-kill: 50
+  player-kill: 500
+  boss-kill: 500
+  class-skill-only: true
 
 # ============================================
 # Scoreboard Settings
@@ -65,6 +75,13 @@ bounty:
 scoreboard:
   title: "§6§lTHE KINGDOM"
   update-ticks: 40
+
+# ============================================
+# Server Reset Settings
+# ============================================
+reset:
+  shard-minimum: 100
+  preserve-gems: true
 
 # ============================================
 # Resource Pack Settings

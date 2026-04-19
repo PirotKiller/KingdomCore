@@ -149,7 +149,11 @@ public class EconomyManager {
      * Start the async repeating task that syncs both gems and shards from MongoDB.
      * This picks up web store purchases for in-game base and premium currencies.
      */
-    public void startCurrencySyncTask() {
+    /**
+     * Start async tasks for synchronization and persistence.
+     */
+    public void startSyncTasks() {
+        // Task 1: Polling Sync (Fallback for real-time updates)
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 UUID uuid = player.getUniqueId();
@@ -162,15 +166,24 @@ public class EconomyManager {
                     int webGems = doc.getInteger("gems", 0);
                     int webShards = doc.getInteger("shards", 0);
                     int webBounty = doc.getInteger("bounty", 0);
+                    int webLevel = doc.getInteger("level", data.getLevel());
+                    
                     boolean updated = false;
 
-                    if (webGems > data.getGems()) {
+                    // Sync Gems, Shards, Level, and Bounty if they differ from local
+                    // Note: We use != to allow admin overrides (even reductions)
+                    if (webGems != data.getGems()) {
                         data.setGems(webGems);
                         updated = true;
                     }
                     
-                    if (webShards > data.getShards()) {
+                    if (webShards != data.getShards()) {
                         data.setShards(webShards);
+                        updated = true;
+                    }
+
+                    if (webLevel != data.getLevel()) {
+                        data.setLevel(webLevel);
                         updated = true;
                     }
 
@@ -180,17 +193,23 @@ public class EconomyManager {
                     }
 
                     if (updated) {
-                        // Notify on main thread
                         Bukkit.getScheduler().runTask(plugin, () -> {
                             if (player.isOnline()) {
-                                player.sendMessage("§a§l[Kingdom] §7Your balances have been synced from the store!");
-                                player.sendMessage("§6✦ §eGems: §b" + data.getGems() + " §7| §eShards: §a" + data.getShards());
+                                player.sendMessage("§a§l[Kingdom] §7Your stats have been updated from the web panel!");
+                                player.sendMessage("§6✦ §eLevel: §f" + data.getLevel() + " §7| §eGems: §b" + data.getGems() + " §7| §eShards: §a" + data.getShards());
                             }
                         });
                     }
                 });
             }
-        }, 100L, 100L);
+        }, 200L, 200L); // Every 10 seconds
+
+        // Task 2: Periodic Save (Ensures DB is current for the web panel)
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            if (cache.isEmpty()) return;
+            plugin.getLogger().info("[KingdomCore] Performing periodic background save for " + cache.size() + " players...");
+            saveAll();
+        }, 6000L, 6000L); // Every 5 minutes
     }
 
     public Map<UUID, PlayerData> getCache() {

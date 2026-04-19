@@ -9,7 +9,10 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +30,7 @@ public class MongoManager {
     private MongoCollection<Document> playerCollection;
     private MongoCollection<Document> auctionCollection;
     private MongoCollection<Document> shopsCollection;
+    private MongoCollection<Document> purchasesCollection;
     private com.mongodb.client.ChangeStreamIterable<Document> playerChangeStream;
     private final ExecutorService executor;
 
@@ -45,11 +49,54 @@ public class MongoManager {
             this.playerCollection = database.getCollection(playerCollName);
             this.auctionCollection = database.getCollection(auctionCollName);
             this.shopsCollection = database.getCollection("shops");
+            this.purchasesCollection = database.getCollection("purchases");
             logger.info("[KingdomCore] Connected to MongoDB: " + dbName);
         } catch (Exception e) {
             logger.severe("[KingdomCore] Failed to connect to MongoDB: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Start a watch stream for the purchases collection to notify players of real-time store deliveries.
+     */
+    public void startPurchaseWatchStream(EconomyManager economyManager) {
+        executor.submit(() -> {
+            try {
+                logger.info("[KingdomCore] Starting real-time MongoDB watch stream for purchases...");
+                purchasesCollection.watch()
+                        .fullDocument(com.mongodb.client.model.changestream.FullDocument.UPDATE_LOOKUP)
+                        .forEach(change -> {
+                            // We look for inserts or updates where status becomes 'delivered'
+                            Document fullDoc = change.getFullDocument();
+                            if (fullDoc != null) {
+                                String status = fullDoc.getString("status");
+                                if ("delivered".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status)) {
+                                    String uuidStr = fullDoc.getString("minecraftUuid");
+                                    String itemName = fullDoc.getString("itemName");
+                                    
+                                    if (uuidStr != null) {
+                                        UUID uuid = UUID.fromString(uuidStr);
+                                        Bukkit.getScheduler().runTask(economyManager.getPlugin(), () -> {
+                                            Player player = Bukkit.getPlayer(uuid);
+                                            if (player != null && player.isOnline()) {
+                                                player.sendMessage("");
+                                                player.sendMessage("§b§l§m     §b§l[ §f§lKINGDOM STORE §b§l]§b§l§m     ");
+                                                player.sendMessage("§7Thank you for your purchase, §f" + player.getName() + "§7!");
+                                                player.sendMessage("§7Items: §e" + (itemName != null ? itemName : "Premium Content"));
+                                                player.sendMessage("§aYour rewards have been added to your account.");
+                                                player.sendMessage("§b§l§m                          ");
+                                                player.sendMessage("");
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        });
+            } catch (Exception e) {
+                logger.warning("[KingdomCore] Purchase Watch Stream error: " + e.getMessage());
+            }
+        });
     }
 
     /**
@@ -112,33 +159,39 @@ public class MongoManager {
 
     /**
      * Start a real-time watch stream on the players collection.
-     * This requires a MongoDB Replica Set.
+     * This ensures that admin changes from the web panel are reflected in-game instantly.
      */
     public void startPlayerWatchStream(EconomyManager economyManager) {
         executor.submit(() -> {
             try {
-                logger.info("[KingdomCore] Attempting to start real-time MongoDB watch stream...");
+                logger.info("[KingdomCore] Starting real-time MongoDB watch stream for player updates...");
+                
+                // Use UPDATE_LOOKUP so we get the full document even for partial $set updates
                 playerCollection.watch()
+                        .fullDocument(com.mongodb.client.model.changestream.FullDocument.UPDATE_LOOKUP)
                         .forEach(change -> {
                             Document fullDoc = change.getFullDocument();
                             if (fullDoc != null && fullDoc.containsKey("uuid")) {
-                                UUID uuid = UUID.fromString(fullDoc.getString("uuid"));
-                                
-                                // Only process if player is online (in cache)
-                                if (economyManager.getPlayerData(uuid) != null) {
+                                try {
+                                    UUID uuid = UUID.fromString(fullDoc.getString("uuid"));
+                                    
+                                    // Process the update in the game cache
                                     PlayerData updatedData = documentToPlayerData(fullDoc);
                                     
-                                    // Update on main thread to be safe
+                                    // Update on main thread
                                     Bukkit.getScheduler().runTask(economyManager.getPlugin(), () -> {
-                                        economyManager.getCache().put(uuid, updatedData);
-                                        // Optional: notify player or refresh scoreboard
+                                        if (economyManager.getCache().containsKey(uuid)) {
+                                            economyManager.getCache().put(uuid, updatedData);
+                                        }
                                     });
+                                } catch (IllegalArgumentException e) {
+                                    // Skip invalid UUIDs
                                 }
                             }
                         });
             } catch (com.mongodb.MongoCommandException e) {
                 if (e.getErrorCode() == 40573 || e.getErrorMessage().contains("requires a replica set")) {
-                    logger.warning("[KingdomCore] Real-time updates disabled: MongoDB is not a Replica Set. Falling back to 5s polling.");
+                    logger.warning("[KingdomCore] Real-time updates disabled: MongoDB is not a Replica Set.");
                 } else {
                     logger.warning("[KingdomCore] MongoDB Watch Stream error: " + e.getMessage());
                 }
@@ -184,6 +237,14 @@ public class MongoManager {
     // ---- Conversion Helpers ----
 
     private Document playerDataToDocument(PlayerData data) {
+        // Convert class progress map to Document
+        Document progressDoc = new Document();
+        for (Map.Entry<String, PlayerData.ClassProgress> entry : data.getAllClassProgress().entrySet()) {
+            progressDoc.append(entry.getKey(), new Document()
+                    .append("level", entry.getValue().level)
+                    .append("xp", entry.getValue().xp));
+        }
+
         return new Document()
                 .append("uuid", data.getUuid().toString())
                 .append("lastKnownName", data.getLastKnownName())
@@ -196,11 +257,12 @@ public class MongoManager {
                 .append("kills", data.getKills())
                 .append("deaths", data.getDeaths())
                 .append("scoreboardEnabled", data.isScoreboardEnabled())
-                .append("online", data.isOnline());
+                .append("online", data.isOnline())
+                .append("classProgress", progressDoc);
     }
 
     private PlayerData documentToPlayerData(Document doc) {
-        return new PlayerData(
+        PlayerData data = new PlayerData(
                 UUID.fromString(doc.getString("uuid")),
                 doc.getString("lastKnownName"),
                 doc.getString("class"),
@@ -214,5 +276,23 @@ public class MongoManager {
                 doc.getBoolean("scoreboardEnabled", true),
                 doc.getBoolean("online", false)
         );
+
+        // Load class progress
+        Document progressDoc = doc.get("classProgress", Document.class);
+        if (progressDoc != null) {
+            Map<String, PlayerData.ClassProgress> progress = new HashMap<>();
+            for (String key : progressDoc.keySet()) {
+                Document entry = progressDoc.get(key, Document.class);
+                if (entry != null) {
+                    progress.put(key, new PlayerData.ClassProgress(
+                            entry.getInteger("level", 1),
+                            entry.getInteger("xp", 0)
+                    ));
+                }
+            }
+            data.setClassProgress(progress);
+        }
+
+        return data;
     }
 }

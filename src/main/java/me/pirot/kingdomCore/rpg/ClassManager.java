@@ -26,18 +26,33 @@ public class ClassManager {
     }
 
     /**
-     * Set a player's RPG class. Removes old passives, applies new ones.
+     * Set a player's RPG class. Saves old class progress, removes old passives, applies new ones.
      */
     public void setClass(Player player, RPGClass rpgClass) {
         UUID uuid = player.getUniqueId();
         PlayerData data = economyManager.getPlayerData(uuid);
         if (data == null) return;
 
+        // Save current class progress before switching
+        data.saveCurrentClassProgress();
+
         // Remove old passives
         removePassives(player);
 
         // Set new class
         data.setClassName(rpgClass.name());
+
+        // Check if player has previous progress in this class
+        PlayerData.ClassProgress saved = data.getClassProgress(rpgClass.name());
+        if (saved != null) {
+            data.setLevel(saved.level);
+            data.setXp(saved.xp);
+            player.sendMessage("§a§l[Kingdom] §7Previous progress restored — §eLevel " + saved.level + "§7!");
+        } else {
+            // New class, start fresh
+            data.setLevel(1);
+            data.setXp(0);
+        }
 
         // Apply new passives
         applyPassives(player);
@@ -58,35 +73,32 @@ public class ClassManager {
         switch (rpgClass) {
             case ROGUE:
                 // 1.25x speed
-                double speedMultiplier = configManager.getClassMultiplier("rogue", "speed-multiplier");
-                AttributeInstance speedAttr = player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
-                if (speedAttr != null) {
-                    // Default walking speed base value is 0.1
-                    speedAttr.setBaseValue(0.1 * speedMultiplier);
+                double rogueSpeed = configManager.getClassMultiplier("rogue", "speed-multiplier");
+                AttributeInstance rogueSpeedAttr = player.getAttribute(Attribute.MOVEMENT_SPEED);
+                if (rogueSpeedAttr != null) {
+                    rogueSpeedAttr.setBaseValue(0.1 * rogueSpeed);
                 }
-                // Permanent Feather Falling IV
+                // Permanent Feather Falling IV effect
                 player.addPotionEffect(new PotionEffect(
                         PotionEffectType.SLOW_FALLING,
                         PotionEffect.INFINITE_DURATION,
-                        0, // Feather Falling is handled through boots enchant, but we use slow falling as visual
-                        true, false, false
+                        0, true, false, false
                 ));
                 break;
 
-            case KNIGHT:
-                // Knight passives are reactive (handled in ClassListener), no persistent effects needed
-                break;
-
-            case ARCHER:
-                // Archer passives are reactive (handled in ClassListener), no persistent effects needed
-                break;
-
-            case WIZARD:
-                // Wizard passives are reactive (handled in ClassListener), no persistent effects needed
-                break;
-
             case RONIN:
-                // Ronin passives are reactive (handled in ClassListener), no persistent effects needed
+                // 1.25x speed (same as Rogue)
+                double roninSpeed = 1.25;
+                AttributeInstance roninSpeedAttr = player.getAttribute(Attribute.MOVEMENT_SPEED);
+                if (roninSpeedAttr != null) {
+                    roninSpeedAttr.setBaseValue(0.1 * roninSpeed);
+                }
+                break;
+
+            case KNIGHT:
+            case ARCHER:
+            case WIZARD:
+                // Reactive passives handled in ClassListener/ClassAbilityListener
                 break;
         }
     }
@@ -96,7 +108,7 @@ public class ClassManager {
      */
     public void removePassives(Player player) {
         // Reset speed
-        AttributeInstance speedAttr = player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
+        AttributeInstance speedAttr = player.getAttribute(Attribute.MOVEMENT_SPEED);
         if (speedAttr != null) {
             speedAttr.setBaseValue(0.1); // Default
         }

@@ -78,4 +78,20 @@ public class ConfigManager {
     public int getScoreboardUpdateTicks() {
         return config.getInt("scoreboard.update-ticks", 40);
     }
+
+    // ---- XP Settings ----
+
+    public int getXpMobKill() { return config.getInt("xp.mob-kill", 50); }
+    public int getXpPlayerKill() { return config.getInt("xp.player-kill", 500); }
+    public int getXpBossKill() { return config.getInt("xp.boss-kill", 500); }
+    public boolean isClassSkillOnly() { return config.getBoolean("xp.class-skill-only", true); }
+
+    // ---- Reset Settings ----
+
+    public int getResetShardMinimum() { return config.getInt("reset.shard-minimum", 100); }
+    public boolean isResetPreserveGems() { return config.getBoolean("reset.preserve-gems", true); }
+
+    // ---- Bounty ----
+
+    public int getDailySurvivalReward() { return config.getInt("bounty.daily-survival-reward", 100); }
 }

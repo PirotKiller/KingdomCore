@@ -1,11 +1,13 @@
 package me.pirot.kingdomCore.database;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * POJO representing a player's persisted RPG state.
  * Directly maps to/from MongoDB documents.
- * Tracks level, XP, currencies, and combat stats.
+ * Tracks level, XP, currencies, combat stats, and per-class progress.
  */
 public class PlayerData {
 
@@ -22,6 +24,10 @@ public class PlayerData {
     private boolean scoreboardEnabled;
     private boolean online;
 
+    // Per-class progress: stores level & XP for each class the player has played
+    // Key = class name (e.g. "ARCHER"), Value = {level, xp}
+    private Map<String, ClassProgress> classProgress;
+
     public PlayerData(UUID uuid) {
         this.uuid = uuid;
         this.lastKnownName = "Unknown";
@@ -35,6 +41,7 @@ public class PlayerData {
         this.deaths = 0;
         this.scoreboardEnabled = true;
         this.online = false;
+        this.classProgress = new HashMap<>();
     }
 
     public PlayerData(UUID uuid, String lastKnownName, String className, int shards, int gems,
@@ -52,16 +59,68 @@ public class PlayerData {
         this.deaths = deaths;
         this.scoreboardEnabled = scoreboardEnabled;
         this.online = online;
+        this.classProgress = new HashMap<>();
     }
 
-    // ---- Status Check ----
+    // ---- XP Formula ----
 
     /**
-     * @return the XP required to reach the next level.
-     * Formula based on screenshot analysis: Level * 100
+     * Exponential XP formula matching the design doc:
+     * Level 2 = 250 XP, Level 5 ≈ 3,750 XP, Level 10 ≈ 127,750 XP
+     * Formula: 250 * 1.5^(level-2) for level >= 2
      */
     public int getXpNeeded() {
-        return Math.max(100, this.level * 100);
+        if (this.level <= 1) return 250;
+        return (int) (250 * Math.pow(1.5, this.level - 2));
+    }
+
+    /**
+     * Get total XP needed from level 1 to reach a specific level.
+     */
+    public static int getTotalXpForLevel(int targetLevel) {
+        int total = 0;
+        for (int l = 1; l < targetLevel; l++) {
+            if (l <= 1) total += 250;
+            else total += (int) (250 * Math.pow(1.5, l - 2));
+        }
+        return total;
+    }
+
+    // ---- Per-Class Progress ----
+
+    /**
+     * Save current class progress before switching.
+     */
+    public void saveCurrentClassProgress() {
+        if (className == null || className.equals("NONE")) return;
+        classProgress.put(className, new ClassProgress(level, xp));
+    }
+
+    /**
+     * Restore progress for a class (used with Data Restore Tome).
+     * Returns true if progress was found and restored.
+     */
+    public boolean restoreClassProgress(String targetClass) {
+        ClassProgress progress = classProgress.get(targetClass);
+        if (progress == null) return false;
+        this.level = progress.level;
+        this.xp = progress.xp;
+        return true;
+    }
+
+    /**
+     * Get saved progress for a specific class.
+     */
+    public ClassProgress getClassProgress(String className) {
+        return classProgress.get(className);
+    }
+
+    public Map<String, ClassProgress> getAllClassProgress() {
+        return classProgress;
+    }
+
+    public void setClassProgress(Map<String, ClassProgress> progress) {
+        this.classProgress = progress != null ? progress : new HashMap<>();
     }
 
     // ---- Getters & Setters ----
@@ -201,5 +260,18 @@ public class PlayerData {
 
     public void setOnline(boolean online) {
         this.online = online;
+    }
+
+    /**
+     * Stores saved progress for a specific class.
+     */
+    public static class ClassProgress {
+        public final int level;
+        public final int xp;
+
+        public ClassProgress(int level, int xp) {
+            this.level = level;
+            this.xp = xp;
+        }
     }
 }

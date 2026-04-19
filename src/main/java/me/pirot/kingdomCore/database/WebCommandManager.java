@@ -8,6 +8,7 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class WebCommandManager {
 
     private void initCollection() {
         if (mongoManager.getDatabase() != null) {
-            this.pendingCommandsCollection = mongoManager.getDatabase().getCollection("web_commands");
+            this.pendingCommandsCollection = mongoManager.getDatabase().getCollection("pending_commands");
         } else {
             plugin.getLogger().warning("[KingdomCore] MongoDB Database is null. Cannot initialize WebCommandManager.");
         }
@@ -37,6 +38,7 @@ public class WebCommandManager {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             if (pendingCommandsCollection == null) return;
             try {
+                // Fetch commands that haven't been executed
                 for (Document doc : pendingCommandsCollection.find(Filters.eq("executed", false))) {
                     processCommand(doc);
                 }
@@ -49,10 +51,11 @@ public class WebCommandManager {
     private void processCommand(Document doc) {
         String command = doc.getString("command");
         String uuidStr = doc.getString("uuid");
+        String sessionId = doc.getString("stripeSessionId");
         ObjectId id = doc.getObjectId("_id");
 
         if (command == null) {
-            markExecuted(id);
+            markExecuted(id, sessionId);
             return;
         }
 
@@ -61,8 +64,15 @@ public class WebCommandManager {
             
             if (uuidStr != null && !uuidStr.equalsIgnoreCase("CONSOLE")) {
                 UUID uuid = UUID.fromString(uuidStr);
-                OfflinePlayer target = Bukkit.getOfflinePlayer(uuid);
-                String playerName = target.getName() != null ? target.getName() : "UnknownPlayer";
+                Player player = Bukkit.getPlayer(uuid);
+                
+                // If the command is player-specific and the player is offline, skip it for now.
+                // It will be picked up again during the next poll when they are online.
+                if (player == null || !player.isOnline()) {
+                    return;
+                }
+
+                String playerName = player.getName();
 
                 // Parse placeholders
                 finalCommand = command
@@ -74,27 +84,39 @@ public class WebCommandManager {
 
             // Execute on main thread
             Bukkit.getScheduler().runTask(plugin, () -> {
-                plugin.getLogger().info("[KingdomCore-Webstore] Executing command: " + commandToExecute);
+                plugin.getLogger().info("[KingdomCore-Webstore] Executing command for " + (uuidStr != null ? uuidStr : "CONSOLE") + ": " + commandToExecute);
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
                 
                 // Mark as executed asynchronously after dispatching
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> markExecuted(id));
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> markExecuted(id, sessionId));
             });
 
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("[KingdomCore] Invalid UUID in pending command: " + uuidStr);
-            markExecuted(id);
+            markExecuted(id, sessionId);
         }
     }
 
-    private void markExecuted(ObjectId id) {
+    private void markExecuted(ObjectId id, String sessionId) {
         try {
+            // 1. Mark the command as executed
             pendingCommandsCollection.updateOne(
                     Filters.eq("_id", id),
                     Updates.set("executed", true)
             );
+
+            // 2. If it is linked to a purchase, update the purchase status on the store
+            if (sessionId != null && !sessionId.isEmpty()) {
+                mongoManager.getDatabase().getCollection("purchases").updateOne(
+                        Filters.eq("stripeSessionId", sessionId),
+                        Updates.combine(
+                                Updates.set("status", "delivered"),
+                                Updates.set("deliveredAt", new java.util.Date())
+                        )
+                );
+            }
         } catch (Exception e) {
-            plugin.getLogger().warning("[KingdomCore] Failed to mark command as executed: " + id);
+            plugin.getLogger().warning("[KingdomCore] Failed to finalize command execution: " + e.getMessage());
         }
     }
 }

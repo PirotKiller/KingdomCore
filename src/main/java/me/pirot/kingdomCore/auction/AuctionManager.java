@@ -46,14 +46,15 @@ public class AuctionManager {
     public void loadListings() {
         CompletableFuture.runAsync(() -> {
             try {
-                listings.clear();
+                List<AuctionListing> newListings = new ArrayList<>();
                 for (Document doc : collection.find()) {
                     AuctionListing listing = documentToListing(doc);
-                    if (listing != null && !listing.isExpired()) {
-                        listings.add(listing);
+                    if (listing != null && !listing.isClaimed()) {
+                        newListings.add(listing);
                     }
                 }
-                logger.info("[KingdomCore] Loaded " + listings.size() + " auction listings.");
+                listings.clear();
+                listings.addAll(newListings);
             } catch (Exception e) {
                 logger.warning("[KingdomCore] Failed to load auction listings: " + e.getMessage());
             }
@@ -71,17 +72,17 @@ public class AuctionManager {
     }
 
     /**
-     * Create a new listing.
+     * Create a new listing with custom duration.
      */
-    public CompletableFuture<Void> createListing(UUID seller, String sellerName, ItemStack item, int priceShards, int priceGems) {
+    public CompletableFuture<Void> createListing(UUID seller, String sellerName, ItemStack item, int priceShards, int priceGems, long durationMillis) {
         String listingId = UUID.randomUUID().toString().substring(0, 8);
-        long expireTime = System.currentTimeMillis() + (24 * 60 * 60 * 1000); // 24 hours
+        long expireTime = System.currentTimeMillis() + durationMillis;
 
         AuctionListing listing = new AuctionListing(
                 listingId, seller, sellerName,
                 item.getType().name(), item.getAmount(),
                 serializeItem(item),
-                priceShards, priceGems, expireTime
+                priceShards, priceGems, expireTime, false
         );
 
         listings.add(listing);
@@ -95,49 +96,52 @@ public class AuctionManager {
         }, mongoManager.getExecutor());
     }
 
-    /**
-     * Remove a listing by ID.
-     */
-    public CompletableFuture<Void> removeListing(String listingId) {
+    public CompletableFuture<Void> claimListing(String listingId) {
         listings.removeIf(l -> l.getListingId().equals(listingId));
         return CompletableFuture.runAsync(() -> {
             try {
                 collection.deleteOne(Filters.eq("listingId", listingId));
             } catch (Exception e) {
-                logger.warning("[KingdomCore] Failed to remove auction listing: " + e.getMessage());
+                logger.warning("[KingdomCore] Failed to remove claimed auction: " + e.getMessage());
             }
         }, mongoManager.getExecutor());
     }
 
-    /**
-     * Get all active, non-expired listings.
-     */
+    public CompletableFuture<Void> removeListing(String listingId) {
+        return claimListing(listingId);
+    }
+
     public List<AuctionListing> getActiveListings() {
-        listings.removeIf(AuctionListing::isExpired);
-        return Collections.unmodifiableList(listings);
+        return listings.stream()
+                .filter(l -> !l.isExpired() && !l.isClaimed())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<AuctionListing> getPlayerListings(UUID playerUuid) {
+        return listings.stream()
+                .filter(l -> l.getSeller().equals(playerUuid) && !l.isClaimed())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     /**
-     * Find a listing by ID.
+     * Find a specific listing by its ID.
      */
     public AuctionListing getListing(String listingId) {
+        if (listingId == null) return null;
         return listings.stream()
                 .filter(l -> l.getListingId().equals(listingId))
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
     }
 
-    /**
-     * Purge all expired listings from the database.
-     */
     public void purgeExpired() {
-        long now = System.currentTimeMillis();
-        listings.removeIf(AuctionListing::isExpired);
+        // Stop deleting expired items immediately. 
+        // We only purge items that are over 30 days old to avoid database bloat.
+        long oldAge = System.currentTimeMillis() - (1000L * 60 * 60 * 24 * 30);
         CompletableFuture.runAsync(() -> {
             try {
-                collection.deleteMany(Filters.lt("expireTime", now));
+                collection.deleteMany(Filters.lt("expireTime", oldAge));
             } catch (Exception e) {
-                logger.warning("[KingdomCore] Failed to purge expired auctions: " + e.getMessage());
+                logger.warning("[KingdomCore] Failed to purge old auctions: " + e.getMessage());
             }
         }, mongoManager.getExecutor());
     }
@@ -183,7 +187,8 @@ public class AuctionManager {
                 .append("itemData", listing.getSerializedItem())
                 .append("priceShards", listing.getPriceShards())
                 .append("priceGems", listing.getPriceGems())
-                .append("expireTime", listing.getExpireTime());
+                .append("expireTime", listing.getExpireTime())
+                .append("claimed", listing.isClaimed());
     }
 
     private AuctionListing documentToListing(Document doc) {
@@ -197,7 +202,8 @@ public class AuctionManager {
                     doc.getString("itemData"),
                     doc.getInteger("priceShards", 0),
                     doc.getInteger("priceGems", 0),
-                    doc.getLong("expireTime")
+                    doc.getLong("expireTime"),
+                    doc.getBoolean("claimed", false)
             );
         } catch (Exception e) {
             logger.warning("[KingdomCore] Failed to parse auction listing: " + e.getMessage());
@@ -218,10 +224,11 @@ public class AuctionManager {
         private final int priceShards;
         private final int priceGems;
         private final long expireTime;
+        private final boolean claimed;
 
         public AuctionListing(String listingId, UUID seller, String sellerName,
                               String materialName, int amount, String serializedItem,
-                              int priceShards, int priceGems, long expireTime) {
+                              int priceShards, int priceGems, long expireTime, boolean claimed) {
             this.listingId = listingId;
             this.seller = seller;
             this.sellerName = sellerName;
@@ -231,12 +238,14 @@ public class AuctionManager {
             this.priceShards = priceShards;
             this.priceGems = priceGems;
             this.expireTime = expireTime;
+            this.claimed = claimed;
         }
 
         public boolean isExpired() {
             return System.currentTimeMillis() > expireTime;
         }
 
+        public boolean isClaimed() { return claimed; }
         public String getListingId() { return listingId; }
         public UUID getSeller() { return seller; }
         public String getSellerName() { return sellerName; }

@@ -14,6 +14,12 @@ export default function AccountPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  
+  const [history, setHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyTotalPages, setHistoryTotalPages] = useState(1);
+  const [historyTotal, setHistoryTotal] = useState(0);
 
   const loadPurchases = (p: number) => {
     setLoadingPurchases(true);
@@ -28,16 +34,37 @@ export default function AccountPage() {
       .catch(() => setLoadingPurchases(false));
   };
 
+  const loadHistory = (p: number) => {
+    setLoadingHistory(true);
+    fetch(`/api/account/history?page=${p}&limit=5`)
+      .then((r) => r.json())
+      .then((data) => {
+        setHistory(data.logs || []);
+        setHistoryTotalPages(data.totalPages || 1);
+        setHistoryTotal(data.total || 0);
+        setLoadingHistory(false);
+      })
+      .catch(() => setLoadingHistory(false));
+  };
+
   useEffect(() => {
     if (session) {
       fetch("/api/verify")
         .then((r) => r.json())
         .then(setLinkStatus)
         .catch(() => {});
-
+      
       loadPurchases(page);
     }
   }, [session, page]);
+
+  useEffect(() => {
+    if (session && linkStatus?.verified) {
+      loadHistory(historyPage);
+    } else {
+        setLoadingHistory(false);
+    }
+  }, [session, linkStatus?.verified, historyPage]);
 
   const generateCode = async () => {
     setVerifyState("loading");
@@ -109,8 +136,8 @@ export default function AccountPage() {
 
         {linkStatus?.verified ? (
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20 flex items-center justify-center text-2xl">
-              🎮
+            <div className="w-14 h-14 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] overflow-hidden shadow-lg shadow-black/50">
+              <img src={`https://mc-heads.net/avatar/${linkStatus.minecraftUuid || linkStatus.minecraftUsername}/64`} alt="" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="font-semibold text-white text-lg">{linkStatus.minecraftUsername}</div>
@@ -215,6 +242,68 @@ export default function AccountPage() {
           <p className="text-[var(--text-secondary)] text-sm">Your purchase history will appear here after your first purchase.</p>
         )}
       </div>
+
+      {/* Punishment History */}
+      {linkStatus?.verified && (
+        <div className="glass-card p-6 mt-6">
+          <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">Punishment History</h2>
+          
+          {loadingHistory ? (
+            <div className="animate-pulse space-y-3">
+              <div className="h-10 bg-[var(--bg-secondary)] rounded w-full"></div>
+              <div className="h-10 bg-[var(--bg-secondary)] rounded w-full" style={{ opacity: 0.5 }}></div>
+            </div>
+          ) : history.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
+                    <th className="px-4 py-3 font-medium">Action</th>
+                    <th className="px-4 py-3 font-medium">Reason</th>
+                    <th className="px-4 py-3 font-medium">Duration</th>
+                    <th className="px-4 py-3 font-medium text-right">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((log) => (
+                    <tr key={log._id} className="border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors">
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded border ${
+                            log.action === 'ban' || log.action === 'tempban' ? 'text-red-400 bg-red-400/10 border-red-400/20' :
+                            log.action === 'kick' ? 'text-amber-400 bg-amber-400/10 border-amber-400/20' :
+                            log.action === 'mute' ? 'text-violet-400 bg-violet-400/10 border-violet-400/20' :
+                            'text-blue-400 bg-blue-400/10 border-blue-400/20'
+                        }`}>
+                          {log.action}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-[var(--text-secondary)] italic">
+                        {log.reason || "No reason specified"}
+                      </td>
+                      <td className="px-4 py-3 text-[var(--text-muted)] font-mono text-xs">
+                        {log.duration || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-[var(--text-muted)] text-right tabular-nums">
+                        {new Date(log.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Pagination
+                page={historyPage}
+                total={historyTotal}
+                totalPages={historyTotalPages}
+                limit={5}
+                onPageChange={setHistoryPage}
+                loading={loadingHistory}
+              />
+            </div>
+          ) : (
+            <p className="text-[var(--text-secondary)] text-sm">Great job! You have no recorded punishments.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

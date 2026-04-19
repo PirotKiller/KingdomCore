@@ -1,5 +1,7 @@
 package me.pirot.kingdomCore;
 
+import me.pirot.kingdomCore.admin.AdminCommand;
+import me.pirot.kingdomCore.admin.AdminGUI;
 import me.pirot.kingdomCore.auction.AuctionCommand;
 import me.pirot.kingdomCore.auction.AuctionManager;
 import me.pirot.kingdomCore.bounty.BountyCommand;
@@ -9,9 +11,8 @@ import me.pirot.kingdomCore.config.ConfigManager;
 import me.pirot.kingdomCore.database.MongoManager;
 import me.pirot.kingdomCore.database.WebCommandManager;
 import me.pirot.kingdomCore.economy.EconomyManager;
-import me.pirot.kingdomCore.rpg.ClassListener;
-import me.pirot.kingdomCore.rpg.ClassManager;
-import me.pirot.kingdomCore.rpg.WeaponManager;
+import me.pirot.kingdomCore.reset.ResetManager;
+import me.pirot.kingdomCore.rpg.*;
 import me.pirot.kingdomCore.scoreboard.ScoreboardCommand;
 import me.pirot.kingdomCore.scoreboard.ScoreboardManager;
 import me.pirot.kingdomCore.shop.*;
@@ -32,6 +33,9 @@ public final class KingdomCore extends JavaPlugin {
     private AuctionManager auctionManager;
     private WebCommandManager webCommandManager;
     private ShopDataManager shopDataManager;
+    private SpecialItems specialItems;
+    private CraftingGUI craftingGUI;
+    private AdminGUI adminGUI;
 
     @Override
     public void onEnable() {
@@ -51,12 +55,13 @@ public final class KingdomCore extends JavaPlugin {
                 configManager.getMongoCollection(),
                 configManager.getAuctionCollection());
 
-        // 4. Initialize Economy Manager
+        // 3. Initialize Economy Manager
         economyManager = new EconomyManager(this, mongoManager);
 
         // 4. Initialize RPG Managers
         weaponManager = new WeaponManager(this);
         classManager = new ClassManager(this, configManager, economyManager);
+        specialItems = new SpecialItems(this);
 
         // 5. Initialize Bounty Manager
         bountyManager = new BountyManager(economyManager);
@@ -77,7 +82,13 @@ public final class KingdomCore extends JavaPlugin {
         ShopCommandHandler shopCommandHandler = new ShopCommandHandler(this, shopGUI, converterShop, shopDataManager);
         GUIListener guiListener = new GUIListener(this, shopGUI, economyManager, weaponManager, shopDataManager, shopCommandHandler);
 
-        // 9. Register Commands
+        // 9. Initialize Crafting GUI
+        craftingGUI = new CraftingGUI(this, weaponManager, economyManager, specialItems);
+
+        // 10. Initialize Admin Panel
+        adminGUI = new AdminGUI(this, economyManager, classManager, bountyManager, auctionManager, specialItems);
+
+        // 11. Register Commands
         getCommand("shop").setExecutor(shopCommandHandler);
         getCommand("shop").setTabCompleter(shopCommandHandler);
 
@@ -95,6 +106,22 @@ public final class KingdomCore extends JavaPlugin {
         VerifyCommand verifyCommand = new VerifyCommand(this, mongoManager);
         getCommand("verify").setExecutor(verifyCommand);
 
+        // Admin & Reset Commands
+        AdminCommand adminCommand = new AdminCommand(adminGUI);
+        getCommand("admin").setExecutor(adminCommand);
+
+        ResetManager resetManager = new ResetManager(this, economyManager, configManager);
+        getCommand("reset").setExecutor(resetManager);
+
+        // Craft Command (opens Soul Forge)
+        getCommand("craft").setExecutor((sender, cmd, label, args) -> {
+            if (sender instanceof Player player) {
+                craftingGUI.openCraftingGUI(player);
+                return true;
+            }
+            return false;
+        });
+
         getCommand("resourcepack").setExecutor((sender, cmd, label, args) -> {
             if (sender instanceof Player player) {
                 sendResourcePack(player);
@@ -103,18 +130,25 @@ public final class KingdomCore extends JavaPlugin {
             return false;
         });
 
-        // 10. Register Event Listeners
+        // 12. Register Event Listeners
         getServer().getPluginManager().registerEvents(guiListener, this);
         getServer().getPluginManager().registerEvents(converterShop, this);
         getServer().getPluginManager().registerEvents(auctionCommand, this);
         getServer().getPluginManager().registerEvents(shopCommandHandler, this);
         getServer().getPluginManager().registerEvents(bountyCommand, this);
+        getServer().getPluginManager().registerEvents(craftingGUI, this);
+        getServer().getPluginManager().registerEvents(adminGUI, this);
 
-        CombatListener combatListener = new CombatListener(economyManager);
+        CombatListener combatListener = new CombatListener(economyManager, specialItems);
         getServer().getPluginManager().registerEvents(combatListener, this);
 
         ClassListener classListener = new ClassListener(configManager, classManager, weaponManager);
         getServer().getPluginManager().registerEvents(classListener, this);
+
+        // Class Ability Listener (active abilities, XP awards)
+        ClassAbilityListener classAbilityListener = new ClassAbilityListener(
+                this, classManager, configManager, economyManager, weaponManager);
+        getServer().getPluginManager().registerEvents(classAbilityListener, this);
 
         BountyListener bountyListener = new BountyListener(this, bountyManager, configManager);
         getServer().getPluginManager().registerEvents(bountyListener, this);
@@ -123,9 +157,10 @@ public final class KingdomCore extends JavaPlugin {
                 this, economyManager, classManager, scoreboardManager, shopGUI);
         getServer().getPluginManager().registerEvents(joinQuitListener, this);
 
-        // 11. Start Async Tasks
-        economyManager.startCurrencySyncTask();
+        // 13. Start Async Tasks
+        economyManager.startSyncTasks();
         mongoManager.startPlayerWatchStream(economyManager);
+        mongoManager.startPurchaseWatchStream(economyManager);
         scoreboardManager.startUpdateTask();
         bountyListener.startCompassTask();
 
@@ -141,13 +176,14 @@ public final class KingdomCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(
                 new me.pirot.kingdomCore.moderation.GameLogger(this, mongoManager), this);
 
-        // 12. Automated AH Purge (Every 1 hour)
+        // 14. Automated AH Purge (Every 1 hour)
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             auctionManager.purgeExpired();
         }, 20 * 60 * 60L, 20 * 60 * 60L);
 
         getLogger().info("=================================");
         getLogger().info("  KingdomCore - Enabled!");
+        getLogger().info("  New Systems: Crafting, Admin Panel, Abilities");
         getLogger().info("=================================");
     }
 
@@ -174,37 +210,17 @@ public final class KingdomCore extends JavaPlugin {
 
     // ---- Getters for managers ----
 
-    public ConfigManager getConfigManager() {
-        return configManager;
-    }
-
-    public MongoManager getMongoManager() {
-        return mongoManager;
-    }
-
-    public EconomyManager getEconomyManager() {
-        return economyManager;
-    }
-
-    public ClassManager getClassManager() {
-        return classManager;
-    }
-
-    public WeaponManager getWeaponManager() {
-        return weaponManager;
-    }
-
-    public BountyManager getBountyManager() {
-        return bountyManager;
-    }
-
-    public ScoreboardManager getScoreboardManager() {
-        return scoreboardManager;
-    }
-
-    public AuctionManager getAuctionManager() {
-        return auctionManager;
-    }
+    public ConfigManager getConfigManager() { return configManager; }
+    public MongoManager getMongoManager() { return mongoManager; }
+    public EconomyManager getEconomyManager() { return economyManager; }
+    public ClassManager getClassManager() { return classManager; }
+    public WeaponManager getWeaponManager() { return weaponManager; }
+    public BountyManager getBountyManager() { return bountyManager; }
+    public ScoreboardManager getScoreboardManager() { return scoreboardManager; }
+    public AuctionManager getAuctionManager() { return auctionManager; }
+    public SpecialItems getSpecialItems() { return specialItems; }
+    public CraftingGUI getCraftingGUI() { return craftingGUI; }
+    public AdminGUI getAdminGUI() { return adminGUI; }
 
     public void sendResourcePack(Player player) {
         String url = configManager.getConfig().getString("resource-pack.url");

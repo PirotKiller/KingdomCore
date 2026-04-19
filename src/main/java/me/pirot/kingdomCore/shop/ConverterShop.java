@@ -120,6 +120,28 @@ public class ConverterShop implements Listener {
         }
         inv.setItem(SELL_BUTTON_SLOT, sellButton);
 
+        // Gem Conversion Button
+        ItemStack gemConvert = new ItemStack(Material.EMERALD);
+        ItemMeta gemMeta = gemConvert.getItemMeta();
+        if (gemMeta != null) {
+            gemMeta.setDisplayName("§b§l✦ Gem Converter ✦");
+            gemMeta.setLore(Arrays.asList(
+                    "§8§m                              ",
+                    "",
+                    "§7Convert premium Gems into Shards.",
+                    "",
+                    "§7Rate: §b10 Gems §7→ §a10,000 Shards",
+                    "",
+                    "§7Gems are non-refundable!",
+                    "",
+                    "§8§m                              ",
+                    "§a▸ Left-Click: Convert 10 Gems",
+                    "§a▸ Right-Click: Convert 100 Gems"
+            ));
+            gemConvert.setItemMeta(gemMeta);
+        }
+        inv.setItem(8, gemConvert);
+
         activeConverters.add(player.getUniqueId());
         player.openInventory(inv);
     }
@@ -133,6 +155,25 @@ public class ConverterShop implements Listener {
         if (!title.equals(converterTitle)) return;
 
         int slot = event.getRawSlot();
+
+        // Handle Gem Conversion
+        if (slot == 8) {
+            event.setCancelled(true);
+            int gemsRequired = event.isRightClick() ? 100 : 10;
+            int shardsAwarded = event.isRightClick() ? 100000 : 10000;
+            
+            me.pirot.kingdomCore.database.PlayerData data = economyManager.getPlayerData(player.getUniqueId());
+            if (data != null && data.getGems() >= gemsRequired) {
+                data.removeGems(gemsRequired);
+                data.addShards(shardsAwarded);
+                player.sendMessage("§b§l[Kingdom] §7Converted §b" + gemsRequired + " Gems §7into §a" + shardsAwarded + " Shards§7!");
+                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
+            } else {
+                player.sendMessage("§c§l[Kingdom] §7You don't have enough Gems!");
+                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+            }
+            return;
+        }
 
         // Allow interaction with non-border input slots (player can place items)
         if (slot >= 0 && slot < 54) {

@@ -1,3 +1,5 @@
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\admin\AdminCommand.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\admin\AdminGUI.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\auction\AuctionCommand.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\auction\AuctionManager.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\bounty\BountyCommand.java
@@ -14,10 +16,15 @@ C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\moder
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\moderation\ModerationManager.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\moderation\PunishmentListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\PlayerJoinQuitListener.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\reset\ResetManager.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\ClassAbilityListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\ClassListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\ClassManager.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\CraftingGUI.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\RPGClass.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\SpecialItems.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\WeaponManager.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\WeaponRecipe.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\WeaponTier.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\scoreboard\ScoreboardCommand.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\scoreboard\ScoreboardManager.java
