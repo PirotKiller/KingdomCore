@@ -208,13 +208,16 @@ public class PlayerData {
         this.xp = xp;
     }
 
-    public void addXp(int amount) {
+    public int addXp(int amount) {
         this.xp += amount;
+        int levelsGained = 0;
         // Level up check
         while (this.xp >= getXpNeeded()) {
             this.xp -= getXpNeeded();
             this.level++;
+            levelsGained++;
         }
+        return levelsGained;
     }
 
     public int getLevel() {

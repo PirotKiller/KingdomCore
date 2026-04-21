@@ -41,3 +41,23 @@ items:
     amount: 32
     price: 12
     name: "§fBricks x32"
+  tuff:
+    material: TUFF
+    amount: 32
+    price: 6
+    name: "§fTuff x32"
+  calcite:
+    material: CALCITE
+    amount: 32
+    price: 6
+    name: "§fCalcite x32"
+  smooth_stone:
+    material: SMOOTH_STONE
+    amount: 64
+    price: 15
+    name: "§fSmooth Stone x64"
+  mossy_cobblestone:
+    material: MOSSY_COBBLESTONE
+    amount: 32
+    price: 10
+    name: "§fMossy Cobblestone x32"

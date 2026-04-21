@@ -43,6 +43,10 @@ commands:
     description: Open the Soul Forge crafting GUI
     usage: /craft
     aliases: [forge, soulforge]
+  eco:
+    description: Economy base command
+    usage: /eco [note <amount>]
+    aliases: [economy, balance, bal]
 
 permissions:
   kingdomcore.shop:

@@ -1,0 +1,176 @@
+title: "§8§l[ §a§lCrafting Shop §8§l]"
+size: 54
+items:
+  # === Workstations ===
+  crafting_table:
+    material: CRAFTING_TABLE
+    price-shards: 50
+    price-gems: 0
+    amount: 1
+    name: "§a§lCrafting Table"
+    order: 1
+  furnace:
+    material: FURNACE
+    price-shards: 75
+    price-gems: 0
+    amount: 1
+    name: "§7§lFurnace"
+    order: 2
+  blast_furnace:
+    material: BLAST_FURNACE
+    price-shards: 200
+    price-gems: 0
+    amount: 1
+    name: "§7§lBlast Furnace"
+    order: 3
+  smoker:
+    material: SMOKER
+    price-shards: 150
+    price-gems: 0
+    amount: 1
+    name: "§e§lSmoker"
+    order: 4
+  smithing_table:
+    material: SMITHING_TABLE
+    price-shards: 300
+    price-gems: 5
+    amount: 1
+    name: "§6§lSmithing Table"
+    order: 5
+  anvil:
+    material: ANVIL
+    price-shards: 500
+    price-gems: 10
+    amount: 1
+    name: "§8§lAnvil"
+    order: 6
+  grindstone:
+    material: GRINDSTONE
+    price-shards: 200
+    price-gems: 0
+    amount: 1
+    name: "§7§lGrindstone"
+    order: 7
+  stonecutter:
+    material: STONECUTTER
+    price-shards: 150
+    price-gems: 0
+    amount: 1
+    name: "§7§lStonecutter"
+    order: 8
+  loom:
+    material: LOOM
+    price-shards: 100
+    price-gems: 0
+    amount: 1
+    name: "§e§lLoom"
+    order: 9
+  cartography_table:
+    material: CARTOGRAPHY_TABLE
+    price-shards: 100
+    price-gems: 0
+    amount: 1
+    name: "§f§lCartography Table"
+    order: 10
+
+  # === Crafting Materials ===
+  stick:
+    material: STICK
+    price-shards: 5
+    price-gems: 0
+    amount: 16
+    name: "§e§lSticks §7(x16)"
+    order: 11
+  string:
+    material: STRING
+    price-shards: 15
+    price-gems: 0
+    amount: 8
+    name: "§f§lString §7(x8)"
+    order: 12
+  leather:
+    material: LEATHER
+    price-shards: 20
+    price-gems: 0
+    amount: 8
+    name: "§6§lLeather §7(x8)"
+    order: 13
+  paper:
+    material: PAPER
+    price-shards: 10
+    price-gems: 0
+    amount: 16
+    name: "§f§lPaper §7(x16)"
+    order: 14
+  book:
+    material: BOOK
+    price-shards: 30
+    price-gems: 0
+    amount: 4
+    name: "§6§lBooks §7(x4)"
+    order: 15
+  glass:
+    material: GLASS
+    price-shards: 15
+    price-gems: 0
+    amount: 16
+    name: "§f§lGlass §7(x16)"
+    order: 16
+  slime_ball:
+    material: SLIME_BALL
+    price-shards: 50
+    price-gems: 0
+    amount: 4
+    name: "§a§lSlime Ball §7(x4)"
+    order: 17
+  honey_bottle:
+    material: HONEY_BOTTLE
+    price-shards: 75
+    price-gems: 0
+    amount: 4
+    name: "§6§lHoney Bottle §7(x4)"
+    order: 18
+
+  # === Rare Crafting Components ===
+  netherite_upgrade:
+    material: NETHERITE_UPGRADE_SMITHING_TEMPLATE
+    price-shards: 3000
+    price-gems: 50
+    amount: 1
+    name: "§4§lNetherite Upgrade Template"
+    order: 19
+  diamond:
+    material: DIAMOND
+    price-shards: 500
+    price-gems: 10
+    amount: 1
+    name: "§b§lDiamond"
+    order: 20
+  netherite_ingot:
+    material: NETHERITE_INGOT
+    price-shards: 2000
+    price-gems: 25
+    amount: 1
+    name: "§4§lNetherite Ingot"
+    order: 21
+  blaze_rod:
+    material: BLAZE_ROD
+    price-shards: 200
+    price-gems: 5
+    amount: 4
+    name: "§6§lBlaze Rod §7(x4)"
+    order: 22
+  ender_pearl:
+    material: ENDER_PEARL
+    price-shards: 150
+    price-gems: 5
+    amount: 4
+    name: "§5§lEnder Pearl §7(x4)"
+    order: 23
+  ghast_tear:
+    material: GHAST_TEAR
+    price-shards: 300
+    price-gems: 10
+    amount: 1
+    name: "§f§lGhast Tear"
+    order: 24

@@ -19,10 +19,12 @@ public class ClassManager {
 
     private final ConfigManager configManager;
     private final EconomyManager economyManager;
+    private final me.pirot.kingdomCore.database.MongoManager mongoManager;
 
     public ClassManager(KingdomCore plugin, ConfigManager configManager, EconomyManager economyManager) {
         this.configManager = configManager;
         this.economyManager = economyManager;
+        this.mongoManager = plugin.getMongoManager();
     }
 
     /**
@@ -32,6 +34,8 @@ public class ClassManager {
         UUID uuid = player.getUniqueId();
         PlayerData data = economyManager.getPlayerData(uuid);
         if (data == null) return;
+
+        String oldClass = data.getClassName();
 
         // Save current class progress before switching
         data.saveCurrentClassProgress();
@@ -59,6 +63,17 @@ public class ClassManager {
         applyPassives(player);
 
         player.sendMessage("§a§l[Kingdom] §7You are now a " + rpgClass.getColoredName() + "§7!");
+
+        // --- LOGGING ---
+        org.bson.Document log = new org.bson.Document("timestamp", new java.util.Date())
+                .append("source", "GAME")
+                .append("type", "CLASS_CHANGE")
+                .append("player", new org.bson.Document("uuid", uuid.toString())
+                        .append("name", player.getName()))
+                .append("summary", "Switched class from " + oldClass + " to " + rpgClass.name())
+                .append("metadata", new org.bson.Document("oldClass", oldClass)
+                        .append("newClass", rpgClass.name()));
+        mongoManager.logAction(log);
     }
 
     /**

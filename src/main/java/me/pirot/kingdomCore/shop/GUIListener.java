@@ -29,6 +29,7 @@ import java.util.UUID;
  */
 public class GUIListener implements Listener {
 
+    private final KingdomCore plugin;
     private final ShopGUI shopGUI;
     private final EconomyManager economyManager;
     private final WeaponManager weaponManager;
@@ -38,6 +39,7 @@ public class GUIListener implements Listener {
     public GUIListener(KingdomCore plugin, ShopGUI shopGUI, EconomyManager economyManager,
                        WeaponManager weaponManager, ShopDataManager shopDataManager, 
                        ShopCommandHandler shopCommandHandler) {
+        this.plugin = plugin;
         this.shopGUI = shopGUI;
         this.economyManager = economyManager;
         this.weaponManager = weaponManager;
@@ -130,6 +132,16 @@ public class GUIListener implements Listener {
                 giveItem(player, weapon);
                 player.sendMessage("§a§l[Kingdom] §7Purchased " + name + "§7!");
                 player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
+                
+                // --- LOGGING ---
+                org.bson.Document log = new org.bson.Document()
+                        .append("source", "GAME")
+                        .append("type", "SHOP_PURCHASE")
+                        .append("player", new org.bson.Document("uuid", uuid.toString()).append("name", player.getName()))
+                        .append("summary", "Purchased weapon: " + name)
+                        .append("currency", new org.bson.Document("shards", priceShards).append("gems", priceGems))
+                        .append("metadata", new org.bson.Document("itemId", itemId).append("shop", shopTypeName));
+                plugin.getMongoManager().logAction(log);
             }
             return;
         }
@@ -142,7 +154,7 @@ public class GUIListener implements Listener {
             ItemStack book = new ItemStack(Material.ENCHANTED_BOOK, 1);
             EnchantmentStorageMeta bookMeta = (EnchantmentStorageMeta) book.getItemMeta();
             if (bookMeta != null) {
-                Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(itemData.getEnchant().toLowerCase()));
+                Enchantment enchantment = Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft(itemData.getEnchant().toLowerCase()));
                 if (enchantment != null) {
                     bookMeta.addStoredEnchant(enchantment, itemData.getEnchantLevel(), true);
                 }
@@ -151,6 +163,16 @@ public class GUIListener implements Listener {
             giveItem(player, book);
             player.sendMessage("§a§l[Kingdom] §7Purchased " + itemData.getName() + "§7!");
             player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
+
+            // --- LOGGING ---
+            org.bson.Document log = new org.bson.Document()
+                    .append("source", "GAME")
+                    .append("type", "SHOP_PURCHASE")
+                    .append("player", new org.bson.Document("uuid", uuid.toString()).append("name", player.getName()))
+                    .append("summary", "Purchased enchantment: " + itemData.getName())
+                    .append("currency", new org.bson.Document("shards", priceShards).append("gems", priceGems))
+                    .append("metadata", new org.bson.Document("itemId", itemId).append("shop", shopTypeName));
+            plugin.getMongoManager().logAction(log);
             return;
         }
 
@@ -165,6 +187,16 @@ public class GUIListener implements Listener {
         player.sendMessage("§a§l[Kingdom] §7Purchased §f" + purchased.getAmount() + "x " + displayName);
         giveItem(player, purchased);
         player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
+
+        // --- LOGGING ---
+        org.bson.Document log = new org.bson.Document()
+                .append("source", "GAME")
+                .append("type", "SHOP_PURCHASE")
+                .append("player", new org.bson.Document("uuid", uuid.toString()).append("name", player.getName()))
+                .append("summary", "Purchased item: " + purchased.getAmount() + "x " + displayName)
+                .append("currency", new org.bson.Document("shards", priceShards).append("gems", priceGems))
+                .append("metadata", new org.bson.Document("itemId", itemId).append("shop", shopTypeName));
+        plugin.getMongoManager().logAction(log);
     }
 
     private void giveItem(Player player, ItemStack item) {

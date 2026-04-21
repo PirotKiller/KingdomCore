@@ -166,3 +166,43 @@ items:
       - "§7Category: §aMining"
       - "§7Level: §d§lI §8(Max)"
       - "§8§m                    "
+  infinity_1:
+    material: ENCHANTED_BOOK
+    enchant: INFINITY
+    enchant-level: 1
+    price-shards: 1200
+    price-gems: 60
+    amount: 1
+    name: "§d§lInfinity I"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §6Ranged"
+      - "§7Level: §d§lI §8(Max)"
+      - "§e★ §7Premium enchantment"
+      - "§8§m                    "
+  flame_1:
+    material: ENCHANTED_BOOK
+    enchant: FLAME
+    enchant-level: 1
+    price-shards: 600
+    price-gems: 20
+    amount: 1
+    name: "§d§lFlame I"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §6Ranged"
+      - "§7Level: §d§lI §8(Max)"
+      - "§8§m                    "
+  knockback_2:
+    material: ENCHANTED_BOOK
+    enchant: KNOCKBACK
+    enchant-level: 2
+    price-shards: 400
+    price-gems: 15
+    amount: 1
+    name: "§d§lKnockback II"
+    lore:
+      - "§8§m                    "
+      - "§7Category: §cCombat"
+      - "§7Level: §d§lII §8(Max)"
+      - "§8§m                    "

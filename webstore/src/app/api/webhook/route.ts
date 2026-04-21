@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import dbConnect from "@/lib/mongodb";
@@ -22,91 +23,130 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No signature" }, { status: 400 });
   }
 
-  let event;
+  let event: Stripe.Event;
+
   try {
-    event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    const stripe = getStripe();
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    console.log("✅ Webhook verified:", event.id, event.type);
   } catch (err: any) {
-    console.error("Webhook Error: Signature verification failed:", err.message);
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    console.error("❌ Webhook Signature Error:", err.message);
+    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    const meta = session.metadata;
+    if (event.type === "checkout.session.completed") {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const meta = session.metadata;
 
-    if (!meta) {
-      console.warn("Webhook Warning: No metadata in session:", session.id);
-      return NextResponse.json({ received: true });
-    }
-
-    try {
-      console.log("Processing Webhook: checkout.session.completed for", session.id);
-      await dbConnect();
-
-      // Verify we have a primary connection
-      if (mongoose.connection.readyState !== 1) {
-        throw new Error("Database connection not ready (readyState: " + mongoose.connection.readyState + ")");
-      }
-
-      // Record the purchase
-      console.log("Recording purchase for userId:", meta.userId);
-      await Purchase.create({
-        userId: new mongoose.Types.ObjectId(meta.userId),
-        discordId: meta.discordId,
-        minecraftUuid: meta.minecraftUuid,
-        itemId: new mongoose.Types.ObjectId(meta.itemId),
-        itemName: meta.itemName,
-        price: session.amount_total || 0,
-        currency: session.currency || "usd",
-        stripeSessionId: session.id,
-        transactionId: generateTransactionId(),
-        status: "completed",
-      });
-
-      // For currency purchases, update the player document directly
-      const item = await StoreItem.findById(meta.itemId);
-      if (item) {
-        const db = mongoose.connection.db;
-        if (!db) throw new Error("Database connection is missing db object");
-
-        if (item.deliveryType === "currency") {
-          const field = item.deliveryData?.type === "gems" ? "gems" : "shards";
-          const amount = item.deliveryData?.amount || 0;
-
-          console.log("Delivering currency:", amount, field, "to", meta.minecraftUuid);
-          const updateResult = await db.collection("players").updateOne(
-            { uuid: meta.minecraftUuid },
-            { $inc: { [field]: amount } }
-          );
-            
-          if (updateResult.matchedCount === 0) {
-            console.error("Delivery Error: Player not found in database:", meta.minecraftUuid);
-          } else {
-            console.log("Delivery Success: Updated player document.");
-            await Purchase.findOneAndUpdate({ stripeSessionId: session.id }, { status: "delivered", deliveredAt: new Date() });
-          }
-        } else if (item.deliveryType === "command" && item.deliveryData?.command) {
-          console.log("Queueing command for delivery:", item.deliveryData.command, "to", meta.minecraftUuid);
-          await db.collection("pending_commands").insertOne({
-            uuid: meta.minecraftUuid,
-            command: item.deliveryData.command,
-            executed: false,
-            createdAt: new Date(),
-            stripeSessionId: session.id
-          });
-          
-          console.log("Delivery Success: Enqueued command.");
-          await Purchase.findOneAndUpdate({ stripeSessionId: session.id }, { status: "processing", deliveredAt: new Date() });
+        if (!meta || !meta.userId || !meta.itemId || !meta.minecraftUuid) {
+            console.warn("⚠️ Webhook Warning: Incomplete metadata in session:", session.id, meta);
+            return NextResponse.json({ error: "Missing metadata" }, { status: 200 });
         }
-      }
-      
-      console.log("Webhook Success: Processed session", session.id);
-    } catch (dbErr: any) {
-      console.error("Webhook Database Error:", dbErr.message);
-      // We still return 200 so Stripe doesn't keep retrying if it's a persistent DB issue
-      return NextResponse.json({ error: "Database error during processing" }, { status: 500 });
-    }
-  }
 
+        try {
+            console.log("🔄 Processing purchase for session:", session.id);
+            await dbConnect();
+
+            // Register models
+            if (!mongoose.models.Purchase) {
+                console.log("📦 Registering Purchase model...");
+            }
+
+            // Record Purchase
+            const purchaseData = {
+                userId: new mongoose.Types.ObjectId(meta.userId),
+                discordId: meta.discordId,
+                minecraftUuid: meta.minecraftUuid,
+                itemId: new mongoose.Types.ObjectId(meta.itemId),
+                itemName: meta.itemName,
+                price: session.amount_total || 0,
+                currency: session.currency || "usd",
+                stripeSessionId: session.id,
+                transactionId: generateTransactionId(),
+                status: "completed",
+            };
+
+            const purchase = await Purchase.create(purchaseData);
+            console.log("✅ Purchase record created:", purchase._id);
+
+            // --- LOGGING: PURCHASE COMPLETE ---
+            try {
+                const { recordWebLog } = await import("@/lib/logger");
+                await recordWebLog({
+                    type: "STORE_PURCHASE_COMPLETE",
+                    executor: { discordId: "system", name: "SYSTEM (Stripe)" },
+                    summary: `Payment received for ${meta.itemName} from ${meta.minecraftUsername || meta.minecraftUuid} ($${((session.amount_total || 0) / 100).toFixed(2)})`,
+                    metadata: { 
+                        purchaseId: purchase._id, 
+                        stripeSessionId: session.id,
+                        minecraftUuid: meta.minecraftUuid,
+                        amount: session.amount_total
+                    }
+                });
+            } catch (le) { console.error("Log error:", le); }
+
+            // Delivery logic
+            const item = await StoreItem.findById(meta.itemId);
+            if (item) {
+                const db = mongoose.connection.db;
+                if (!db) throw new Error("Database connection missing db object");
+
+                let deliverySuccess = false;
+                let deliveryDetail = "";
+
+                if (item.deliveryType === "currency") {
+                    const field = item.deliveryData?.type === "gems" ? "gems" : "shards";
+                    const amount = item.deliveryData?.amount || 0;
+                    deliveryDetail = `${amount} ${field}`;
+
+                    const updateResult = await db.collection("players").updateOne(
+                        { uuid: meta.minecraftUuid },
+                        { $inc: { [field]: amount } }
+                    );
+                    
+                    deliverySuccess = updateResult.matchedCount > 0;
+                } else if (item.deliveryType === "command" && item.deliveryData?.command) {
+                    const command = item.deliveryData.command.replace("{player}", meta.minecraftUsername || "");
+                    deliveryDetail = `Command: ${command}`;
+                    
+                    await db.collection("pending_commands").insertOne({
+                        uuid: meta.minecraftUuid,
+                        command: command,
+                        executed: false,
+                        createdAt: new Date(),
+                        stripeSessionId: session.id
+                    });
+                    deliverySuccess = true;
+                } else {
+                    deliverySuccess = true;
+                    deliveryDetail = "Manual/Default Delivery";
+                }
+
+                if (deliverySuccess) {
+                    await Purchase.findByIdAndUpdate(purchase._id, { status: "delivered", deliveredAt: new Date() });
+                    
+                    // --- LOGGING: DELIVERY SUCCESS ---
+                    try {
+                        const { recordWebLog } = await import("@/lib/logger");
+                        await recordWebLog({
+                            type: "STORE_DELIVERY",
+                            executor: { discordId: "system", name: "SYSTEM (Delivery)" },
+                            summary: `Successfully delivered ${item.name} to ${meta.minecraftUsername || meta.minecraftUuid}`,
+                            metadata: { 
+                                type: item.deliveryType, 
+                                detail: deliveryDetail,
+                                minecraftUuid: meta.minecraftUuid 
+                            }
+                        });
+                    } catch (le) { console.error("Log error:", le); }
+                } else {
+                    await Purchase.findByIdAndUpdate(purchase._id, { status: "failed" });
+                }
+            }
+        } catch (dbErr: any) {
+            console.error("❌ Webhook Database Error:", dbErr.message);
+            return NextResponse.json({ error: "Internal processing error" }, { status: 500 });
+        }
+    }
   return NextResponse.json({ received: true });
 }

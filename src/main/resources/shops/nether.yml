@@ -43,3 +43,27 @@ items:
     price-shards: 500
     price-gems: 50
     name: "§fWither Skeleton Skull"
+  crying_obsidian:
+    material: CRYING_OBSIDIAN
+    amount: 4
+    price-shards: 150
+    price-gems: 0
+    name: "§fCrying Obsidian x4"
+  crimson_nylium:
+    material: CRIMSON_NYLIUM
+    amount: 16
+    price-shards: 40
+    price-gems: 0
+    name: "§fCrimson Nylium x16"
+  warped_nylium:
+    material: WARPED_NYLIUM
+    amount: 16
+    price-shards: 40
+    price-gems: 0
+    name: "§fWarped Nylium x16"
+  glowstone:
+    material: GLOWSTONE
+    amount: 16
+    price-shards: 60
+    price-gems: 0
+    name: "§fGlowstone Block x16"

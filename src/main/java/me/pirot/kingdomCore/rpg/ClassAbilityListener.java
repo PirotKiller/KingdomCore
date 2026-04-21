@@ -36,6 +36,7 @@ public class ClassAbilityListener implements Listener {
     private final ConfigManager configManager;
     private final EconomyManager economyManager;
     private final WeaponManager weaponManager;
+    private final AnimationManager animationManager;
 
     // Cooldown tracking: playerUUID -> ability name -> last use time (ms)
     private final Map<UUID, Map<String, Long>> cooldowns = new ConcurrentHashMap<>();
@@ -45,12 +46,13 @@ public class ClassAbilityListener implements Listener {
 
     public ClassAbilityListener(KingdomCore plugin, ClassManager classManager,
                                 ConfigManager configManager, EconomyManager economyManager,
-                                WeaponManager weaponManager) {
+                                WeaponManager weaponManager, AnimationManager animationManager) {
         this.plugin = plugin;
         this.classManager = classManager;
         this.configManager = configManager;
         this.economyManager = economyManager;
         this.weaponManager = weaponManager;
+        this.animationManager = animationManager;
     }
 
     // ============================================================
@@ -65,6 +67,10 @@ public class ClassAbilityListener implements Listener {
 
         RPGClass rpgClass = classManager.getPlayerClass(killer);
         if (rpgClass == null) return;
+
+        // Only award XP when killing with a Kingdom weapon
+        ItemStack mainHand = killer.getInventory().getItemInMainHand();
+        if (!weaponManager.isKingdomWeapon(mainHand)) return;
 
         int xpAmount = 0;
 
@@ -181,6 +187,42 @@ public class ClassAbilityListener implements Listener {
         }
     }
 
+    /**
+     * Rogue: Shadow Lunge active ability on right-click.
+     * Invisibility + lunge + X-cut slash.
+     */
+    @EventHandler
+    public void onRogueAbility(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+
+        RPGClass rpgClass = classManager.getPlayerClass(player);
+        if (rpgClass != RPGClass.ROGUE) return;
+
+        // Use event.getItem() for off-hand support
+        ItemStack held = event.getItem();
+        if (held == null || !weaponManager.isKingdomWeapon(held)) return;
+
+        // NEW: Check if this is a ROGUE weapon
+        String classKey = held.getItemMeta().getPersistentDataContainer()
+                .get(weaponManager.CLASS_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+        if (!"ROGUE".equals(classKey)) return;
+
+        PlayerData data = economyManager.getPlayerData(player.getUniqueId());
+        int level = data != null ? data.getLevel() : 1;
+        long cooldownMs = animationManager.calculateCooldown(20000, 10000, level);
+
+        if (isOnCooldown(player, "rogue_lunge", cooldownMs)) return;
+        setCooldown(player, "rogue_lunge");
+
+        String tierKey = held.getItemMeta().getPersistentDataContainer()
+                .get(weaponManager.TIER_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+        WeaponTier tier = WeaponTier.fromString(tierKey != null ? tierKey : "GOLD");
+
+        // Trigger Shadow Lunge Animation
+        animationManager.playRogueAbility(player, held, tier);
+    }
+
     // ============================================================
     // KNIGHT: Ender Pearl Death + AOE Shield
     // ============================================================
@@ -201,7 +243,8 @@ public class ClassAbilityListener implements Listener {
     }
 
     /**
-     * Knight: Defensive AOE shield on right-click (final level only).
+     * Knight: Colossal Smash — right-click with any Kingdom weapon.
+     * Works at all levels and all tiers.
      */
     @EventHandler
     public void onKnightShieldAbility(PlayerInteractEvent event) {
@@ -211,21 +254,35 @@ public class ClassAbilityListener implements Listener {
         RPGClass rpgClass = classManager.getPlayerClass(player);
         if (rpgClass != RPGClass.KNIGHT) return;
 
-        PlayerData data = economyManager.getPlayerData(player.getUniqueId());
-        if (data == null || data.getLevel() < 10) return;
+        // NEW: Only work when crouching
+        if (!player.isSneaking()) return;
 
-        ItemStack held = player.getInventory().getItemInMainHand();
-        if (!weaponManager.isKingdomWeapon(held)) return;
-        String tier = held.getItemMeta().getPersistentDataContainer()
+        // Use event.getItem() to handle both Main Hand and Off-Hand
+        ItemStack held = event.getItem();
+        if (held == null || !weaponManager.isKingdomWeapon(held)) return;
+
+        // NEW: Check if this is a KNIGHT weapon
+        String classKey = held.getItemMeta().getPersistentDataContainer()
+                .get(weaponManager.CLASS_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+        if (!"KNIGHT".equals(classKey)) return;
+
+        String tierKey = held.getItemMeta().getPersistentDataContainer()
                 .get(weaponManager.TIER_KEY, org.bukkit.persistence.PersistentDataType.STRING);
-        if (!"CHAOS".equals(tier)) return;
+        WeaponTier tier = WeaponTier.fromString(tierKey != null ? tierKey : "GOLD");
 
-        if (isOnCooldown(player, "knight_aoe", 15000)) return;
-        setCooldown(player, "knight_aoe");
+        PlayerData data = economyManager.getPlayerData(player.getUniqueId());
+        int level = data != null ? data.getLevel() : 1;
+        long cooldownMs = animationManager.calculateCooldown(20000, 10000, level);
+
+        if (isOnCooldown(player, "knight_smash", cooldownMs)) return;
+        setCooldown(player, "knight_smash");
+
+        // Trigger Colossal Smash Animation
+        animationManager.playKnightAbility(player, held, tier);
 
         // Create AOE defensive zone
         Location center = player.getLocation();
-        player.sendMessage("§b§l[Kingdom] §7Defensive AOE activated!");
+        player.sendMessage("§b§l[Kingdom] §7Earthshaker activated!");
         player.playSound(center, Sound.ITEM_TOTEM_USE, 1f, 1.5f);
 
         new BukkitRunnable() {
@@ -310,33 +367,27 @@ public class ClassAbilityListener implements Listener {
         RPGClass rpgClass = classManager.getPlayerClass(player);
         if (rpgClass != RPGClass.WIZARD) return;
 
-        ItemStack held = player.getInventory().getItemInMainHand();
-        if (!weaponManager.isKingdomWeapon(held)) return;
+        ItemStack held = event.getItem();
+        if (held == null || !weaponManager.isKingdomWeapon(held)) return;
 
         String classKey = held.getItemMeta().getPersistentDataContainer()
                 .get(weaponManager.CLASS_KEY, org.bukkit.persistence.PersistentDataType.STRING);
         if (!"WIZARD".equals(classKey)) return;
 
+        String tierKey = held.getItemMeta().getPersistentDataContainer()
+                .get(weaponManager.TIER_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+        WeaponTier tier = WeaponTier.fromString(tierKey != null ? tierKey : "GOLD");
+
         PlayerData data = economyManager.getPlayerData(player.getUniqueId());
         int level = data != null ? data.getLevel() : 1;
 
-        // Cooldown scales with level: 3s at level 1, 1s at level 10
-        long cooldownMs = Math.max(1000, 3000 - (level * 200L));
+        // Wizard special ability cooldown: starts at 20s, min 4s
+        long cooldownMs = animationManager.calculateCooldown(20000, 4000, level);
         if (isOnCooldown(player, "wizard_fireball", cooldownMs)) return;
         setCooldown(player, "wizard_fireball");
 
-        // Shoot fireball
-        SmallFireball fireball = player.launchProjectile(SmallFireball.class);
-        fireball.setDirection(player.getLocation().getDirection().multiply(1.5));
-        fireball.setIsIncendiary(false);
-        fireball.setYield(0); // No block damage
-
-        // Scale damage with level
-        double baseDamage = 4.0 + (level * 0.5);
-        fireball.setMetadata("wizard_damage", new FixedMetadataValue(plugin, baseDamage));
-
-        player.playSound(player.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 0.8f, 1.2f);
-        player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 1, 0), 10, 0.2, 0.2, 0.2, 0.05);
+        // Trigger Astral Summon Animation
+        animationManager.playWizardAbility(player, held, tier);
 
         event.setCancelled(true);
     }
@@ -400,15 +451,26 @@ public class ClassAbilityListener implements Listener {
         RPGClass rpgClass = classManager.getPlayerClass(player);
         if (rpgClass != RPGClass.RONIN) return;
 
-        ItemStack held = player.getInventory().getItemInMainHand();
-        if (!weaponManager.isKingdomWeapon(held)) return;
+        ItemStack held = event.getItem();
+        if (held == null || !weaponManager.isKingdomWeapon(held)) return;
 
         String classKey = held.getItemMeta().getPersistentDataContainer()
                 .get(weaponManager.CLASS_KEY, org.bukkit.persistence.PersistentDataType.STRING);
         if (!"RONIN".equals(classKey)) return;
 
-        if (isOnCooldown(player, "ronin_dash", 5000)) return;
+        String tierKey = held.getItemMeta().getPersistentDataContainer()
+                .get(weaponManager.TIER_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+        WeaponTier tier = WeaponTier.fromString(tierKey != null ? tierKey : "GOLD");
+
+        PlayerData data = economyManager.getPlayerData(player.getUniqueId());
+        int level = data != null ? data.getLevel() : 1;
+        long cooldownMs = animationManager.calculateCooldown(20000, 10000, level);
+
+        if (isOnCooldown(player, "ronin_dash", cooldownMs)) return;
         setCooldown(player, "ronin_dash");
+
+        // Trigger Crescent Sweep Animation
+        animationManager.playRoninAbility(player, held, tier);
 
         // Dash forward
         Vector direction = player.getLocation().getDirection().normalize().multiply(2.0);
@@ -468,6 +530,43 @@ public class ClassAbilityListener implements Listener {
         if (event.getProjectile() instanceof Arrow arrow) {
             arrow.setVelocity(arrow.getVelocity().multiply(1.3));
         }
+    }
+
+    /**
+     * Archer: Tornado Volley active ability on right-click while crouching.
+     */
+    @EventHandler
+    public void onArcherAbility(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+
+        RPGClass rpgClass = classManager.getPlayerClass(player);
+        if (rpgClass != RPGClass.ARCHER) return;
+
+        // Only work when crouching
+        if (!player.isSneaking()) return;
+        // Use event.getItem() for off-hand support
+        ItemStack held = event.getItem();
+        if (held == null || !weaponManager.isKingdomWeapon(held)) return;
+
+        // NEW: Check if this is an ARCHER weapon
+        String classKey = held.getItemMeta().getPersistentDataContainer()
+                .get(weaponManager.CLASS_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+        if (!"ARCHER".equals(classKey)) return;
+
+        PlayerData data = economyManager.getPlayerData(player.getUniqueId());
+        int level = data != null ? data.getLevel() : 1;
+        long cooldownMs = animationManager.calculateCooldown(20000, 10000, level);
+
+        if (isOnCooldown(player, "archer_volley", cooldownMs)) return;
+        setCooldown(player, "archer_volley");
+
+        String tierKey = held.getItemMeta().getPersistentDataContainer()
+                .get(weaponManager.TIER_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+        WeaponTier tier = WeaponTier.fromString(tierKey != null ? tierKey : "GOLD");
+
+        // Trigger High-Fidelity Tornado Volley Animation
+        animationManager.playArcherAbility(player, held, tier);
     }
 
     // ============================================================

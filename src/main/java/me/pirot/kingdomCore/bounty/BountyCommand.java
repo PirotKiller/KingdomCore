@@ -250,6 +250,20 @@ public class BountyCommand implements CommandExecutor, TabCompleter, Listener {
                     amount + " Shards §7to the bounty on §f" + target.getName() + "§7!");
 
             Bukkit.broadcastMessage("§6§l[Bounty] §f" + target.getName() + "§7's new total bounty: §6" + totalBounty + " Shards");
+
+            // --- LOGGING ---
+            org.bson.Document log = new org.bson.Document("timestamp", new java.util.Date())
+                    .append("source", "GAME")
+                    .append("type", "BOUNTY_SET")
+                    .append("player", new org.bson.Document("uuid", source.getUniqueId().toString())
+                            .append("name", source.getName()))
+                    .append("target", new org.bson.Document("uuid", target.getUniqueId().toString())
+                            .append("name", target.getName()))
+                    .append("summary", source.getName() + " placed a bounty of " + amount + " Shards on " + target.getName())
+                    .append("currency", new org.bson.Document("shards", -amount))
+                    .append("metadata", new org.bson.Document("amount", amount)
+                            .append("newTotal", totalBounty));
+            plugin.getMongoManager().logAction(log);
         } else {
             source.sendMessage("§c§l[Kingdom] §7Not enough Shards!");
         }

@@ -36,6 +36,7 @@ public final class KingdomCore extends JavaPlugin {
     private SpecialItems specialItems;
     private CraftingGUI craftingGUI;
     private AdminGUI adminGUI;
+    private AnimationManager animationManager;
 
     @Override
     public void onEnable() {
@@ -62,6 +63,7 @@ public final class KingdomCore extends JavaPlugin {
         weaponManager = new WeaponManager(this);
         classManager = new ClassManager(this, configManager, economyManager);
         specialItems = new SpecialItems(this);
+        animationManager = new AnimationManager(this, economyManager);
 
         // 5. Initialize Bounty Manager
         bountyManager = new BountyManager(economyManager);
@@ -78,7 +80,7 @@ public final class KingdomCore extends JavaPlugin {
 
         ShopGUI shopGUI = new ShopGUI(this);
         shopGUI.setShopDataManager(shopDataManager);
-        ConverterShop converterShop = new ConverterShop(configManager, economyManager);
+        ConverterShop converterShop = new ConverterShop(this, configManager, economyManager);
         ShopCommandHandler shopCommandHandler = new ShopCommandHandler(this, shopGUI, converterShop, shopDataManager);
         GUIListener guiListener = new GUIListener(this, shopGUI, economyManager, weaponManager, shopDataManager, shopCommandHandler);
 
@@ -112,6 +114,11 @@ public final class KingdomCore extends JavaPlugin {
 
         ResetManager resetManager = new ResetManager(this, economyManager, configManager);
         getCommand("reset").setExecutor(resetManager);
+
+        me.pirot.kingdomCore.economy.EcoCommand ecoCommand = new me.pirot.kingdomCore.economy.EcoCommand(this, economyManager);
+        getCommand("eco").setExecutor(ecoCommand);
+        getCommand("eco").setTabCompleter(ecoCommand);
+        getServer().getPluginManager().registerEvents(ecoCommand, this);
 
         // Craft Command (opens Soul Forge)
         getCommand("craft").setExecutor((sender, cmd, label, args) -> {
@@ -147,7 +154,7 @@ public final class KingdomCore extends JavaPlugin {
 
         // Class Ability Listener (active abilities, XP awards)
         ClassAbilityListener classAbilityListener = new ClassAbilityListener(
-                this, classManager, configManager, economyManager, weaponManager);
+                this, classManager, configManager, economyManager, weaponManager, animationManager);
         getServer().getPluginManager().registerEvents(classAbilityListener, this);
 
         BountyListener bountyListener = new BountyListener(this, bountyManager, configManager);
@@ -225,9 +232,11 @@ public final class KingdomCore extends JavaPlugin {
     public BountyManager getBountyManager() { return bountyManager; }
     public ScoreboardManager getScoreboardManager() { return scoreboardManager; }
     public AuctionManager getAuctionManager() { return auctionManager; }
+    public ShopDataManager getShopDataManager() { return shopDataManager; }
     public SpecialItems getSpecialItems() { return specialItems; }
     public CraftingGUI getCraftingGUI() { return craftingGUI; }
     public AdminGUI getAdminGUI() { return adminGUI; }
+    public AnimationManager getAnimationManager() { return animationManager; }
 
     public void sendResourcePack(Player player) {
         String url = configManager.getConfig().getString("resource-pack.url");

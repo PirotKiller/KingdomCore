@@ -43,3 +43,15 @@ items:
     price-shards: 5000
     price-gems: 200
     name: "§fElytra"
+  end_rod:
+    material: END_ROD
+    amount: 4
+    price-shards: 100
+    price-gems: 0
+    name: "§fEnd Rod x4"
+  purpur_pillar:
+    material: PURPUR_PILLAR
+    amount: 16
+    price-shards: 40
+    price-gems: 0
+    name: "§fPurpur Pillar x16"

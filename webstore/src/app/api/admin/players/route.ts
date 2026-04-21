@@ -60,10 +60,37 @@ export async function PUT(req: NextRequest) {
   const db = mongoose.connection.db;
   if (!db) return NextResponse.json({ error: "Database not connected" }, { status: 500 });
   
+  // Fetch current data for logging comparison (optional, but good for summary)
+  const player = await db.collection("players").findOne({ uuid });
+  const playerName = player?.lastKnownName || "Unknown";
+
   const updateResult = await db.collection("players").updateOne(
     { uuid },
     { $set: { shards: Number(shards), gems: Number(gems), level: Number(level), bounty: Number(bounty) } }
   );
+
+  if (updateResult.matchedCount > 0) {
+    const { recordWebLog, LogType } = await import("@/lib/logger");
+    const session = await auth();
+    
+    await recordWebLog({
+      type: LogType.ADMIN_ACTION,
+      executor: {
+        discordId: (session as any)?.discordId,
+        name: session?.user?.name || "Unknown Admin",
+      },
+      target: {
+        uuid,
+        name: playerName,
+      },
+      summary: `Updated player stats (Shards: ${shards}, Gems: ${gems}, Lvl: ${level}, Bounty: ${bounty})`,
+      currency: {
+        shards: Number(shards),
+        gems: Number(gems),
+      },
+      metadata: { action: "PLAYER_UPDATE", originalShards: player?.shards, originalGems: player?.gems }
+    });
+  }
 
   return NextResponse.json({ success: true, matched: updateResult.matchedCount });
 }

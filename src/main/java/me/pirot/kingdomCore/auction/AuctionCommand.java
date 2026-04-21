@@ -197,6 +197,16 @@ public class AuctionCommand implements CommandExecutor, TabCompleter, Listener {
                 " x" + listingItem.getAmount() + "§7 for §a" + priceShards + " Shards" +
                 (priceGems > 0 ? " §7+ §b" + priceGems + " Gems" : "") + 
                 " §7for §e" + formatDuration(durationMillis) + "§7!");
+                
+        // --- LOGGING ---
+        org.bson.Document log = new org.bson.Document()
+                .append("source", "GAME")
+                .append("type", "AH_LIST")
+                .append("player", new org.bson.Document("uuid", player.getUniqueId().toString()).append("name", player.getName()))
+                .append("summary", "Listed " + listingItem.getAmount() + "x " + listingItem.getType().name() + " on AH")
+                .append("currency", new org.bson.Document("shards", priceShards).append("gems", priceGems))
+                .append("metadata", new org.bson.Document("item", listingItem.getType().name()).append("amount", listingItem.getAmount()));
+        plugin.getMongoManager().logAction(log);
     }
 
     private long parseDuration(String input) {
@@ -487,6 +497,16 @@ public class AuctionCommand implements CommandExecutor, TabCompleter, Listener {
             auctionManager.removeListing(listingId);
             player.sendMessage("§a§l[Kingdom] §7Purchase successful!");
             openAuctionGUI(player);
+            
+            // --- LOGGING ---
+            org.bson.Document log = new org.bson.Document()
+                    .append("source", "GAME")
+                    .append("type", "AH_BUY")
+                    .append("player", new org.bson.Document("uuid", uuid.toString()).append("name", player.getName()))
+                    .append("summary", "Bought " + purchased.getAmount() + "x " + purchased.getType().name() + " from AH")
+                    .append("currency", new org.bson.Document("shards", listing.getPriceShards()).append("gems", listing.getPriceGems()))
+                    .append("metadata", new org.bson.Document("sellerUuid", listing.getSeller().toString()).append("item", purchased.getType().name()));
+            plugin.getMongoManager().logAction(log);
         }
     }
 

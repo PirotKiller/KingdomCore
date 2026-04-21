@@ -24,6 +24,7 @@ import java.util.*;
  */
 public class ConverterShop implements Listener {
 
+    private final me.pirot.kingdomCore.KingdomCore plugin;
     private final EconomyManager economyManager;
 
     // Track which inventories are converter GUIs
@@ -57,7 +58,8 @@ public class ConverterShop implements Listener {
         CONVERSION_VALUES.put(Material.AMETHYST_SHARD, 6);
     }
 
-    public ConverterShop(ConfigManager configManager, EconomyManager economyManager) {
+    public ConverterShop(me.pirot.kingdomCore.KingdomCore plugin, ConfigManager configManager, EconomyManager economyManager) {
+        this.plugin = plugin;
         this.economyManager = economyManager;
         this.converterTitle = "§8§l[ §a§lOre Converter §8§l]";
     }
@@ -120,11 +122,11 @@ public class ConverterShop implements Listener {
         }
         inv.setItem(SELL_BUTTON_SLOT, sellButton);
 
-        // Gem Conversion Button
-        ItemStack gemConvert = new ItemStack(Material.EMERALD);
+        // Gem Conversion Button (slot 48, NOT on border to avoid overwrite)
+        ItemStack gemConvert = new ItemStack(Material.EMERALD_BLOCK);
         ItemMeta gemMeta = gemConvert.getItemMeta();
         if (gemMeta != null) {
-            gemMeta.setDisplayName("§b§l✦ Gem Converter ✦");
+            gemMeta.setDisplayName("§b§l✦ Gem → Shard Converter ✦");
             gemMeta.setLore(Arrays.asList(
                     "§8§m                              ",
                     "",
@@ -138,9 +140,11 @@ public class ConverterShop implements Listener {
                     "§a▸ Left-Click: Convert 10 Gems",
                     "§a▸ Right-Click: Convert 100 Gems"
             ));
+            gemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            gemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             gemConvert.setItemMeta(gemMeta);
         }
-        inv.setItem(8, gemConvert);
+        inv.setItem(48, gemConvert);
 
         activeConverters.add(player.getUniqueId());
         player.openInventory(inv);
@@ -156,20 +160,29 @@ public class ConverterShop implements Listener {
 
         int slot = event.getRawSlot();
 
-        // Handle Gem Conversion
-        if (slot == 8) {
+        // Handle Gem Conversion (slot 48)
+        if (slot == 48) {
             event.setCancelled(true);
             int gemsRequired = event.isRightClick() ? 100 : 10;
             int shardsAwarded = event.isRightClick() ? 100000 : 10000;
             
-            me.pirot.kingdomCore.database.PlayerData data = economyManager.getPlayerData(player.getUniqueId());
-            if (data != null && data.getGems() >= gemsRequired) {
-                data.removeGems(gemsRequired);
-                data.addShards(shardsAwarded);
-                player.sendMessage("§b§l[Kingdom] §7Converted §b" + gemsRequired + " Gems §7into §a" + shardsAwarded + " Shards§7!");
+            java.util.UUID uuid = player.getUniqueId();
+            if (economyManager.getGems(uuid) >= gemsRequired) {
+                // Use EconomyManager methods — they call updateLocal() + savePlayer()
+                economyManager.removeGems(uuid, gemsRequired);
+                economyManager.addShards(uuid, shardsAwarded);
+                player.sendMessage("§b§l[Kingdom] §7Converted §b" + gemsRequired + " Gems §7into §a" + String.format("%,d", shardsAwarded) + " Shards§7!");
                 player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
+                
+                // --- LOGGING ---
+                plugin.getMongoManager().logAction(new org.bson.Document()
+                        .append("source", "GAME")
+                        .append("type", "GEM_CONVERSION")
+                        .append("player", new org.bson.Document("uuid", uuid.toString()).append("name", player.getName()))
+                        .append("summary", "Converted " + gemsRequired + " Gems to " + shardsAwarded + " Shards")
+                        .append("currency", new org.bson.Document("shards", shardsAwarded).append("gems", -gemsRequired)));
             } else {
-                player.sendMessage("§c§l[Kingdom] §7You don't have enough Gems!");
+                player.sendMessage("§c§l[Kingdom] §7You don't have enough Gems! Need §b" + gemsRequired + "§7.");
                 player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_VILLAGER_NO, 1f, 1f);
             }
             return;
@@ -214,7 +227,7 @@ public class ConverterShop implements Listener {
         List<ItemStack> returnItems = new ArrayList<>();
 
         for (int slot = 0; slot < 54; slot++) {
-            if (isBorderSlot(slot) || slot == INFO_SLOT || slot == SELL_BUTTON_SLOT) continue;
+            if (isBorderSlot(slot) || slot == INFO_SLOT || slot == SELL_BUTTON_SLOT || slot == 48) continue;
 
             ItemStack item = inv.getItem(slot);
             if (item == null || item.getType() == Material.AIR) continue;
@@ -235,6 +248,15 @@ public class ConverterShop implements Listener {
         if (totalShards > 0) {
             economyManager.addShards(player.getUniqueId(), totalShards);
             player.sendMessage("§a§l[Kingdom] §7Converted §f" + itemsSold + " items §7for §a" + totalShards + " Shards§7!");
+            
+            // --- LOGGING ---
+            plugin.getMongoManager().logAction(new org.bson.Document()
+                    .append("source", "GAME")
+                    .append("type", "CONVERTER_SELL")
+                    .append("player", new org.bson.Document("uuid", player.getUniqueId().toString()).append("name", player.getName()))
+                    .append("summary", "Sold " + itemsSold + " items for " + totalShards + " Shards")
+                    .append("currency", new org.bson.Document("shards", totalShards).append("gems", 0))
+                    .append("metadata", new org.bson.Document("itemsSold", itemsSold)));
         } else if (returnItems.isEmpty()) {
             player.sendMessage("§e§l[Kingdom] §7No items to convert.");
         }

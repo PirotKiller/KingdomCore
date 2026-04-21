@@ -1,6 +1,7 @@
 me\pirot\kingdomCore\shop\ShopDataManager.class
 me\pirot\kingdomCore\bounty\BountyCommand.class
 me\pirot\kingdomCore\auction\AuctionCommand.class
+me\pirot\kingdomCore\rpg\AnimationManager$3.class
 me\pirot\kingdomCore\database\PlayerData.class
 me\pirot\kingdomCore\web\VerifyCommand.class
 me\pirot\kingdomCore\rpg\ClassListener$1.class
@@ -9,6 +10,7 @@ me\pirot\kingdomCore\rpg\SpecialItems.class
 me\pirot\kingdomCore\rpg\CraftingGUI$1.class
 me\pirot\kingdomCore\config\ConfigManager.class
 me\pirot\kingdomCore\database\MongoManager.class
+me\pirot\kingdomCore\rpg\AnimationManager$5$1.class
 me\pirot\kingdomCore\rpg\ClassManager.class
 me\pirot\kingdomCore\auction\AuctionCommand$ItemCategory.class
 me\pirot\kingdomCore\reset\ResetManager.class
@@ -19,8 +21,11 @@ me\pirot\kingdomCore\rpg\WeaponTier.class
 me\pirot\kingdomCore\economy\EconomyManager.class
 me\pirot\kingdomCore\KingdomCore.class
 me\pirot\kingdomCore\rpg\WeaponRecipe.class
+me\pirot\kingdomCore\rpg\AnimationManager$4.class
+me\pirot\kingdomCore\rpg\AnimationManager$5$2.class
 me\pirot\kingdomCore\rpg\RPGClass.class
 me\pirot\kingdomCore\shop\ConverterShop.class
+me\pirot\kingdomCore\rpg\AnimationManager$1.class
 me\pirot\kingdomCore\bounty\BountyListener.class
 me\pirot\kingdomCore\moderation\ModerationManager.class
 me\pirot\kingdomCore\scoreboard\ScoreboardManager.class
@@ -31,9 +36,12 @@ me\pirot\kingdomCore\shop\ShopType.class
 me\pirot\kingdomCore\moderation\GameLogger.class
 me\pirot\kingdomCore\rpg\ClassListener.class
 me\pirot\kingdomCore\bounty\BountyManager.class
+me\pirot\kingdomCore\rpg\AnimationManager$5.class
 me\pirot\kingdomCore\shop\ShopGUI.class
 me\pirot\kingdomCore\rpg\WeaponManager.class
+me\pirot\kingdomCore\rpg\AnimationManager$2.class
 me\pirot\kingdomCore\shop\ShopGUI$1.class
+me\pirot\kingdomCore\rpg\AnimationManager.class
 me\pirot\kingdomCore\rpg\ClassManager$1.class
 me\pirot\kingdomCore\auction\AuctionManager$AuctionListing.class
 me\pirot\kingdomCore\rpg\ClassAbilityListener.class
@@ -42,10 +50,13 @@ me\pirot\kingdomCore\PlayerJoinQuitListener.class
 me\pirot\kingdomCore\database\WebCommandManager.class
 me\pirot\kingdomCore\shop\ShopType$CurrencyMode.class
 me\pirot\kingdomCore\admin\AdminGUI.class
+me\pirot\kingdomCore\rpg\AnimationManager$1$1.class
 me\pirot\kingdomCore\CombatListener.class
 me\pirot\kingdomCore\shop\ShopCommandHandler.class
 me\pirot\kingdomCore\admin\AdminCommand.class
 me\pirot\kingdomCore\rpg\SpecialItemsListener.class
 me\pirot\kingdomCore\shop\GUIListener.class
+me\pirot\kingdomCore\rpg\AnimationManager$6.class
+me\pirot\kingdomCore\economy\EcoCommand.class
 me\pirot\kingdomCore\admin\AdminGUI$1.class
 me\pirot\kingdomCore\database\PlayerData$ClassProgress.class

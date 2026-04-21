@@ -10,13 +10,36 @@ interface GameLog {
   uuid: string;
   details: string;
   timestamp: string;
+  source?: "GAME" | "WEB";
 }
+
+const SOURCE_COLORS: Record<string, string> = {
+  GAME: "text-blue-400 bg-blue-400/10 border-blue-400/20",
+  WEB: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
+};
 
 const EVENT_COLORS: Record<string, string> = {
   JOIN: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
   QUIT: "text-red-400 bg-red-400/10 border-red-400/20",
   CHAT: "text-blue-400 bg-blue-400/10 border-blue-400/20",
   COMMAND: "text-purple-400 bg-purple-400/10 border-purple-400/20",
+  SHOP_PURCHASE: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
+  AH_BUY: "text-amber-400 bg-amber-400/10 border-amber-400/20",
+  AH_LIST: "text-amber-300 bg-amber-300/10 border-amber-300/20",
+  ECO_ADMIN: "text-blue-400 bg-blue-400/10 border-blue-400/20",
+  ECO_WITHDRAW: "text-red-300 bg-red-300/10 border-red-300/20",
+  ECO_DEPOSIT: "text-green-400 bg-green-400/10 border-green-400/20",
+  BOUNTY_CLAIM: "text-orange-400 bg-orange-400/10 border-orange-400/20",
+  CONVERTER_SELL: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
+  GEM_CONVERSION: "text-cyan-400 bg-cyan-400/10 border-cyan-400/20",
+  ADMIN_ACTION: "text-fuchsia-400 bg-fuchsia-400/10 border-fuchsia-400/20",
+  MODERATION: "text-rose-400 bg-rose-400/10 border-rose-400/20",
+  LEVEL_UP: "text-yellow-300 bg-yellow-300/10 border-yellow-300/20 font-bold",
+  CLASS_CHANGE: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20",
+  BOUNTY_SET: "text-red-500 bg-red-500/10 border-red-500/20",
+  STORE_CHECKOUT_START: "text-slate-400 bg-slate-400/10 border-slate-400/20",
+  STORE_PURCHASE_COMPLETE: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20 font-bold",
+  STORE_DELIVERY: "text-cyan-400 bg-cyan-400/10 border-cyan-400/20",
 };
 
 export default function AdminLogsPage() {
@@ -27,10 +50,11 @@ export default function AdminLogsPage() {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("ALL");
+  const [filterSource, setFilterSource] = useState("ALL");
 
-  const loadLogs = (p: number, currentSearch: string, currentFilter: string) => {
+  const loadLogs = (p: number, currentSearch: string, currentFilter: string, currentSource: string) => {
     setLoading(true);
-    fetch(`/api/admin/logs?page=${p}&search=${encodeURIComponent(currentSearch)}&type=${currentFilter}`)
+    fetch(`/api/admin/logs?page=${p}&search=${encodeURIComponent(currentSearch)}&type=${currentFilter}&source=${currentSource}`)
       .then((r) => r.json())
       .then((data) => {
         setLogs(data.logs || []);
@@ -43,10 +67,10 @@ export default function AdminLogsPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-        loadLogs(page, search, filterType);
+        loadLogs(page, search, filterType, filterSource);
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, search, filterType]);
+  }, [page, search, filterType, filterSource]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -55,6 +79,11 @@ export default function AdminLogsPage() {
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFilterType(e.target.value);
+    setPage(1);
+  };
+
+  const handleSourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterSource(e.target.value);
     setPage(1);
   };
 
@@ -68,16 +97,35 @@ export default function AdminLogsPage() {
 
         <div className="flex flex-col sm:flex-row gap-3">
           <select 
+            value={filterSource}
+            onChange={handleSourceChange}
+            className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          >
+            <option value="ALL">All Sources</option>
+            <option value="GAME">Minecraft</option>
+            <option value="WEB">WebStore</option>
+          </select>
+
+          <select 
             value={filterType}
             onChange={handleFilterChange}
             className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             <option value="ALL">All Events</option>
+            <option value="LEVEL_UP">Level Ups</option>
+            <option value="CLASS_CHANGE">Classes</option>
+            <option value="BOUNTY_SET">Bounties Set</option>
+            <option value="BOUNTY_CLAIM">Bounties Claimed</option>
+            <option value="STORE_PURCHASE_COMPLETE">Store Sales</option>
+            <option value="STORE_DELIVERY">Deliveries</option>
+            <option value="STORE_CHECKOUT_START">Checkouts</option>
+            <option value="MODERATION">Moderation</option>
+            <option value="ECO_ADMIN">Eco Admin</option>
             <option value="JOIN">Joins</option>
             <option value="QUIT">Quits</option>
             <option value="CHAT">Chat</option>
-            <option value="COMMAND">Commands</option>
           </select>
+
           
           <div className="relative group min-w-[250px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -126,9 +174,14 @@ export default function AdminLogsPage() {
                 logs.map((log) => (
                   <tr key={log._id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-3">
-                      <span className={`px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded border ${EVENT_COLORS[log.eventType] || "text-gray-400 bg-white/5 border-white/10"}`}>
-                        {log.eventType}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 text-[9px] font-bold rounded border ${SOURCE_COLORS[log.source || "GAME"]}`}>
+                          {log.source || "GAME"}
+                        </span>
+                        <span className={`px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded border ${EVENT_COLORS[log.eventType] || "text-gray-400 bg-white/5 border-white/10"}`}>
+                          {log.eventType}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-3 text-white">
                       {log.playerName}

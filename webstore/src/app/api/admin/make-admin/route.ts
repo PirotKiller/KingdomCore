@@ -46,6 +46,25 @@ export async function GET(req: NextRequest) {
     user.isAdmin = true;
     await user.save();
 
+    // --- LOGGING ---
+    try {
+      const { recordWebLog, LogType } = await import("@/lib/logger");
+      await recordWebLog({
+        type: LogType.ADMIN_ACTION,
+        executor: {
+          name: "SYSTEM (Setup Secret)",
+        },
+        target: {
+          discordId: user.discordId,
+          name: user.discordUsername,
+        },
+        summary: `Promoted ${user.discordUsername} to Admin via setup secret`,
+        metadata: { action: "MAKE_ADMIN", discordId: user.discordId }
+      });
+    } catch (logError) {
+      console.error("Failed to record unified log:", logError);
+    }
+
     return NextResponse.json({
       success: true,
       message: user.discordUsername + " is now an admin!",

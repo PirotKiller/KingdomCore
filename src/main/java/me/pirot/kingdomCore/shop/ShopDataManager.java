@@ -1,9 +1,15 @@
 package me.pirot.kingdomCore.shop;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOptions;
 import me.pirot.kingdomCore.database.MongoManager;
 import org.bson.Document;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -30,11 +36,10 @@ public class ShopDataManager {
      * Call from onEnable after MongoDB is connected.
      */
     public void loadAll() {
-        cache.clear();
-
-        // Pre-fill with empty lists
+        // Use a temporary map to avoid "empty cache" windows during loading
+        Map<ShopType, List<ShopItemData>> stagingCache = new HashMap<>();
         for (ShopType type : ShopType.values()) {
-            cache.put(type, new ArrayList<>());
+            stagingCache.put(type, new ArrayList<>());
         }
 
         try {
@@ -42,6 +47,14 @@ public class ShopDataManager {
             if (shopsCol == null) {
                 logger.warning("[KingdomCore] Shops collection not available. Shops will be empty.");
                 return;
+            }
+
+            // --- AUTO BOOTSTRAP ---
+            long count = shopsCol.countDocuments();
+            if (count == 0) {
+                logger.info("[KingdomCore] MongoDB Shops collection is empty. Performing auto-migration from YAML files...");
+                // Note: migrateYAMLtoMongoDB is still safe to call here as it's typically startup or manual sync
+                migrateYAMLtoMongoDB();
             }
 
             int total = 0;
@@ -54,15 +67,19 @@ public class ShopDataManager {
 
                 ShopItemData item = documentToShopItem(doc);
                 if (item != null && item.isActive()) {
-                    cache.get(type).add(item);
+                    stagingCache.get(type).add(item);
                     total++;
                 }
             }
 
             // Sort each shop's items by order
             for (ShopType type : ShopType.values()) {
-                cache.get(type).sort(Comparator.comparingInt(ShopItemData::getOrder));
+                stagingCache.get(type).sort(Comparator.comparingInt(ShopItemData::getOrder));
             }
+
+            // Atomic update of the main cache
+            cache.clear();
+            cache.putAll(stagingCache);
 
             logger.info("[KingdomCore] Loaded " + total + " shop items from MongoDB.");
         } catch (Exception e) {
@@ -95,6 +112,80 @@ public class ShopDataManager {
         loadAll();
     }
 
+    /**
+     * Migrates items from YAML files in resources to MongoDB.
+     * This is a one-time or manual sync utility.
+     */
+    public void migrateYAMLtoMongoDB() {
+        if (mongoManager.getShopsCollection() == null) {
+            logger.warning("[KingdomCore] Cannot migrate: Shops collection is null.");
+            return;
+        }
+
+        logger.info("[KingdomCore] Starting YAML to MongoDB migration...");
+        int totalMigrated = 0;
+
+        for (ShopType type : ShopType.values()) {
+            String fileName = "shops/" + type.getConfigKey() + ".yml";
+            InputStream is = getClass().getClassLoader().getResourceAsStream(fileName);
+            
+            if (is == null) {
+                // Not every shop type might have a YAML file, skip if missing
+                continue;
+            }
+
+            YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(is));
+            ConfigurationSection itemsSection = yaml.getConfigurationSection("items");
+            if (itemsSection == null) continue;
+
+            for (String key : itemsSection.getKeys(false)) {
+                ConfigurationSection itemSec = itemsSection.getConfigurationSection(key);
+                if (itemSec == null) continue;
+
+                Document doc = new Document()
+                        .append("shopType", type.getConfigKey())
+                        .append("itemKey", key)
+                        .append("name", itemSec.getString("name"))
+                        .append("material", itemSec.getString("material"))
+                        .append("amount", itemSec.getInt("amount", 1))
+                        .append("priceShards", itemSec.getInt("price-shards", itemSec.getInt("price", 0)))
+                        .append("priceGems", itemSec.getInt("price-gems", 0))
+                        .append("order", itemSec.getInt("order", 0))
+                        .append("active", true);
+
+                // Optional fields
+                if (itemSec.contains("lore")) doc.append("lore", itemSec.getStringList("lore"));
+                if (itemSec.contains("enchant")) {
+                    doc.append("enchant", itemSec.getString("enchant"));
+                    doc.append("enchantLevel", itemSec.getInt("enchant-level", 1));
+                }
+                if (itemSec.contains("potion-type")) {
+                    doc.append("potionType", itemSec.getString("potion-type"));
+                    doc.append("potionLevel", itemSec.getInt("potion-level", 1));
+                    doc.append("potionDuration", itemSec.getInt("potion-duration", 120));
+                }
+                if (itemSec.contains("damage")) doc.append("damage", itemSec.getDouble("damage"));
+                if (itemSec.contains("speed")) doc.append("speed", itemSec.getDouble("speed"));
+                if (itemSec.contains("class")) doc.append("class", itemSec.getString("class"));
+                if (itemSec.contains("tier")) doc.append("tier", itemSec.getString("tier"));
+                if (itemSec.contains("cmd")) doc.append("cmd", itemSec.getInt("cmd"));
+
+                // Upsert into MongoDB
+                mongoManager.getShopsCollection().replaceOne(
+                        Filters.and(
+                                Filters.eq("shopType", type.getConfigKey()),
+                                Filters.eq("itemKey", key)
+                        ),
+                        doc,
+                        new ReplaceOptions().upsert(true)
+                );
+                totalMigrated++;
+            }
+        }
+
+        logger.info("[KingdomCore] Migration complete! Total items synced to MongoDB: " + totalMigrated);
+    }
+
     private ShopItemData documentToShopItem(Document doc) {
         try {
             List<String> rawLore = doc.get("lore", List.class);
@@ -103,7 +194,6 @@ public class ShopDataManager {
                 for (Object line : rawLore) lore.add(String.valueOf(line));
             }
 
-            // Safely handle potential nulls from MongoDB (BSON Document getters have 1 arg)
             String itemKey = doc.getString("itemKey");
             String name = doc.getString("name");
             String material = doc.getString("material");
@@ -125,7 +215,7 @@ public class ShopDataManager {
             int order = getInt(doc, "order", 0);
             
             Boolean activeVal = doc.getBoolean("active");
-            boolean active = activeVal == null || activeVal; // Default to true if missing
+            boolean active = activeVal == null || activeVal;
 
             return new ShopItemData(
                     itemKey, name, material, amount, lore,
@@ -134,8 +224,6 @@ public class ShopDataManager {
             );
         } catch (Exception e) {
             logger.warning("[KingdomCore] Failed to parse shop item document: " + e.getMessage());
-            logger.warning("[KingdomCore] Raw document: " + doc.toJson());
-            e.printStackTrace();
             return null;
         }
     }

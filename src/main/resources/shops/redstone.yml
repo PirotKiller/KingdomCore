@@ -41,3 +41,23 @@ items:
     amount: 4
     price: 30
     name: "§fDropper x4"
+  redstone_torch:
+    material: REDSTONE_TORCH
+    amount: 16
+    price: 15
+    name: "§fRedstone Torch x16"
+  lever:
+    material: LEVER
+    amount: 8
+    price: 10
+    name: "§fLever x8"
+  dispenser:
+    material: DISPENSER
+    amount: 4
+    price: 50
+    name: "§fDispenser x4"
+  redstone_lamp:
+    material: REDSTONE_LAMP
+    amount: 4
+    price: 80
+    name: "§fRedstone Lamp x4"

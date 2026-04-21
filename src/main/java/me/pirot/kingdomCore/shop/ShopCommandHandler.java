@@ -44,8 +44,8 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
     // Valid subcommands
     private static final List<String> SUBCOMMANDS = Arrays.asList(
             "wood", "stone", "fisherman", "fletcher", "redstone", "farming",
-            "blacksmith", "enchant", "potion", "nether", "end", "armor",
-            "sell", "convert", "reload"
+            "enchant", "potion", "nether", "end", "armor",
+            "sell", "convert", "reload", "migrate"
     );
 
     public ShopCommandHandler(KingdomCore plugin, ShopGUI shopGUI, ConverterShop converterShop, ShopDataManager shopDataManager) {
@@ -77,6 +77,18 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
             }
             shopDataManager.reload();
             sender.sendMessage("§a§l[Kingdom] §7Shops have been reloaded from MongoDB!");
+            return true;
+        }
+
+        if (sub.equals("migrate")) {
+            if (sender instanceof Player player && !player.hasPermission("kingdomcore.admin")) {
+                player.sendMessage("§c§l[Kingdom] §7You do not have permission to migrate shops.");
+                return true;
+            }
+            sender.sendMessage("§e§l[Kingdom] §7Starting YAML to MongoDB migration...");
+            shopDataManager.migrateYAMLtoMongoDB();
+            shopDataManager.reload();
+            sender.sendMessage("§a§l[Kingdom] §7Migration complete! Items are now live in MongoDB.");
             return true;
         }
 
@@ -136,9 +148,7 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
                 "§7Void materials.", "§6✦ §eDual Currency"));
 
         // -- Middle Row: Gear & Magic & Util --
-        inv.setItem(20, createIcon(Material.ANVIL, "§8§lBlacksmith", "blacksmith",
-                "§7Buy high-tier weapons.", "§6✦ §eDual Currency"));
-        inv.setItem(21, createIcon(Material.DIAMOND_CHESTPLATE, "§b§lArmor Shop", "armor",
+        inv.setItem(20, createIcon(Material.DIAMOND_CHESTPLATE, "§b§lArmor Shop", "armor",
                 "§7Buy protective gear.", "§6✦ §eDual Currency"));
         inv.setItem(22, createIcon(Material.GOLD_INGOT, "§a§lOre Converter", "converter",
                 "§7Convert ores to Shards.", "§6✦ §eEarn Shards"));

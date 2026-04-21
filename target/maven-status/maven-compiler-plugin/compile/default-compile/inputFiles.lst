@@ -10,6 +10,7 @@ C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\confi
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\database\MongoManager.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\database\PlayerData.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\database\WebCommandManager.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\economy\EcoCommand.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\economy\EconomyManager.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\KingdomCore.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\moderation\GameLogger.java
@@ -17,6 +18,7 @@ C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\moder
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\moderation\PunishmentListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\PlayerJoinQuitListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\reset\ResetManager.java
+C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\AnimationManager.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\ClassAbilityListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\ClassListener.java
 C:\Users\thaku\IdeaProjects\KingdomCore\src\main\java\me\pirot\kingdomCore\rpg\ClassManager.java

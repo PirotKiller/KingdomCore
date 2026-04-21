@@ -1,0 +1,215 @@
+{
+  "parent": "minecraft:builtin/entity",
+  "gui_light": "front",
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        10.5,
+        6,
+        -4
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        10.5,
+        6,
+        -12
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        180,
+        5
+      ],
+      "translation": [
+        -10,
+        2,
+        -10
+      ],
+      "scale": [
+        1.25,
+        1.25,
+        1.25
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        180,
+        5
+      ],
+      "translation": [
+        -10,
+        2,
+        -10
+      ],
+      "scale": [
+        1.25,
+        1.25,
+        1.25
+      ]
+    },
+    "gui": {
+      "rotation": [
+        15,
+        -25,
+        -5
+      ],
+      "translation": [
+        2,
+        3,
+        0
+      ],
+      "scale": [
+        0.65,
+        0.65,
+        0.65
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        -4.5,
+        4.5,
+        -5
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        2,
+        3,
+        3
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        -8,
+        13,
+        -0.5
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "blocking": 1
+      },
+      "model": "minecraft:item/shield_blocking"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2001
+      },
+      "model": "item/custom_weapons/knight/goldshield/midas_shield"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2001,
+        "blocking": 1
+      },
+      "model": "item/custom_weapons/knight/goldshield/midas_shield_blocking"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2002
+      },
+      "model": "item/custom_weapons/knight/diamondshield/diamond_shield"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2002,
+        "blocking": 1
+      },
+      "model": "item/custom_weapons/knight/diamondshield/diamond_shield_blocking"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2003
+      },
+      "model": "item/custom_weapons/knight/endershield/midas_shield"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2003,
+        "blocking": 1
+      },
+      "model": "item/custom_weapons/knight/endershield/midas_shield_blocking"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2004
+      },
+      "model": "item/custom_weapons/knight/boneshield/bone_shield"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2004,
+        "blocking": 1
+      },
+      "model": "item/custom_weapons/knight/boneshield/bone_shield_blocking"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2005
+      },
+      "model": "item/custom_weapons/knight/chaosshield/shield_dark"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2005,
+        "blocking": 1
+      },
+      "model": "item/custom_weapons/knight/chaosshield/shield_dark_blocking"
+    }
+  ]
+}

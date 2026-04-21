@@ -37,5 +37,23 @@ export async function POST(
   user.isAdmin = !user.isAdmin;
   await user.save();
 
+  // --- LOGGING ---
+  try {
+    const { recordWebLog, LogType } = await import("@/lib/logger");
+    await recordWebLog({
+      type: LogType.ADMIN_ACTION,
+      executor: { 
+        discordId: admin.discordId, 
+        name: admin.discordUsername || "Admin" 
+      },
+      target: {
+        discordId: user.discordId,
+        name: user.discordUsername || "User"
+      },
+      summary: `${user.isAdmin ? "Promoted" : "Demoted"} ${user.discordUsername} to Admin status`,
+      metadata: { action: "USER_TOGGLE_ADMIN", userId: id, newValue: user.isAdmin }
+    });
+  } catch (e) {}
+
   return NextResponse.json({ success: true, isAdmin: user.isAdmin });
 }

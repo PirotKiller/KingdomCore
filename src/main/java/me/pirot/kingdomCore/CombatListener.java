@@ -93,6 +93,12 @@ public class CombatListener implements Listener {
             }
         }
 
+        // 15% chance to drop a Soul Fragment on any death
+        if (ThreadLocalRandom.current().nextInt(100) < 15) {
+            event.getDrops().add(specialItems.createSoulItem());
+            victim.sendMessage("§d§l[Death] §7A §b✦ Soul Fragment §7slipped from your grasp!");
+        }
+
         // Track kill for killer
         if (killer != null && !killer.equals(victim)) {
             // Using EconomyManager adds to cache + saves to DB

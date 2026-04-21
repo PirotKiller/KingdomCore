@@ -6,7 +6,6 @@ import { MINECRAFT_MATERIALS } from "@/lib/materials";
 
 const SHOP_TYPES = [
   { key: "armor", label: "Armor Shop", icon: "🛡️" },
-  { key: "blacksmith", label: "Blacksmith", icon: "⚒️" },
   { key: "converter", label: "Ore Converter", icon: "🔄" },
   { key: "enchant", label: "Enchantments", icon: "✨" },
   { key: "end", label: "End Shop", icon: "🌀" },
@@ -23,7 +22,7 @@ const SHOP_TYPES = [
 const CURRENCY_INFO: Record<string, string> = {
   wood: "SHARDS", stone: "SHARDS", fisherman: "SHARDS", fletcher: "SHARDS",
   redstone: "SHARDS", farming: "SHARDS", converter: "SHARDS",
-  blacksmith: "DUAL", enchant: "DUAL", potion: "DUAL",
+  enchant: "DUAL", potion: "DUAL",
   nether: "DUAL", end: "DUAL", armor: "DUAL",
 };
 

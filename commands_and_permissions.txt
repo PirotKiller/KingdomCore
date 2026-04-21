@@ -1,0 +1,117 @@
+============================================================
+           KINGDOMCORE COMMANDS & PERMISSIONS
+============================================================
+
+------------------------------------------------------------
+ [ PLAYER COMMANDS ] - Available to all by default
+------------------------------------------------------------
+
+/shop [type] (Aliases: /s)
+  - Description: Opens the main shop menu or a specific shop.
+  - Subcommands:
+      • /shop wood      - Buy wood, leaves, and saplings.
+      • /shop stone     - Buy stones, bricks, and ores.
+      • /shop fisherman - Buy fish, rods, and aquatic items.
+      • /shop fletcher  - Buy bows, arrows, and fletching gear.
+      • /shop redstone  - Buy redstone components and machinery.
+      • /shop farming   - Buy seeds, food, and farming tools.
+      • /shop armor     - Buy armor sets and defense gear.
+      • /shop enchant   - Buy enchanted items and magic gear.
+      • /shop potion    - Buy potions and brewing ingredients.
+      • /shop nether    - Buy nether-specific blocks and drops.
+      • /shop end       - Buy end-specific materials.
+      • /shop sell      - Open the Bulk Sell GUI to earn Shards.
+      • /shop convert   - Open the Gem/Shard Converter GUI.
+
+/ah [sell <price>] (Aliases: /auctionhouse)
+  - Description: Opens the Auction House or puts an item up for sale.
+  - Permission: kingdomcore.ah
+
+/bounty <player> <amount>
+  - Description: Places a bounty on a player using Shards.
+  - Permission: kingdomcore.bounty
+
+/sb (Aliases: /scoreboard)
+  - Description: Toggles the RPG Scoreboard visibility.
+  - Permission: kingdomcore.sb
+
+/verify <code>
+  - Description: Links your Minecraft account to the webstore.
+  - Permission: kingdomcore.verify
+
+/resourcepack (Aliases: /rp, /resource)
+  - Description: Prompts the download of the server resource pack.
+  - Permission: None (Available to everyone)
+
+/craft (Aliases: /forge, /soulforge)
+  - Description: Opens the Soul Forge crafting interface.
+  - Permission: kingdomcore.craft
+
+/eco (Aliases: /balance, /bal)
+  - Description: Check your current Shards and Gems.
+  - Permission: None (Available to everyone)
+
+/eco pay <player> <amount>
+  - Description: Transfer Shards to another player.
+  - Permission: None (Available to everyone)
+
+/eco paygems <player> <amount>
+  - Description: Transfer Gems to another player.
+  - Permission: None (Available to everyone)
+
+/eco note <amount>
+  - Description: Withdraw Shards into a physical item (Money Note).
+  - Permission: None (Available to everyone)
+
+
+------------------------------------------------------------
+ [ ADMIN COMMANDS ] - Requires OP or specific permission
+------------------------------------------------------------
+
+/admin (Aliases: None)
+  - Description: Opens the main Admin Panel GUI.
+  - Permission: kingdomcore.admin
+
+/admin player <name>
+  - Description: Directly manage a specific player's data.
+  - Permission: kingdomcore.admin
+
+/shop reload
+  - Description: Reloads shop configurations from database/resources.
+  - Permission: kingdomcore.admin
+
+/shop migrate
+  - Description: Migrates local YAML shop files into MongoDB.
+  - Permission: kingdomcore.admin
+
+/eco give <player> <shards|gems|level> <amount>
+  - Description: Grant currency or levels to a player.
+  - Permission: kingdomcore.admin
+
+/eco take <player> <shards|gems|level> <amount>
+  - Description: Subtract currency or levels from a player.
+  - Permission: kingdomcore.admin
+
+/eco set <player> <shards|gems|level> <amount>
+  - Description: Set a player's exact currency or level.
+  - Permission: kingdomcore.admin
+
+/eco wipe <shards|gems|levels>
+  - Description: Wipe specific data server-wide (Use with caution!).
+  - Permission: kingdomcore.admin
+
+/eco spawnshard <amount>
+  - Description: Spawn a physical Shard item at your location.
+  - Permission: kingdomcore.admin
+
+/eco airdrop <tier1|tier2|tier3|tier4>
+  - Description: Trigger a global economy airdrop event.
+  - Permission: kingdomcore.admin
+
+/reset confirm
+  - Description: Permanently resets ALL player data in the database.
+  - Permission: kingdomcore.admin (Requires OP)
+
+============================================================
+                     END OF FILE
+============================================================

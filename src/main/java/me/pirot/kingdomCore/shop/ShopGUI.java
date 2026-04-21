@@ -35,7 +35,7 @@ public class ShopGUI {
     public final NamespacedKey SHOP_BACK_KEY;
 
     // Prefix used to identify shop inventories
-    public static final String SHOP_IDENTIFIER = "§8§l[";
+    public static final String SHOP_IDENTIFIER = "§6§l[ Shop ] §8§l";
 
     // 28 item slots per page (rows 1-4, cols 1-7)
     private static final int ITEMS_PER_PAGE = 28;
@@ -334,20 +334,20 @@ public class ShopGUI {
     }
 
     private String getShopTitle(ShopType shopType) {
+        String base = SHOP_IDENTIFIER;
         return switch (shopType) {
-            case BLACKSMITH -> "§8§l[ §7§lBlacksmith §8§l]";
-            case ENCHANT -> "§8§l[ §9§lEnchantments §8§l]";
-            case POTION -> "§8§l[ §d§lPotions §8§l]";
-            case NETHER -> "§8§l[ §4§lNether Shop §8§l]";
-            case END -> "§8§l[ §e§lEnd Shop §8§l]";
-            case ARMOR -> "§8§l[ §b§lArmor Shop §8§l]";
-            case WOOD -> "§8§l[ §a§lWood Shop §8§l]";
-            case STONE -> "§8§l[ §7§lStone Shop §8§l]";
-            case FISHERMAN -> "§8§l[ §3§lFisherman §8§l]";
-            case FLETCHER -> "§8§l[ §a§lFletcher §8§l]";
-            case REDSTONE -> "§8§l[ §c§lRedstone Shop §8§l]";
-            case FARMING -> "§8§l[ §e§lFarming Shop §8§l]";
-            case CONVERTER -> "§8§l[ §a§lOre Converter §8§l]";
+            case ENCHANT -> base + "§9§lEnchantments";
+            case POTION -> base + "§d§lPotions";
+            case NETHER -> base + "§4§lNether Shop";
+            case END -> base + "§e§lEnd Shop";
+            case ARMOR -> base + "§b§lArmor Shop";
+            case WOOD -> base + "§a§lWood Shop";
+            case STONE -> base + "§7§lStone Shop";
+            case FISHERMAN -> base + "§3§lFisherman";
+            case FLETCHER -> base + "§a§lFletcher";
+            case REDSTONE -> base + "§c§lRedstone Shop";
+            case FARMING -> base + "§e§lFarming Shop";
+            case CONVERTER -> base + "§a§lOre Converter";
         };
     }
 
@@ -361,7 +361,6 @@ public class ShopGUI {
 
     private Material getInfoMaterial(ShopType shopType) {
         return switch (shopType) {
-            case BLACKSMITH -> Material.ANVIL;
             case ENCHANT -> Material.ENCHANTING_TABLE;
             case POTION -> Material.BREWING_STAND;
             case NETHER -> Material.NETHERRACK;
@@ -397,7 +396,6 @@ public class ShopGUI {
 
     private Material getBorderMaterial(ShopType shopType) {
         return switch (shopType) {
-            case BLACKSMITH -> Material.GRAY_STAINED_GLASS_PANE;
             case ENCHANT -> Material.PURPLE_STAINED_GLASS_PANE;
             case POTION -> Material.PINK_STAINED_GLASS_PANE;
             case NETHER -> Material.RED_STAINED_GLASS_PANE;
@@ -415,7 +413,6 @@ public class ShopGUI {
 
     private Material getCornerMaterial(ShopType shopType) {
         return switch (shopType) {
-            case BLACKSMITH -> Material.BLACK_STAINED_GLASS_PANE;
             case ENCHANT -> Material.BLACK_STAINED_GLASS_PANE;
             case POTION -> Material.MAGENTA_STAINED_GLASS_PANE;
             case NETHER -> Material.BLACK_STAINED_GLASS_PANE;

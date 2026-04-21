@@ -18,7 +18,7 @@ async function isAdmin() {
 // Valid shop types that match the Java ShopType enum
 const VALID_SHOP_TYPES = [
   "wood", "stone", "fisherman", "fletcher", "redstone", "farming",
-  "blacksmith", "enchant", "potion", "nether", "end", "armor", "converter"
+  "enchant", "potion", "nether", "end", "armor", "converter"
 ];
 
 /**
@@ -46,8 +46,9 @@ export async function GET(req: NextRequest) {
       grouped[type] = [];
     }
     for (const item of items) {
-      if (!grouped[item.shopType]) grouped[item.shopType] = [];
-      grouped[item.shopType].push(item);
+      const type = item.shopType.toLowerCase();
+      if (!grouped[type]) grouped[type] = [];
+      grouped[type].push(item);
     }
 
     return NextResponse.json(grouped);
@@ -87,6 +88,19 @@ export async function POST(req: NextRequest) {
     }
 
     const item = await ShopItem.create(body);
+
+    // --- LOGGING ---
+    try {
+      const { recordWebLog, LogType } = await import("@/lib/logger");
+      const session = await auth();
+      await recordWebLog({
+        type: LogType.ADMIN_ACTION,
+        executor: { discordId: (session as any)?.discordId, name: session?.user?.name || "Admin" },
+        summary: `Added item to ${item.shopType} shop: ${item.name}`,
+        metadata: { action: "SHOP_ITEM_CREATE", itemId: item._id, shop: item.shopType }
+      });
+    } catch (e) {}
+
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     console.error("Failed to create shop item:", error);
@@ -111,6 +125,18 @@ export async function PUT(req: NextRequest) {
     const updated = await ShopItem.findByIdAndUpdate(_id, updateData, { new: true }).lean();
     if (!updated) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
+    // --- LOGGING ---
+    try {
+      const { recordWebLog, LogType } = await import("@/lib/logger");
+      const session = await auth();
+      await recordWebLog({
+        type: LogType.ADMIN_ACTION,
+        executor: { discordId: (session as any)?.discordId, name: session?.user?.name || "Admin" },
+        summary: `Updated item in ${updated.shopType} shop: ${updated.name}`,
+        metadata: { action: "SHOP_ITEM_UPDATE", itemId: _id, shop: updated.shopType }
+      });
+    } catch (e) {}
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error("Failed to update shop item:", error);
@@ -130,8 +156,23 @@ export async function DELETE(req: NextRequest) {
     const { _id } = await req.json();
     if (!_id) return NextResponse.json({ error: "Missing _id" }, { status: 400 });
 
-    const deleted = await ShopItem.findByIdAndDelete(_id);
-    if (!deleted) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    const item = await ShopItem.findById(_id);
+    if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    const name = item.name;
+    const shop = item.shopType;
+    await ShopItem.findByIdAndDelete(_id);
+
+    // --- LOGGING ---
+    try {
+      const { recordWebLog, LogType } = await import("@/lib/logger");
+      const session = await auth();
+      await recordWebLog({
+        type: LogType.ADMIN_ACTION,
+        executor: { discordId: (session as any)?.discordId, name: session?.user?.name || "Admin" },
+        summary: `Removed item from ${shop} shop: ${name}`,
+        metadata: { action: "SHOP_ITEM_DELETE", itemId: _id, shop }
+      });
+    } catch (e) {}
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -156,6 +197,18 @@ export async function PATCH(req: NextRequest) {
       uuid: "CONSOLE",
       executed: false
     });
+
+    // --- LOGGING ---
+    try {
+      const { recordWebLog, LogType } = await import("@/lib/logger");
+      const session = await auth();
+      await recordWebLog({
+        type: LogType.ADMIN_ACTION,
+        executor: { discordId: (session as any)?.discordId, name: session?.user?.name || "Admin" },
+        summary: `Triggered Shop Sync (reload) to Minecraft server`,
+        metadata: { action: "SHOP_SYNC" }
+      });
+    } catch (e) {}
 
     return NextResponse.json({ success: true, message: "Sync command sent to server" });
   } catch (error) {

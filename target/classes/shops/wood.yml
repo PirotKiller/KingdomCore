@@ -1,10 +1,10 @@
 title: §8§l[ §a§lWood Shop §8§l]
-size: 27
+size: 45
 items:
   oak_log:
     material: OAK_LOG
     amount: 16
-    price: 1044
+    price: 10
     name: §fOak Log x16
   birch_log:
     material: BIRCH_LOG
@@ -41,3 +41,118 @@ items:
     amount: 16
     price: 15
     name: §fCherry Log x16
+  bamboo_block:
+    material: BAMBOO_BLOCK
+    amount: 16
+    price: 15
+    name: "§fBamboo Block x16"
+  crimson_stem:
+    material: CRIMSON_STEM
+    amount: 16
+    price: 20
+    name: "§fCrimson Stem x16"
+  warped_stem:
+    material: WARPED_STEM
+    amount: 16
+    price: 20
+    name: "§fWarped Stem x16"
+  stripped_oak_log:
+    material: STRIPPED_OAK_LOG
+    amount: 16
+    price: 12
+    name: "§fStripped Oak Log x16"
+  stripped_spruce_log:
+    material: STRIPPED_SPRUCE_LOG
+    amount: 16
+    price: 12
+    name: "§fStripped Spruce Log x16"
+  stripped_birch_log:
+    material: STRIPPED_BIRCH_LOG
+    amount: 16
+    price: 12
+    name: "§fStripped Birch Log x16"
+  stripped_jungle_log:
+    material: STRIPPED_JUNGLE_LOG
+    amount: 16
+    price: 14
+    name: "§fStripped Jungle Log x16"
+  stripped_acacia_log:
+    material: STRIPPED_ACACIA_LOG
+    amount: 16
+    price: 12
+    name: "§fStripped Acacia Log x16"
+  stripped_dark_oak_log:
+    material: STRIPPED_DARK_OAK_LOG
+    amount: 16
+    price: 14
+    name: "§fStripped Dark Oak Log x16"
+  stripped_mangrove_log:
+    material: STRIPPED_MANGROVE_LOG
+    amount: 16
+    price: 14
+    name: "§fStripped Mangrove Log x16"
+  stripped_cherry_log:
+    material: STRIPPED_CHERRY_LOG
+    amount: 16
+    price: 17
+    name: "§fStripped Cherry Log x16"
+  stripped_crimson_stem:
+    material: STRIPPED_CRIMSON_STEM
+    amount: 16
+    price: 22
+    name: "§fStripped Crimson Stem x16"
+  stripped_warped_stem:
+    material: STRIPPED_WARPED_STEM
+    amount: 16
+    price: 22
+    name: "§fStripped Warped Stem x16"
+  oak_wood:
+    material: OAK_WOOD
+    amount: 16
+    price: 15
+    name: "§fOak Wood x16"
+  spruce_wood:
+    material: SPRUCE_WOOD
+    amount: 16
+    price: 15
+    name: "§fSpruce Wood x16"
+  birch_wood:
+    material: BIRCH_WOOD
+    amount: 16
+    price: 15
+    name: "§fBirch Wood x16"
+  jungle_wood:
+    material: JUNGLE_WOOD
+    amount: 16
+    price: 18
+    name: "§fJungle Wood x16"
+  acacia_wood:
+    material: ACACIA_WOOD
+    amount: 16
+    price: 15
+    name: "§fAcacia Wood x16"
+  dark_oak_wood:
+    material: DARK_OAK_WOOD
+    amount: 16
+    price: 18
+    name: "§fDark Oak Wood x16"
+  mangrove_wood:
+    material: MANGROVE_WOOD
+    amount: 16
+    price: 18
+    name: "§fMangrove Wood x16"
+  cherry_wood:
+    material: CHERRY_WOOD
+    amount: 16
+    price: 20
+    name: "§fCherry Wood x16"
+  crimson_hyphae:
+    material: CRIMSON_HYPHAE
+    amount: 16
+    price: 25
+    name: "§fCrimson Hyphae x16"
+  warped_hyphae:
+    material: WARPED_HYPHAE
+    amount: 16
+    price: 25
+    name: "§fWarped Hyphae x16"

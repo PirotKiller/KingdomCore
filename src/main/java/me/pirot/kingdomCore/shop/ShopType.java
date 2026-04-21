@@ -16,7 +16,6 @@ public enum ShopType {
     // Gem-only shops (Removed Classes)
 
     // Dual-currency shops
-    BLACKSMITH("blacksmith", CurrencyMode.DUAL),
     ENCHANT("enchant", CurrencyMode.DUAL),
     POTION("potion", CurrencyMode.DUAL),
     NETHER("nether", CurrencyMode.DUAL),

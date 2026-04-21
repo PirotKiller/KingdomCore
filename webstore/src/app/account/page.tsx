@@ -8,7 +8,7 @@ export default function AccountPage() {
   const { data: session, status } = useSession();
   const [verifyState, setVerifyState] = useState<"idle" | "loading" | "code">("idle");
   const [code, setCode] = useState("");
-  const [linkStatus, setLinkStatus] = useState<{ verified: boolean; minecraftUsername: string | null } | null>(null);
+  const [linkStatus, setLinkStatus] = useState<{ verified: boolean; minecraftUsername: string | null; minecraftUuid: string | null } | null>(null);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loadingPurchases, setLoadingPurchases] = useState(true);
   const [page, setPage] = useState(1);

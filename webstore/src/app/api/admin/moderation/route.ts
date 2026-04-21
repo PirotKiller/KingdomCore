@@ -110,7 +110,26 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Log the moderation action
+  // --- LOGGING ---
+  try {
+    const { recordWebLog, LogType } = await import("@/lib/logger");
+    await recordWebLog({
+      type: LogType.MODERATION,
+      executor: {
+        discordId: (session as any)?.discordId,
+        name: adminName,
+      },
+      target: {
+        name: playerName || "Global/Console",
+      },
+      summary: label,
+      metadata: { action, reason, duration, command }
+    });
+  } catch (logError) {
+    console.error("Failed to record unified log:", logError);
+  }
+
+  // Log the moderation action (to existing collection for compatibility)
   await db.collection("moderation_logs").insertOne({
     action,
     playerName: playerName || null,

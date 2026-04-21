@@ -50,11 +50,33 @@ export async function POST(req: NextRequest) {
     metadata: {
       userId: user._id.toString(),
       discordId: user.discordId,
+      minecraftUsername: user.minecraftUsername,
       minecraftUuid: user.minecraftUuid,
       itemId: item._id.toString(),
       itemName: item.name,
     },
   });
+
+  // --- LOGGING ---
+  try {
+    const { recordWebLog, LogType } = await import("@/lib/logger");
+    await recordWebLog({
+      type: "STORE_CHECKOUT_START",
+      executor: {
+        discordId: user.discordId,
+        name: user.discordUsername || session?.user?.name || "User",
+      },
+      summary: `Started checkout for ${item.name} ($${(item.price / 100).toFixed(2)})`,
+      metadata: { 
+        itemId: item._id, 
+        itemName: item.name, 
+        price: item.price, 
+        sessionId: checkoutSession.id 
+      }
+    });
+  } catch (logError) {
+    console.error("Failed to record checkout log:", logError);
+  }
 
   return NextResponse.json({ url: checkoutSession.url });
 }

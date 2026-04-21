@@ -41,3 +41,28 @@ items:
     amount: 8
     price: 10
     name: "§fSugar Cane x8"
+  cocoa_beans:
+    material: COCOA_BEANS
+    amount: 16
+    price: 15
+    name: "§fCocoa Beans x16"
+  bamboo:
+    material: BAMBOO
+    amount: 16
+    price: 10
+    name: "§fBamboo x16"
+  sweet_berries:
+    material: SWEET_BERRIES
+    amount: 16
+    price: 12
+    name: "§fSweet Berries x16"
+  glow_berries:
+    material: GLOW_BERRIES
+    amount: 8
+    price: 20
+    name: "§fGlow Berries x8"
+  nether_wart:
+    material: NETHER_WART
+    amount: 8
+    price: 30
+    name: "§fNether Wart x8"

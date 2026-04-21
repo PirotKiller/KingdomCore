@@ -163,9 +163,22 @@ public class EconomyManager {
     public void addXp(UUID uuid, int amount) {
         PlayerData data = cache.get(uuid);
         if (data != null) {
-            data.addXp(amount);
+            int levelsGained = data.addXp(amount);
             data.updateLocal();
             savePlayer(uuid);
+
+            if (levelsGained > 0) {
+                Document log = new Document("timestamp", new java.util.Date())
+                        .append("source", "GAME")
+                        .append("type", "LEVEL_UP")
+                        .append("player", new Document("uuid", uuid.toString())
+                                .append("name", data.getLastKnownName()))
+                        .append("summary", "Leveled up " + levelsGained + " time(s)! New Level: " + data.getLevel())
+                        .append("metadata", new Document("levelsGained", levelsGained)
+                                .append("newLevel", data.getLevel())
+                                .append("xpLeft", data.getXp()));
+                mongoManager.logAction(log);
+            }
         }
     }
 

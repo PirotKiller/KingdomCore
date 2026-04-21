@@ -15,14 +15,14 @@ interface ModerationLog {
 }
 
 const ACTIONS = [
-  { id: "kick", label: "Kick", icon: "🦶", color: "amber", requiresPlayer: true, hasReason: true },
-  { id: "ban", label: "Ban", icon: "🔨", color: "red", requiresPlayer: true, hasReason: true },
-  { id: "tempban", label: "Temp Ban", icon: "⏱️", color: "orange", requiresPlayer: true, hasReason: true, hasDuration: true },
-  { id: "unban", label: "Unban", icon: "🔓", color: "emerald", requiresPlayer: true },
-  { id: "mute", label: "Mute", icon: "🔇", color: "violet", requiresPlayer: true, hasDuration: true },
-  { id: "unmute", label: "Unmute", icon: "🔊", color: "cyan", requiresPlayer: true },
-  { id: "warn", label: "Warn", icon: "⚠️", color: "yellow", requiresPlayer: true, hasReason: true },
-  { id: "custom", label: "Custom Command", icon: "⌨️", color: "blue", isCustom: true },
+  { id: "kick", label: "Kick", icon: "🦶", color: "amber", requiresPlayer: true, hasReason: true, hasDuration: false, isCustom: false },
+  { id: "ban", label: "Ban", icon: "🔨", color: "red", requiresPlayer: true, hasReason: true, hasDuration: false, isCustom: false },
+  { id: "tempban", label: "Temp Ban", icon: "⏱️", color: "orange", requiresPlayer: true, hasReason: true, hasDuration: true, isCustom: false },
+  { id: "unban", label: "Unban", icon: "🔓", color: "emerald", requiresPlayer: true, hasReason: false, hasDuration: false, isCustom: false },
+  { id: "mute", label: "Mute", icon: "🔇", color: "violet", requiresPlayer: true, hasReason: false, hasDuration: true, isCustom: false },
+  { id: "unmute", label: "Unmute", icon: "🔊", color: "cyan", requiresPlayer: true, hasReason: false, hasDuration: false, isCustom: false },
+  { id: "warn", label: "Warn", icon: "⚠️", color: "yellow", requiresPlayer: true, hasReason: true, hasDuration: false, isCustom: false },
+  { id: "custom", label: "Custom Command", icon: "⌨️", color: "blue", requiresPlayer: false, hasReason: false, hasDuration: false, isCustom: true },
 ] as const;
 
 const actionColorMap: Record<string, string> = {

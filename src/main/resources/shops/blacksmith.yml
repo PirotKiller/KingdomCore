@@ -8,7 +8,7 @@ items:
     price-shards: 500
     price-gems: 0
     amount: 1
-    name: "§6Midas Bow"
+    name: "§6Gold Bow"
     lore:
       - "§7Tier: §6Gold"
       - "§7Class: §6Archer"
@@ -40,7 +40,7 @@ items:
     price-shards: 2000
     price-gems: 50
     amount: 1
-    name: "§4Ender Bow"
+    name: "§4Nether Bow"
     lore:
       - "§7Tier: §4Nether"
       - "§7Class: §6Archer"
@@ -89,7 +89,7 @@ items:
     price-shards: 500
     price-gems: 0
     amount: 1
-    name: "§6Midas Shield"
+    name: "§6Gold Shield"
     lore:
       - "§7Tier: §6Gold"
       - "§7Class: §bKnight"
@@ -113,7 +113,7 @@ items:
     price-shards: 2000
     price-gems: 50
     amount: 1
-    name: "§4Ender Shield"
+    name: "§4Nether Shield"
     lore:
       - "§7Tier: §4Nether"
       - "§7Class: §bKnight"
@@ -182,7 +182,7 @@ items:
     price-shards: 2000
     price-gems: 50
     amount: 1
-    name: "§4Ender Staff"
+    name: "§4Nether Staff"
     lore:
       - "§7Tier: §4Nether"
       - "§7Class: §5Wizard"
@@ -231,7 +231,7 @@ items:
     price-shards: 500
     price-gems: 0
     amount: 1
-    name: "§6Spirit Flame Dagger"
+    name: "§6Gold Dagger"
     lore:
       - "§7Tier: §6Gold"
       - "§7Class: §cRogue"
@@ -247,7 +247,7 @@ items:
     price-shards: 1000
     price-gems: 25
     amount: 1
-    name: "§bSpirit Magic Dagger"
+    name: "§bDiamond Dagger"
     lore:
       - "§7Tier: §bDiamond"
       - "§7Class: §cRogue"
@@ -263,7 +263,7 @@ items:
     price-shards: 2000
     price-gems: 50
     amount: 1
-    name: "§4Spirit Void Dagger"
+    name: "§4Nether Dagger"
     lore:
       - "§7Tier: §4Nether"
       - "§7Class: §cRogue"
@@ -344,7 +344,7 @@ items:
     price-shards: 2000
     price-gems: 50
     amount: 1
-    name: "§4Ender Katana"
+    name: "§4Nether Katana"
     lore:
       - "§7Tier: §4Nether"
       - "§7Class: §eRonin"

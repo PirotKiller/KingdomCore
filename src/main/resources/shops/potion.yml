@@ -55,3 +55,39 @@ items:
     price-gems: 0
     amount: 1
     name: "§fNight Vision Potion"
+  brewing_stand:
+    material: BREWING_STAND
+    price-shards: 250
+    price-gems: 0
+    amount: 1
+    name: "§fBrewing Stand"
+  glass_bottle:
+    material: GLASS_BOTTLE
+    price-shards: 15
+    price-gems: 0
+    amount: 16
+    name: "§fGlass Bottle x16"
+  nether_wart:
+    material: NETHER_WART
+    price-shards: 60
+    price-gems: 0
+    amount: 16
+    name: "§fNether Wart x16"
+  blaze_powder:
+    material: BLAZE_POWDER
+    price-shards: 100
+    price-gems: 0
+    amount: 8
+    name: "§fBlaze Powder x8"
+  magma_cream:
+    material: MAGMA_CREAM
+    price-shards: 40
+    price-gems: 0
+    amount: 8
+    name: "§fMagma Cream x8"
+  fermented_spider_eye:
+    material: FERMENTED_SPIDER_EYE
+    price-shards: 60
+    price-gems: 0
+    amount: 4
+    name: "§fFermented Spider Eye x4"

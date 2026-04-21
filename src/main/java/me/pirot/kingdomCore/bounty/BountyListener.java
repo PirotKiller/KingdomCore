@@ -44,6 +44,16 @@ public class BountyListener implements Listener {
             Bukkit.broadcastMessage("§6§l[Bounty] §f" + killer.getName() + " §7claimed the §a" +
                     claimed + " Shard §7bounty on §f" + victim.getName() + "§7!");
             killer.sendMessage("§a§l[Kingdom] §7You earned §a" + claimed + " Shards §7from the bounty!");
+            
+            // --- LOGGING ---
+            org.bson.Document log = new org.bson.Document()
+                    .append("source", "GAME")
+                    .append("type", "BOUNTY_CLAIM")
+                    .append("player", new org.bson.Document("uuid", killer.getUniqueId().toString()).append("name", killer.getName()))
+                    .append("target", new org.bson.Document("uuid", victim.getUniqueId().toString()).append("name", victim.getName()))
+                    .append("summary", "Claimed " + claimed + " Shard bounty on " + victim.getName())
+                    .append("currency", new org.bson.Document("shards", claimed).append("gems", 0));
+            plugin.getMongoManager().logAction(log);
         }
 
         // 2. Increase the killer's OWN bounty for committing a kill

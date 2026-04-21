@@ -79,13 +79,9 @@ public class SpecialItemsListener implements Listener {
     }
 
     /**
-     * Removes one item from the player's hand.
+     * Removes one item from the stack being used.
      */
     private void consumeItem(Player player, ItemStack item) {
-        if (item.getAmount() > 1) {
-            item.setAmount(item.getAmount() - 1);
-        } else {
-            player.getInventory().remove(item);
-        }
+        item.setAmount(item.getAmount() - 1);
     }
 }

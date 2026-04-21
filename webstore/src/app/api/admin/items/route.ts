@@ -55,6 +55,19 @@ export async function POST(req: NextRequest) {
   await dbConnect();
   const body = await req.json();
   const item = await StoreItem.create(body);
+
+  // --- LOGGING ---
+  try {
+    const { recordWebLog, LogType } = await import("@/lib/logger");
+    const session = await auth();
+    await recordWebLog({
+      type: LogType.ADMIN_ACTION,
+      executor: { discordId: (session as any)?.discordId, name: session?.user?.name || "Admin" },
+      summary: `Created store item: ${item.name}`,
+      metadata: { action: "ITEM_CREATE", itemId: item._id, price: item.price }
+    });
+  } catch (e) {}
+
   return NextResponse.json(item, { status: 201 });
 }
 
@@ -67,6 +80,21 @@ export async function PUT(req: NextRequest) {
   const body = await req.json();
   const { _id, ...updates } = body;
   const item = await StoreItem.findByIdAndUpdate(_id, updates, { new: true });
+
+  if (item) {
+    // --- LOGGING ---
+    try {
+      const { recordWebLog, LogType } = await import("@/lib/logger");
+      const session = await auth();
+      await recordWebLog({
+        type: LogType.ADMIN_ACTION,
+        executor: { discordId: (session as any)?.discordId, name: session?.user?.name || "Admin" },
+        summary: `Updated store item: ${item.name}`,
+        metadata: { action: "ITEM_UPDATE", itemId: _id }
+      });
+    } catch (e) {}
+  }
+
   return NextResponse.json(item);
 }
 
@@ -90,6 +118,18 @@ export async function PATCH(req: NextRequest) {
   item[field] = !item[field];
   await item.save();
 
+  // --- LOGGING ---
+  try {
+    const { recordWebLog, LogType } = await import("@/lib/logger");
+    const session = await auth();
+    await recordWebLog({
+      type: LogType.ADMIN_ACTION,
+      executor: { discordId: (session as any)?.discordId, name: session?.user?.name || "Admin" },
+      summary: `${item[field] ? "Enabled" : "Disabled"} ${field} on item: ${item.name}`,
+      metadata: { action: "ITEM_PATCH", itemId: id, field, value: item[field] }
+    });
+  } catch (e) {}
+
   return NextResponse.json({ success: true, [field]: item[field] });
 }
 
@@ -100,6 +140,27 @@ export async function DELETE(req: NextRequest) {
   }
   await dbConnect();
   const { id } = await req.json();
-  await StoreItem.findByIdAndDelete(id);
+  const item = await StoreItem.findById(id);
+  
+  if (item) {
+    // Save info before delete
+    const name = item.name;
+    await StoreItem.findByIdAndDelete(id);
+
+    // --- LOGGING ---
+    try {
+      const { recordWebLog, LogType } = await import("@/lib/logger");
+      const session = await auth();
+      await recordWebLog({
+        type: LogType.ADMIN_ACTION,
+        executor: { discordId: (session as any)?.discordId, name: session?.user?.name || "Admin" },
+        summary: `Deleted store item: ${name}`,
+        metadata: { action: "ITEM_DELETE", itemId: id }
+      });
+    } catch (e) {}
+  } else {
+    await StoreItem.findByIdAndDelete(id);
+  }
+
   return NextResponse.json({ success: true });
 }

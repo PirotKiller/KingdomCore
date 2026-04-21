@@ -67,7 +67,7 @@ export async function GET(
     
     const uuid = user?.minecraftUuid || playerRecord?.uuid;
     
-    let purchases = [];
+    let purchases: any[] = [];
     if (uuid) {
       purchases = await db.collection("purchases")
         .find({ minecraftUuid: uuid })
