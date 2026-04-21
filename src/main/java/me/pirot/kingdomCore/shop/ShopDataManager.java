@@ -52,9 +52,15 @@ public class ShopDataManager {
             // --- AUTO BOOTSTRAP ---
             long count = shopsCol.countDocuments();
             if (count == 0) {
-                logger.info("[KingdomCore] MongoDB Shops collection is empty. Performing auto-migration from YAML files...");
-                // Note: migrateYAMLtoMongoDB is still safe to call here as it's typically startup or manual sync
+                logger.info("[KingdomCore] MongoDB Shops collection is empty. Performing auto-migration...");
                 migrateYAMLtoMongoDB();
+                bootstrapConverterDefaults();
+            } else {
+                // Also check specifically for converter shop if it's empty (just in case)
+                long converterCount = shopsCol.countDocuments(Filters.eq("shopType", ShopType.CONVERTER.getConfigKey()));
+                if (converterCount == 0) {
+                    bootstrapConverterDefaults();
+                }
             }
 
             int total = 0;
@@ -242,5 +248,54 @@ public class ShopDataManager {
             return num.doubleValue();
         }
         return defaultValue;
+    }
+
+    /**
+     * Seeds the MongoDB database with default Ore Converter rates.
+     */
+    private void bootstrapConverterDefaults() {
+        MongoCollection<Document> shopsCol = mongoManager.getShopsCollection();
+        if (shopsCol == null) return;
+
+        logger.info("[KingdomCore] Seeding default Ore Converter rates into MongoDB...");
+        String type = ShopType.CONVERTER.getConfigKey();
+
+        Map<String, Integer> defaults = new LinkedHashMap<>();
+        defaults.put("NETHERITE_INGOT", 200);
+        defaults.put("NETHERITE_SCRAP", 100);
+        defaults.put("ANCIENT_DEBRIS", 80);
+        defaults.put("DIAMOND", 50);
+        defaults.put("EMERALD", 40);
+        defaults.put("GOLD_INGOT", 15);
+        defaults.put("IRON_INGOT", 10);
+        defaults.put("COPPER_INGOT", 5);
+        defaults.put("LAPIS_LAZULI", 5);
+        defaults.put("REDSTONE", 3);
+        defaults.put("COAL", 2);
+        defaults.put("RAW_GOLD", 10);
+        defaults.put("RAW_IRON", 7);
+        defaults.put("RAW_COPPER", 3);
+        defaults.put("QUARTZ", 4);
+        defaults.put("AMETHYST_SHARD", 6);
+
+        int order = 0;
+        for (Map.Entry<String, Integer> entry : defaults.entrySet()) {
+            Document doc = new Document()
+                    .append("shopType", type)
+                    .append("itemKey", entry.getKey())
+                    .append("name", entry.getKey().replace("_", " "))
+                    .append("material", entry.getKey())
+                    .append("amount", 1)
+                    .append("priceShards", entry.getValue())
+                    .append("priceGems", 0)
+                    .append("order", order++)
+                    .append("active", true);
+
+            shopsCol.replaceOne(
+                    Filters.and(Filters.eq("shopType", type), Filters.eq("itemKey", entry.getKey())),
+                    doc,
+                    new ReplaceOptions().upsert(true)
+            );
+        }
     }
 }

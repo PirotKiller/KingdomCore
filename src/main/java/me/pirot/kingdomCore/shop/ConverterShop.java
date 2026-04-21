@@ -26,6 +26,7 @@ public class ConverterShop implements Listener {
 
     private final me.pirot.kingdomCore.KingdomCore plugin;
     private final EconomyManager economyManager;
+    private final ShopDataManager shopDataManager;
 
     // Track which inventories are converter GUIs
     private final Set<UUID> activeConverters = new HashSet<>();
@@ -37,30 +38,10 @@ public class ConverterShop implements Listener {
     private static final int SELL_BUTTON_SLOT = 49;
     private static final int INFO_SLOT = 4;
 
-    // Ore conversion values (material -> shards per item)
-    private static final Map<Material, Integer> CONVERSION_VALUES = new HashMap<>();
-    static {
-        CONVERSION_VALUES.put(Material.NETHERITE_INGOT, 200);
-        CONVERSION_VALUES.put(Material.NETHERITE_SCRAP, 100);
-        CONVERSION_VALUES.put(Material.ANCIENT_DEBRIS, 80);
-        CONVERSION_VALUES.put(Material.DIAMOND, 50);
-        CONVERSION_VALUES.put(Material.EMERALD, 40);
-        CONVERSION_VALUES.put(Material.GOLD_INGOT, 15);
-        CONVERSION_VALUES.put(Material.IRON_INGOT, 10);
-        CONVERSION_VALUES.put(Material.COPPER_INGOT, 5);
-        CONVERSION_VALUES.put(Material.LAPIS_LAZULI, 5);
-        CONVERSION_VALUES.put(Material.REDSTONE, 3);
-        CONVERSION_VALUES.put(Material.COAL, 2);
-        CONVERSION_VALUES.put(Material.RAW_GOLD, 10);
-        CONVERSION_VALUES.put(Material.RAW_IRON, 7);
-        CONVERSION_VALUES.put(Material.RAW_COPPER, 3);
-        CONVERSION_VALUES.put(Material.QUARTZ, 4);
-        CONVERSION_VALUES.put(Material.AMETHYST_SHARD, 6);
-    }
-
-    public ConverterShop(me.pirot.kingdomCore.KingdomCore plugin, ConfigManager configManager, EconomyManager economyManager) {
+    public ConverterShop(me.pirot.kingdomCore.KingdomCore plugin, ConfigManager configManager, EconomyManager economyManager, ShopDataManager shopDataManager) {
         this.plugin = plugin;
         this.economyManager = economyManager;
+        this.shopDataManager = shopDataManager;
         this.converterTitle = "§8§l[ §a§lOre Converter §8§l]";
     }
 
@@ -233,9 +214,11 @@ public class ConverterShop implements Listener {
             if (item == null || item.getType() == Material.AIR) continue;
             if (item.getType().name().endsWith("STAINED_GLASS_PANE")) continue;
 
-            Integer valuePerItem = CONVERSION_VALUES.get(item.getType());
-            if (valuePerItem != null && valuePerItem > 0) {
-                totalShards += valuePerItem * item.getAmount();
+            // Look up item in MongoDB cache (converter shop type)
+            ShopItemData itemData = shopDataManager.findItem(ShopType.CONVERTER, item.getType().name());
+            
+            if (itemData != null && itemData.isActive() && itemData.getPriceShards() > 0) {
+                totalShards += itemData.getPriceShards() * item.getAmount();
                 itemsSold += item.getAmount();
                 inv.setItem(slot, null);
             } else {

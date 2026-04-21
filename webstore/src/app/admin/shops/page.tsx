@@ -522,7 +522,7 @@ export default function AdminShopsPage() {
                   {(currencyMode === "SHARDS" || currencyMode === "DUAL") && (
                     <div className="bg-emerald-500/5 p-4 rounded-2xl border border-emerald-500/10">
                       <label className="block text-xs font-bold text-emerald-400/70 mb-2 uppercase tracking-tighter">
-                        {currencyMode === "DUAL" ? "Shard Price" : "Price (Shards)"}
+                        {selectedShop === "converter" ? "Sell Reward (Shards)" : (currencyMode === "DUAL" ? "Shard Price" : "Price (Shards)")}
                       </label>
                       <input
                         type="number"
@@ -534,7 +534,9 @@ export default function AdminShopsPage() {
                   )}
                   {currencyMode === "DUAL" && (
                     <div className="bg-cyan-500/5 p-4 rounded-2xl border border-cyan-500/10">
-                      <label className="block text-xs font-bold text-cyan-400/70 mb-2 uppercase tracking-tighter">Gem Price</label>
+                      <label className="block text-xs font-bold text-cyan-400/70 mb-2 uppercase tracking-tighter">
+                        {selectedShop === "converter" ? "Sell Reward (Gems)" : "Gem Price"}
+                      </label>
                       <input
                         type="number"
                         value={form.priceGems}

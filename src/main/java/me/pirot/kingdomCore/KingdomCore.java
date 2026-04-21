@@ -80,7 +80,7 @@ public final class KingdomCore extends JavaPlugin {
 
         ShopGUI shopGUI = new ShopGUI(this);
         shopGUI.setShopDataManager(shopDataManager);
-        ConverterShop converterShop = new ConverterShop(this, configManager, economyManager);
+        ConverterShop converterShop = new ConverterShop(this, configManager, economyManager, shopDataManager);
         ShopCommandHandler shopCommandHandler = new ShopCommandHandler(this, shopGUI, converterShop, shopDataManager);
         GUIListener guiListener = new GUIListener(this, shopGUI, economyManager, weaponManager, shopDataManager, shopCommandHandler);
 
