@@ -34,23 +34,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex flex-col md:flex-row min-h-[calc(100vh-4rem)]">
-      {/* Mobile Navigation */}
-      <div className="md:hidden border-b border-[var(--border)] bg-[var(--bg-secondary)] overflow-x-auto">
-        <nav className="flex px-4 py-3 gap-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                pathname === item.href
-                  ? "bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20"
-                  : "text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-card)]"
-              }`}
-            >
-              <span>{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
+      {/* Mobile Navigation - Sleek Scrollbar */}
+      <div className="md:hidden border-b border-white/5 bg-[var(--bg-secondary)] overflow-x-auto no-scrollbar sticky top-0 z-40">
+        <nav className="flex px-4 py-4 gap-2 min-w-max">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+                  isActive
+                    ? "bg-[var(--accent)] text-white shadow-lg shadow-purple-500/25"
+                    : "text-[var(--text-secondary)] hover:text-white hover:bg-white/5 border border-white/5"
+                }`}
+              >
+                <span className="text-sm">{item.icon}</span>
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
       </div>
 

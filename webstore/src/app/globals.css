@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@theme {
+  --breakpoint-xs: 480px;
+}
+
 
 :root {
   --bg-primary: #0a0a0f;
@@ -58,7 +62,7 @@ body {
 }
 
 /* Mesh gradient hero background */
-.mesh-gradient {
+.mesh-gradient, .hero-gradient {
   background-color: var(--bg-primary);
   background-image: 
     radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
@@ -94,31 +98,61 @@ body {
   animation: shine-sweep 4s infinite;
 }
 
-/* Rotating border animation */
-@keyframes rotate-border {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+/* Enhanced Premium Border Animation */
+@keyframes rotate-premium {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.rotating-border-container {
+.premium-card-container {
   position: relative;
-  border-radius: 20px;
-  padding: 1px;
+  border-radius: 24px;
+  padding: 2px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.premium-card-bg {
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    var(--accent) 25%,
+    #ff0080 50%,
+    var(--accent) 75%,
+    transparent 100%
+  );
+  animation: rotate-premium 3s linear infinite;
+  filter: blur(8px);
+}
+
+.premium-card-inner {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  width: 100%;
+  background: #0d0d12;
+  border-radius: 22px;
   overflow: hidden;
 }
 
-.rotating-border-bg {
+/* Internal pulse glow for premium cards */
+@keyframes premium-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.premium-pulse {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    transparent,
-    rgba(124, 58, 237, 0.3),
-    transparent 30%
-  );
-  animation: rotate-border 4s linear infinite;
+  inset: 0;
+  background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  animation: premium-pulse 4s ease-in-out infinite;
 }
 
 /* Float animation */
@@ -151,4 +185,31 @@ body {
 
 .pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Mask for fading edges */
+.mask-fade-right {
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+
+.mask-fade-both {
+  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

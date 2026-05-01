@@ -112,19 +112,27 @@ public class CombatListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onEntityDeath(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
-        if (entity instanceof Player) return; // Handled in PlayerDeathEvent
-        if (entity.getKiller() == null) return; // Only drop if killed by player
-
         int dropAmount = 0;
+        int xpAmount = 0;
 
         if (isBoss(entity)) {
             dropAmount = ThreadLocalRandom.current().nextInt(1000, 5001); // 1K - 5K shards
+            xpAmount = ThreadLocalRandom.current().nextInt(250, 1001);   // 250 - 1K XP
         } else if (isHostileMob(entity)) {
-            dropAmount = ThreadLocalRandom.current().nextInt(5, 26); // 5 - 25 shards
+            dropAmount = ThreadLocalRandom.current().nextInt(5, 26);     // 5 - 25 shards
+            xpAmount = ThreadLocalRandom.current().nextInt(10, 26);      // 10 - 25 XP
         }
 
         if (dropAmount > 0) {
             event.getDrops().add(specialItems.createPhysicalShard(dropAmount));
+        }
+
+        // ---- XP Gain ----
+        Player killer = entity.getKiller();
+        if (killer != null && xpAmount > 0) {
+            economyManager.addXp(killer.getUniqueId(), xpAmount);
+            killer.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                    new TextComponent("§a§l+ " + xpAmount + " XP"));
         }
     }
 

@@ -19,21 +19,7 @@
         "threshold": 5002.0,
         "model": {
           "type": "minecraft:model",
-          "model": "minecraft:item/wooden_sword"
-        }
-      },
-      {
-        "threshold": 5002.0,
-        "model": {
-          "type": "minecraft:model",
           "model": "minecraft:item/custom_weapons/ronin/diamond_katana/diamond_katana"
-        }
-      },
-      {
-        "threshold": 5003.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/wooden_sword"
         }
       },
       {
@@ -47,21 +33,7 @@
         "threshold": 5004.0,
         "model": {
           "type": "minecraft:model",
-          "model": "minecraft:item/wooden_sword"
-        }
-      },
-      {
-        "threshold": 5004.0,
-        "model": {
-          "type": "minecraft:model",
           "model": "minecraft:item/custom_weapons/ronin/bone_katana/bone_katana"
-        }
-      },
-      {
-        "threshold": 5005.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/wooden_sword"
         }
       },
       {

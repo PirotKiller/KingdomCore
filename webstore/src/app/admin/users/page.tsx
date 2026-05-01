@@ -85,15 +85,77 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="glass-card overflow-hidden">
+      {/* Mobile View: Cards */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {loading && users.length === 0 ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="glass-card p-5 h-32 animate-pulse bg-white/5 border-white/10" />
+          ))
+        ) : users.length === 0 ? (
+          <div className="glass-card p-10 text-center text-[var(--text-muted)] italic">
+            No users found
+          </div>
+        ) : (
+          users.map((user) => (
+            <div key={user._id} className="glass-card p-5 border-white/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={user.discordAvatar || "https://cdn.discordapp.com/embed/avatars/0.png"} 
+                    alt="" 
+                    className="w-10 h-10 rounded-full border border-white/10" 
+                  />
+                  <div>
+                    <div className="text-white font-bold text-sm">{user.discordUsername}</div>
+                    <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-tighter">{user.discordId}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => toggleAdmin(user._id, user.isAdmin)}
+                  disabled={toggling !== null}
+                  className={`group px-3 py-1 rounded-lg border transition-all flex items-center gap-2 ${
+                    user.isAdmin 
+                      ? "bg-amber-400/10 border-amber-400/50 text-amber-400" 
+                      : "bg-white/5 border-white/10 text-[var(--text-muted)]"
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${user.isAdmin ? "bg-amber-400 animate-pulse" : "bg-gray-600"}`} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">{user.isAdmin ? "Admin" : "User"}</span>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between py-3 border-t border-b border-white/5">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] mb-1">Minecraft</span>
+                  {user.minecraftUsername ? (
+                    <div className="flex items-center gap-2">
+                      <img src={`https://mc-heads.net/avatar/${user.minecraftUsername}/24`} alt="" className="w-4 h-4 rounded" />
+                      <span className="text-emerald-400 text-xs font-bold">{user.minecraftUsername}</span>
+                    </div>
+                  ) : (
+                    <span className="text-white/20 text-xs italic">Not linked</span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <span className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] mb-1 block">Joined</span>
+                  <span className="text-[var(--text-secondary)] text-xs tabular-nums">{new Date(user.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          )))
+        }
+      </div>
+
+      {/* Desktop View: Table */}
+      <div className="hidden md:block glass-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)] bg-white/5">
-                <th className="px-6 py-4 font-bold uppercase tracking-wider">Discord</th>
-                <th className="px-6 py-4 font-bold uppercase tracking-wider">Minecraft</th>
-                <th className="px-6 py-4 font-bold uppercase tracking-wider">Role</th>
-                <th className="px-6 py-4 font-bold uppercase tracking-wider">Joined</th>
+                <th className="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Discord</th>
+                <th className="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Minecraft</th>
+                <th className="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Role</th>
+                <th className="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Joined</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
@@ -129,10 +191,10 @@ export default function AdminUsersPage() {
                       {user.minecraftUsername ? (
                         <div className="flex items-center gap-2">
                           <img src={`https://mc-heads.net/avatar/${user.minecraftUsername}/24`} alt="" className="w-5 h-5 rounded" />
-                          <span className="text-emerald-400">{user.minecraftUsername}</span>
+                          <span className="text-emerald-400 font-bold">{user.minecraftUsername}</span>
                         </div>
                       ) : (
-                        <span className="text-[var(--text-muted)] text-xs uppercase tracking-tight">Not linked</span>
+                        <span className="text-[var(--text-muted)] text-[10px] uppercase tracking-tight">Not linked</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -146,11 +208,11 @@ export default function AdminUsersPage() {
                         }`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${user.isAdmin ? "bg-amber-400 animate-pulse" : "bg-gray-600 group-hover:bg-gray-400"}`} />
-                        {user.isAdmin ? "Admin" : "User"}
+                        <span className="text-[10px] font-black uppercase tracking-widest">{user.isAdmin ? "Admin" : "User"}</span>
                         {toggling === user._id && <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />}
                       </button>
                     </td>
-                    <td className="px-6 py-4 text-[var(--text-muted)] tabular-nums">
+                    <td className="px-6 py-4 text-[var(--text-muted)] tabular-nums text-xs">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                   </tr>

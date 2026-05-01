@@ -75,7 +75,7 @@ public class ShopGUI {
         page = Math.max(0, Math.min(page, totalPages - 1));
 
         // Always 54 slots (double chest)
-        Inventory inv = Bukkit.createInventory(null, 54, title);
+        Inventory inv = Bukkit.createInventory(new ShopHolder(shopType, page), 54, title);
 
         // Fill borders
         fillBorder(inv, shopType);

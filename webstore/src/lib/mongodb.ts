@@ -38,6 +38,7 @@ async function dbConnect() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      dbName: "kingdomcore",
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => m);

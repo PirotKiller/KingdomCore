@@ -6,22 +6,24 @@
  [ PLAYER COMMANDS ] - Available to all by default
 ------------------------------------------------------------
 
-/shop [type] (Aliases: /s)
-  - Description: Opens the main shop menu or a specific shop.
-  - Subcommands:
-      • /shop wood      - Buy wood, leaves, and saplings.
-      • /shop stone     - Buy stones, bricks, and ores.
-      • /shop fisherman - Buy fish, rods, and aquatic items.
-      • /shop fletcher  - Buy bows, arrows, and fletching gear.
-      • /shop redstone  - Buy redstone components and machinery.
-      • /shop farming   - Buy seeds, food, and farming tools.
-      • /shop armor     - Buy armor sets and defense gear.
-      • /shop enchant   - Buy enchanted items and magic gear.
-      • /shop potion    - Buy potions and brewing ingredients.
-      • /shop nether    - Buy nether-specific blocks and drops.
-      • /shop end       - Buy end-specific materials.
-      • /shop sell      - Open the Bulk Sell GUI to earn Shards.
-      • /shop convert   - Open the Gem/Shard Converter GUI.
+/shop [category] (Aliases: /s)
+  - Description: Opens the main shop menu or a specific category.
+  - Permission: kingdomcore.shop
+  - Available Categories:
+      • wood      - Buy wood, leaves, and saplings.
+      • stone     - Buy stones, bricks, and ores.
+      • fisherman - Buy fish, rods, and aquatic items.
+      • fletcher  - Buy bows, arrows, and fletching gear.
+      • redstone  - Buy redstone components and machinery.
+      • farming   - Buy seeds, food, and farming tools.
+      • armor     - Buy armor sets and defense gear.
+      • enchant   - Buy enchanted items and magic gear.
+      • potion    - Buy potions and brewing ingredients.
+      • nether    - Buy nether-specific blocks and drops.
+      • end       - Buy end-specific materials.
+  - Utility Subcommands:
+      • sell      - Open the Bulk Sell GUI to earn Shards.
+      • convert   - Open the Gem/Shard Converter GUI.
 
 /ah [sell <price>] (Aliases: /auctionhouse)
   - Description: Opens the Auction House or puts an item up for sale.

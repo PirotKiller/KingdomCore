@@ -140,12 +140,7 @@
     }
   },
   "overrides": [
-    {
-      "predicate": {
-        "blocking": 1
-      },
-      "model": "minecraft:item/shield_blocking"
-    },
+
     {
       "predicate": {
         "custom_model_data": 2001
@@ -210,6 +205,12 @@
         "blocking": 1
       },
       "model": "item/custom_weapons/knight/chaosshield/shield_dark_blocking"
+    },
+    {
+      "predicate": {
+        "blocking": 1
+      },
+      "model": "minecraft:item/shield_blocking"
     }
   ]
 }

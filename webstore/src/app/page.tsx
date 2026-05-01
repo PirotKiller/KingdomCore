@@ -47,7 +47,7 @@ export default function HomePage() {
           </div>
 
           {/* Title with Advanced Gradient Styling */}
-          <h1 className="text-6xl sm:text-8xl font-black tracking-tighter mb-8 leading-none">
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter mb-6 sm:mb-8 leading-tight sm:leading-none">
             <span className="bg-gradient-to-br from-white via-purple-300 to-purple-500 bg-clip-text text-transparent drop-shadow-sm">
               THE KINGDOM
             </span>
@@ -55,17 +55,17 @@ export default function HomePage() {
             <span className="text-white">WEB STORE</span>
           </h1>
 
-          <p className="text-xl sm:text-2xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
+          <p className="text-lg sm:text-xl lg:text-2xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 sm:mb-12 leading-relaxed font-medium px-4">
             Power up your adventure. Buy Gems, Shards, exclusive items, and ranks to dominate the server.
           </p>
 
           {/* CTA with Glassmorphism and Hover Effects */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="flex flex-col xs:flex-row items-center justify-center gap-4 sm:gap-6 px-4">
             <Link
               href="/store"
-              className="group relative px-10 py-4 text-xl font-bold rounded-2xl bg-white text-black hover:bg-[var(--accent)] hover:text-white transition-all overflow-hidden"
+              className="w-full xs:w-auto group relative px-8 sm:px-10 py-4 text-lg sm:text-xl font-bold rounded-2xl bg-white text-black hover:bg-[var(--accent)] hover:text-white transition-all overflow-hidden text-center"
             >
-              <span className="relative z-10 flex items-center gap-2">
+              <span className="relative z-10 flex items-center justify-center gap-2">
                 Browse Store
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -74,7 +74,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/account"
-              className="px-10 py-4 text-xl font-bold rounded-2xl border-2 border-white/10 text-white hover:bg-white/5 hover:border-white/20 transition-all backdrop-blur-sm"
+              className="w-full xs:w-auto px-8 sm:px-10 py-4 text-lg sm:text-xl font-bold rounded-2xl border-2 border-white/10 text-white hover:bg-white/5 hover:border-white/20 transition-all backdrop-blur-sm text-center"
             >
               Link Account
             </Link>
@@ -82,7 +82,7 @@ export default function HomePage() {
         </div>
 
         {/* Stats cards with premium layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-24 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mt-16 sm:mt-24 max-w-5xl mx-auto px-4">
           {[
             { icon: "💎", title: "Gems & Shards", sub: "Premium Currency", color: "amber" },
             { icon: "⚔️", title: "Exclusive Items", sub: "Weapons & Armor", color: "emerald" },
@@ -90,12 +90,12 @@ export default function HomePage() {
           ].map((stat, i) => (
             <div 
               key={stat.title} 
-              className="glass-card p-10 text-center float group hover:bg-white/[0.03] transition-colors"
+              className={`glass-card p-6 sm:p-10 text-center float group hover:bg-white/[0.03] transition-colors ${i === 2 ? 'xs:col-span-2 lg:col-span-1' : ''}`}
               style={{ animationDelay: `${i * 0.2}s` }}
             >
-              <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-500">{stat.icon}</div>
-              <div className="text-lg font-bold text-white">{stat.title}</div>
-              <div className="text-sm text-[var(--text-secondary)] mt-1">{stat.sub}</div>
+              <div className="text-4xl sm:text-5xl mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-500">{stat.icon}</div>
+              <div className="text-base sm:text-lg font-bold text-white">{stat.title}</div>
+              <div className="text-xs sm:text-sm text-[var(--text-secondary)] mt-1">{stat.sub}</div>
             </div>
           ))}
         </div>

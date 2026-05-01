@@ -19,21 +19,7 @@
         "threshold": 4002.0,
         "model": {
           "type": "minecraft:model",
-          "model": "minecraft:item/iron_sword"
-        }
-      },
-      {
-        "threshold": 4002.0,
-        "model": {
-          "type": "minecraft:model",
           "model": "minecraft:item/custom_weapons/rogue/diamond_dagger/spirit_magic_dagger"
-        }
-      },
-      {
-        "threshold": 4003.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/iron_sword"
         }
       },
       {
@@ -47,21 +33,7 @@
         "threshold": 4004.0,
         "model": {
           "type": "minecraft:model",
-          "model": "minecraft:item/iron_sword"
-        }
-      },
-      {
-        "threshold": 4004.0,
-        "model": {
-          "type": "minecraft:model",
           "model": "minecraft:item/custom_weapons/rogue/bone_dagger/bone_dagger"
-        }
-      },
-      {
-        "threshold": 4005.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/iron_sword"
         }
       },
       {

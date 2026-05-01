@@ -90,13 +90,6 @@
       {
         "threshold": 1002.0,
         "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/bow"
-        }
-      },
-      {
-        "threshold": 1002.0,
-        "model": {
           "type": "minecraft:condition",
           "property": "minecraft:using_item",
           "on_true": {
@@ -135,13 +128,6 @@
             "type": "minecraft:model",
             "model": "minecraft:item/custom_weapons/archer/diamondbow/diamond_bow"
           }
-        }
-      },
-      {
-        "threshold": 1003.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/bow"
         }
       },
       {
@@ -190,13 +176,6 @@
       {
         "threshold": 1004.0,
         "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/bow"
-        }
-      },
-      {
-        "threshold": 1004.0,
-        "model": {
           "type": "minecraft:condition",
           "property": "minecraft:using_item",
           "on_true": {
@@ -235,13 +214,6 @@
             "type": "minecraft:model",
             "model": "minecraft:item/custom_weapons/archer/bonebow/model"
           }
-        }
-      },
-      {
-        "threshold": 1005.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/bow"
         }
       },
       {

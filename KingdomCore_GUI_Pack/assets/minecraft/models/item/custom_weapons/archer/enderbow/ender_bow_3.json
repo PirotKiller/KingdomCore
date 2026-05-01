@@ -1,7 +1,7 @@
 {
   "textures": {
-    "1": "item/custom_weapons/archer/enderbow/Ender_bow_3",
-    "particle": "item/custom_weapons/archer/enderbow/Ender_bow_3"
+    "1": "item/custom_weapons/archer/enderbow/ender_bow_3",
+    "particle": "item/custom_weapons/archer/enderbow/ender_bow_3"
   },
   "elements": [
     {

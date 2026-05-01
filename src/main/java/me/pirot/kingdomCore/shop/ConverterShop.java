@@ -15,6 +15,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import org.bukkit.inventory.InventoryHolder;
+import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
@@ -22,7 +24,7 @@ import java.util.*;
  * On close or clicking 'Sell', items are evaluated and Shards awarded.
  * Enhanced with themed visuals, price preview, and rich formatting.
  */
-public class ConverterShop implements Listener {
+public class ConverterShop implements Listener, InventoryHolder {
 
     private final me.pirot.kingdomCore.KingdomCore plugin;
     private final EconomyManager economyManager;
@@ -45,11 +47,16 @@ public class ConverterShop implements Listener {
         this.converterTitle = "§8§l[ §a§lOre Converter §8§l]";
     }
 
+    @Override
+    public @NotNull Inventory getInventory() {
+        return Bukkit.createInventory(this, 54, converterTitle);
+    }
+
     /**
      * Open the converter GUI for a player.
      */
     public void openConverter(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 54, converterTitle);
+        Inventory inv = getInventory();
 
         // Fill themed border
         fillConverterBorder(inv);
@@ -134,57 +141,52 @@ public class ConverterShop implements Listener {
     @EventHandler
     public void onConverterClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        if (!activeConverters.contains(player.getUniqueId())) return;
-
-        String title = event.getView().getTitle();
-        if (!title.equals(converterTitle)) return;
+        // Robust check using InventoryHolder
+        if (!(event.getInventory().getHolder() instanceof ConverterShop)) return;
 
         int slot = event.getRawSlot();
 
-        // Handle Gem Conversion (slot 48)
-        if (slot == 48) {
-            event.setCancelled(true);
-            int gemsRequired = event.isRightClick() ? 100 : 10;
-            int shardsAwarded = event.isRightClick() ? 100000 : 10000;
-            
-            java.util.UUID uuid = player.getUniqueId();
-            if (economyManager.getGems(uuid) >= gemsRequired) {
-                // Use EconomyManager methods — they call updateLocal() + savePlayer()
-                economyManager.removeGems(uuid, gemsRequired);
-                economyManager.addShards(uuid, shardsAwarded);
-                player.sendMessage("§b§l[Kingdom] §7Converted §b" + gemsRequired + " Gems §7into §a" + String.format("%,d", shardsAwarded) + " Shards§7!");
-                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
-                
-                // --- LOGGING ---
-                plugin.getMongoManager().logAction(new org.bson.Document()
-                        .append("source", "GAME")
-                        .append("type", "GEM_CONVERSION")
-                        .append("player", new org.bson.Document("uuid", uuid.toString()).append("name", player.getName()))
-                        .append("summary", "Converted " + gemsRequired + " Gems to " + shardsAwarded + " Shards")
-                        .append("currency", new org.bson.Document("shards", shardsAwarded).append("gems", -gemsRequired)));
-            } else {
-                player.sendMessage("§c§l[Kingdom] §7You don't have enough Gems! Need §b" + gemsRequired + "§7.");
-                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_VILLAGER_NO, 1f, 1f);
-            }
-            return;
-        }
-
-        // Allow interaction with non-border input slots (player can place items)
+        // Handle special slots in the top inventory
         if (slot >= 0 && slot < 54) {
-            // Block clicks on border/info
-            if (isBorderSlot(slot) || slot == INFO_SLOT) {
+            // 1. Handle Gem Conversion (slot 48)
+            if (slot == 48) {
                 event.setCancelled(true);
+                int gemsRequired = event.isRightClick() ? 100 : 10;
+                int shardsAwarded = event.isRightClick() ? 100000 : 10000;
+                
+                java.util.UUID uuid = player.getUniqueId();
+                if (economyManager.getGems(uuid) >= gemsRequired) {
+                    economyManager.removeGems(uuid, gemsRequired);
+                    economyManager.addShards(uuid, shardsAwarded);
+                    player.sendMessage("§b§l[Kingdom] §7Converted §b" + gemsRequired + " Gems §7into §a" + String.format("%,d", shardsAwarded) + " Shards§7!");
+                    player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
+                    
+                    plugin.getMongoManager().logAction(new org.bson.Document()
+                            .append("source", "GAME")
+                            .append("type", "GEM_CONVERSION")
+                            .append("player", new org.bson.Document("uuid", uuid.toString()).append("name", player.getName()))
+                            .append("summary", "Converted " + gemsRequired + " Gems to " + shardsAwarded + " Shards")
+                            .append("currency", new org.bson.Document("shards", shardsAwarded).append("gems", -gemsRequired)));
+                } else {
+                    player.sendMessage("§c§l[Kingdom] §7You don't have enough Gems! Need §b" + gemsRequired + "§7.");
+                    player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+                }
                 return;
             }
 
-            // Handle sell button click
+            // 2. Handle Sell Button (slot 49)
             if (slot == SELL_BUTTON_SLOT) {
                 event.setCancelled(true);
                 processConversion(player, event.getInventory());
                 return;
             }
+
+            // 3. Block clicks on other border items or info item
+            if (isBorderSlot(slot) || slot == INFO_SLOT) {
+                event.setCancelled(true);
+                return;
+            }
         }
-        // Allow player inventory clicks (for putting items in)
     }
 
     @EventHandler
@@ -192,8 +194,7 @@ public class ConverterShop implements Listener {
         if (!(event.getPlayer() instanceof Player player)) return;
         if (!activeConverters.remove(player.getUniqueId())) return;
 
-        String title = event.getView().getTitle();
-        if (!title.equals(converterTitle)) return;
+        if (!(event.getInventory().getHolder() instanceof ConverterShop)) return;
 
         // Process any remaining items on close
         processConversion(player, event.getInventory());

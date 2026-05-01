@@ -4,8 +4,8 @@
     32
   ],
   "textures": {
-    "0": "item/custom_weapons/archer/diamondbow/Diamond_bow",
-    "particle": "item/custom_weapons/archer/diamondbow/Diamond_bow"
+    "0": "item/custom_weapons/archer/diamondbow/diamond_bow",
+    "particle": "item/custom_weapons/archer/diamondbow/diamond_bow"
   },
   "elements": [
     {

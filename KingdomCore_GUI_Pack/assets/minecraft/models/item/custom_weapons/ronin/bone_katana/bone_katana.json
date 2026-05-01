@@ -4,7 +4,7 @@
     28
   ],
   "textures": {
-    "1": "item/custom_weapons/ronin/bone_katana/Bone_Katana"
+    "1": "item/custom_weapons/ronin/bone_katana/bone_katana"
   },
   "elements": [
     {

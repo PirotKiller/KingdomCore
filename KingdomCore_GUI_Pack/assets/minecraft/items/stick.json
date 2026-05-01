@@ -19,21 +19,7 @@
         "threshold": 3002.0,
         "model": {
           "type": "minecraft:model",
-          "model": "minecraft:item/stick"
-        }
-      },
-      {
-        "threshold": 3002.0,
-        "model": {
-          "type": "minecraft:model",
           "model": "minecraft:item/custom_weapons/wizard/diamond_staff/diamond_staff"
-        }
-      },
-      {
-        "threshold": 3003.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/stick"
         }
       },
       {
@@ -47,21 +33,7 @@
         "threshold": 3004.0,
         "model": {
           "type": "minecraft:model",
-          "model": "minecraft:item/stick"
-        }
-      },
-      {
-        "threshold": 3004.0,
-        "model": {
-          "type": "minecraft:model",
           "model": "minecraft:item/custom_weapons/wizard/bone_staff/staff_cold_blood"
-        }
-      },
-      {
-        "threshold": 3005.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/stick"
         }
       },
       {

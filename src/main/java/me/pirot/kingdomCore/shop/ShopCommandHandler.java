@@ -137,7 +137,7 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
      * Opens the visual Main Menu GUI.
      */
     public void openMainMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 54, MAIN_SHOP_TITLE);
+        Inventory inv = Bukkit.createInventory(new MenuHolder(), 54, MAIN_SHOP_TITLE);
 
         fillMainMenuBorder(inv);
 
@@ -275,8 +275,8 @@ public class ShopCommandHandler implements CommandExecutor, TabCompleter, Listen
     public void onMainMenuClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        String title = event.getView().getTitle();
-        if (!title.equals(MAIN_SHOP_TITLE)) return;
+        // Robust check using InventoryHolder
+        if (!(event.getInventory().getHolder() instanceof MenuHolder)) return;
 
         event.setCancelled(true);
 

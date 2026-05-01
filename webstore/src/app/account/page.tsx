@@ -193,42 +193,70 @@ export default function AccountPage() {
           </div>
         ) : purchases.length > 0 ? (
           <>
-            <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
-                  <th className="px-4 py-3 font-medium">Order ID</th>
-                  <th className="px-4 py-3 font-medium">Item</th>
-                  <th className="px-4 py-3 font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {purchases.map((p) => (
-                  <tr key={p._id} className="border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors">
-                    <td className="px-4 py-3">
-                      <code className="text-[10px] font-bold text-blue-400 bg-blue-400/5 px-2 py-0.5 rounded border border-blue-400/20">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
+                    <th className="px-4 py-3 font-medium">Order ID</th>
+                    <th className="px-4 py-3 font-medium">Item</th>
+                    <th className="px-4 py-3 font-medium">Amount</th>
+                    <th className="px-4 py-3 font-medium">Date</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {purchases.map((p) => (
+                    <tr key={p._id} className="border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors">
+                      <td className="px-4 py-3">
+                        <code className="text-[10px] font-bold text-blue-400 bg-blue-400/5 px-2 py-0.5 rounded border border-blue-400/20">
+                          {p.transactionId || "LEGACY"}
+                        </code>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-white">{p.itemName}</td>
+                      <td className="px-4 py-3 text-emerald-400">
+                        {(p.price / 100).toLocaleString('en-US', { style: 'currency', currency: p.currency.toUpperCase() })}
+                      </td>
+                      <td className="px-4 py-3 text-[var(--text-secondary)]">
+                        {new Date(p.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${p.status === "delivered" ? "bg-emerald-400/10 text-emerald-400" : "bg-amber-400/10 text-amber-400"}`}>
+                          {p.status === "delivered" ? "Delivered" : "Pending"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {purchases.map((p) => (
+                <div key={p._id} className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-bold text-white mb-1">{p.itemName}</div>
+                      <code className="text-[9px] font-bold text-blue-400 bg-blue-400/5 px-2 py-0.5 rounded border border-blue-400/20">
                         {p.transactionId || "LEGACY"}
                       </code>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-white">{p.itemName}</td>
-                    <td className="px-4 py-3 text-emerald-400">
-                      {(p.price / 100).toLocaleString('en-US', { style: 'currency', currency: p.currency.toUpperCase() })}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--text-secondary)]">
-                      {new Date(p.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${p.status === "delivered" ? "bg-emerald-400/10 text-emerald-400" : "bg-amber-400/10 text-amber-400"}`}>
-                        {p.status === "delivered" ? "Delivered" : "Pending"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-emerald-400 font-bold">
+                        {(p.price / 100).toLocaleString('en-US', { style: 'currency', currency: p.currency.toUpperCase() })}
+                      </div>
+                      <div className="text-[10px] text-[var(--text-muted)]">{new Date(p.createdAt).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${p.status === "delivered" ? "bg-emerald-400/10 text-emerald-400" : "bg-amber-400/10 text-amber-400"}`}>
+                      {p.status === "delivered" ? "Delivered" : "Pending"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           <Pagination
             page={page}
             total={total}
@@ -254,21 +282,53 @@ export default function AccountPage() {
               <div className="h-10 bg-[var(--bg-secondary)] rounded w-full" style={{ opacity: 0.5 }}></div>
             </div>
           ) : history.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
-                    <th className="px-4 py-3 font-medium">Action</th>
-                    <th className="px-4 py-3 font-medium">Reason</th>
-                    <th className="px-4 py-3 font-medium">Duration</th>
-                    <th className="px-4 py-3 font-medium text-right">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <>
+              <div className="space-y-4">
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
+                        <th className="px-4 py-3 font-medium">Action</th>
+                        <th className="px-4 py-3 font-medium">Reason</th>
+                        <th className="px-4 py-3 font-medium">Duration</th>
+                        <th className="px-4 py-3 font-medium text-right">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.map((log) => (
+                        <tr key={log._id} className="border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors">
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded border ${
+                                log.action === 'ban' || log.action === 'tempban' ? 'text-red-400 bg-red-400/10 border-red-400/20' :
+                                log.action === 'kick' ? 'text-amber-400 bg-amber-400/10 border-amber-400/20' :
+                                log.action === 'mute' ? 'text-violet-400 bg-violet-400/10 border-violet-400/20' :
+                                'text-blue-400 bg-blue-400/10 border-blue-400/20'
+                            }`}>
+                              {log.action}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--text-secondary)] italic">
+                            {log.reason || "No reason specified"}
+                          </td>
+                          <td className="px-4 py-3 text-[var(--text-muted)] font-mono text-xs">
+                            {log.duration || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-[var(--text-muted)] text-right tabular-nums">
+                            {new Date(log.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-4">
                   {history.map((log) => (
-                    <tr key={log._id} className="border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors">
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded border ${
+                    <div key={log._id} className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border ${
                             log.action === 'ban' || log.action === 'tempban' ? 'text-red-400 bg-red-400/10 border-red-400/20' :
                             log.action === 'kick' ? 'text-amber-400 bg-amber-400/10 border-amber-400/20' :
                             log.action === 'mute' ? 'text-violet-400 bg-violet-400/10 border-violet-400/20' :
@@ -276,20 +336,23 @@ export default function AccountPage() {
                         }`}>
                           {log.action}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 text-[var(--text-secondary)] italic">
-                        {log.reason || "No reason specified"}
-                      </td>
-                      <td className="px-4 py-3 text-[var(--text-muted)] font-mono text-xs">
-                        {log.duration || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-[var(--text-muted)] text-right tabular-nums">
-                        {new Date(log.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
+                        <span className="text-[10px] text-[var(--text-muted)] tabular-nums">
+                          {new Date(log.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[var(--text-secondary)] italic">
+                        "{log.reason || "No reason specified"}"
+                      </p>
+                      {log.duration && (
+                        <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-mono">
+                          <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full"></span>
+                          {log.duration}
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
               <Pagination
                 page={historyPage}
                 total={historyTotal}
@@ -298,7 +361,7 @@ export default function AccountPage() {
                 onPageChange={setHistoryPage}
                 loading={loadingHistory}
               />
-            </div>
+            </>
           ) : (
             <p className="text-[var(--text-secondary)] text-sm">Great job! You have no recorded punishments.</p>
           )}

@@ -51,9 +51,8 @@ public class GUIListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        // Check if this is a shop inventory by title prefix
-        String title = event.getView().getTitle();
-        if (!title.startsWith(ShopGUI.SHOP_IDENTIFIER)) return;
+        // Check if this is a shop inventory by Holder
+        if (!(event.getInventory().getHolder() instanceof ShopHolder)) return;
 
         // It's a shop GUI — cancel the event to prevent taking items
         event.setCancelled(true);

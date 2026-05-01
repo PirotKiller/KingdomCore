@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 export const revalidate = 60; // Cache for 60 seconds
 
 export async function GET() {
+  const serverIp = process.env.NEXT_PUBLIC_SERVER_IP || "play.kingdom.net";
+  
   try {
-    const res = await fetch("https://api.mcsrvstat.us/2/pic.thekingdom.net", {
+    const res = await fetch(`https://api.mcsrvstat.us/2/${serverIp}`, {
       next: { revalidate: 60 }
     });
     const data = await res.json();

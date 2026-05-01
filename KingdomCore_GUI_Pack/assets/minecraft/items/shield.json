@@ -34,13 +34,6 @@
       {
         "threshold": 2002.0,
         "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
-        }
-      },
-      {
-        "threshold": 2002.0,
-        "model": {
           "type": "minecraft:condition",
           "property": "minecraft:using_item",
           "on_true": {
@@ -56,30 +49,16 @@
       {
         "threshold": 2003.0,
         "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
-        }
-      },
-      {
-        "threshold": 2003.0,
-        "model": {
           "type": "minecraft:condition",
-	  "property": "minecraft:using_item",
+          "property": "minecraft:using_item",
           "on_true": {
-	    "type": "minecraft:model",
+            "type": "minecraft:model",
             "model": "minecraft:item/custom_weapons/knight/endershield/midas_shield_blocking"
-	  },
-	  "on_false": {
+          },
+          "on_false": {
             "type": "minecraft:model",
             "model": "minecraft:item/custom_weapons/knight/endershield/midas_shield"
           }
-        }
-      },
-      {
-        "threshold": 2004.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
         }
       },
       {
@@ -95,13 +74,6 @@
             "type": "minecraft:model",
             "model": "minecraft:item/custom_weapons/knight/boneshield/bone_shield"
           }
-        }
-      },
-      {
-        "threshold": 2005.0,
-        "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
         }
       },
       {

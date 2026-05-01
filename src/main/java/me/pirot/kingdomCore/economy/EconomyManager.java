@@ -165,9 +165,10 @@ public class EconomyManager {
         if (data != null) {
             int levelsGained = data.addXp(amount);
             data.updateLocal();
-            savePlayer(uuid);
 
+            // Save immediately on level up, otherwise rely on periodic save
             if (levelsGained > 0) {
+                savePlayer(uuid);
                 Document log = new Document("timestamp", new java.util.Date())
                         .append("source", "GAME")
                         .append("type", "LEVEL_UP")
@@ -264,43 +265,31 @@ public class EconomyManager {
                     PlayerData data = cache.get(uuid);
                     if (data == null) return;
 
-                    // If we updated locally in the last 10 seconds, ignore the sync to avoid reverts
-                    // while MongoDB is catching up with our recent saves.
+                    // Skip sync if player recently updated data locally (e.g., just killed a mob)
                     if (System.currentTimeMillis() - data.getLastLocalUpdate() < 10000) {
                         return;
                     }
 
-                    int webGems = doc.getInteger("gems", 0);
-                    int webShards = doc.getInteger("shards", 0);
-                    int webBounty = doc.getInteger("bounty", 0);
-                    int webLevel = doc.getInteger("level", data.getLevel());
+                    // Safe integer parsing for all fields (handles Double/Long from web scripts)
+                    int webGems = getSafeInt(doc, "gems", data.getGems());
+                    int webShards = getSafeInt(doc, "shards", data.getShards());
+                    int webBounty = getSafeInt(doc, "bounty", data.getBounty());
+                    int webLevel = getSafeInt(doc, "level", data.getLevel());
+                    int webXp = getSafeInt(doc, "xp", data.getXp());
                     
                     boolean updated = false;
 
-                    // Sync Gems, Shards, Level, and Bounty if they differ from local
-                    // Note: We use != to allow admin overrides (even reductions)
-                    if (webGems != data.getGems()) {
-                        data.setGems(webGems);
-                        updated = true;
-                    }
-                    
-                    if (webShards != data.getShards()) {
-                        data.setShards(webShards);
-                        updated = true;
-                    }
+                    if (webGems != data.getGems()) { data.setGems(webGems); updated = true; }
+                    if (webShards != data.getShards()) { data.setShards(webShards); updated = true; }
+                    if (webBounty != data.getBounty()) { data.setBounty(webBounty); updated = true; }
+                    if (webLevel != data.getLevel()) { data.setLevel(webLevel); updated = true; }
+                    if (webXp != data.getXp()) { data.setXp(webXp); updated = true; }
 
-                    if (webLevel != data.getLevel()) {
-                        data.setLevel(webLevel);
+                    // If DB has a different class (e.g. set via web panel), update it
+                    String webClass = doc.getString("class");
+                    if (webClass != null && !webClass.equals(data.getClassName())) {
+                        data.setClassName(webClass);
                         updated = true;
-                    }
-
-                    if (webBounty != data.getBounty()) {
-                        data.setBounty(webBounty);
-                        updated = true;
-                    }
-
-                    if (updated) {
-                        // Silent update
                     }
                 });
             }
@@ -312,6 +301,12 @@ public class EconomyManager {
             plugin.getLogger().info("[KingdomCore] Performing periodic background save for " + cache.size() + " players...");
             saveAll();
         }, 6000L, 6000L); // Every 5 minutes
+    }
+
+    private int getSafeInt(Document doc, String key, int defaultValue) {
+        Object val = doc.get(key);
+        if (val instanceof Number n) return n.intValue();
+        return defaultValue;
     }
 
     public Map<UUID, PlayerData> getCache() {

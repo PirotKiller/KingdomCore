@@ -1,0 +1,13 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "item/wooden_sword"
+  },
+  "overrides": [
+    { "predicate": { "custom_model_data": 5001 }, "model": "item/custom_weapons/ronin/gold_katana/katana_yellow" },
+    { "predicate": { "custom_model_data": 5002 }, "model": "item/custom_weapons/ronin/diamond_katana/diamond_katana" },
+    { "predicate": { "custom_model_data": 5003 }, "model": "item/custom_weapons/ronin/ender_katana/katana_purple" },
+    { "predicate": { "custom_model_data": 5004 }, "model": "item/custom_weapons/ronin/bone_katana/bone_katana" },
+    { "predicate": { "custom_model_data": 5005 }, "model": "item/custom_weapons/ronin/chaos_katana/odachi_dark" }
+  ]
+}

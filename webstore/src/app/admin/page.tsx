@@ -248,9 +248,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Recent Activity Table */}
-      <div>
-        <div className="flex items-center justify-between mb-8">
+      {/* Recent Activity Section */}
+      <div className="space-y-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
              <span className="w-5 h-5 bg-amber-400 rounded-lg flex items-center justify-center text-xs">🕒</span>
              RECENT PURCHASES
@@ -260,7 +260,48 @@ export default function AdminDashboard() {
           </span>
         </div>
         
-        <div className="glass-card overflow-hidden border-white/5">
+        {/* Mobile View: Cards */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
+          {!stats || stats.recentPurchases.length === 0 ? (
+            <div className="glass-card p-10 text-center text-[var(--text-secondary)] italic">
+              No recent purchases recorded.
+            </div>
+          ) : (
+            stats.recentPurchases.map((p) => {
+              const customerName = p.userId?.minecraftUsername || p.userId?.discordUsername || "Unknown User";
+              return (
+                <div key={p._id} className="glass-card p-5 border-white/5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xl">👤</div>
+                      <div>
+                        <div className="font-bold text-white text-sm">{customerName}</div>
+                        <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-tighter">{p.userId?.discordId || "External"}</div>
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                      p.status === 'delivered' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-amber-400/10 text-amber-400 animate-pulse'
+                    }`}>
+                      {p.status}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-3 border-t border-b border-white/5">
+                    <span className="text-xs text-[var(--text-secondary)] font-medium">{p.itemName}</span>
+                    <span className="text-emerald-400 font-black tracking-tight text-lg">${(p.price / 100).toFixed(2)}</span>
+                  </div>
+
+                  <div className="text-[10px] text-[var(--text-muted)]">
+                    {new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block glass-card overflow-hidden border-white/5">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

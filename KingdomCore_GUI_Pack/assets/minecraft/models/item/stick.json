@@ -1,0 +1,13 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "minecraft:item/stick"
+  },
+  "overrides": [
+    { "predicate": { "custom_model_data": 3001 }, "model": "item/custom_weapons/wizard/gold_staff/goldstaff" },
+    { "predicate": { "custom_model_data": 3002 }, "model": "item/custom_weapons/wizard/diamond_staff/diamond_staff" },
+    { "predicate": { "custom_model_data": 3003 }, "model": "item/custom_weapons/wizard/ender_staff/ender_staff" },
+    { "predicate": { "custom_model_data": 3004 }, "model": "item/custom_weapons/wizard/bone_staff/staff_cold_blood" },
+    { "predicate": { "custom_model_data": 3005 }, "model": "item/custom_weapons/wizard/chaos_staff/staff_dark" }
+  ]
+}
