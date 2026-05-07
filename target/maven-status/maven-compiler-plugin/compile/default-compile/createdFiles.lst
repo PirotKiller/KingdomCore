@@ -1,12 +1,14 @@
 me\pirot\kingdomCore\shop\ShopDataManager.class
 me\pirot\kingdomCore\bounty\BountyCommand.class
 me\pirot\kingdomCore\auction\AuctionCommand.class
+me\pirot\kingdomCore\shop\MenuHolder.class
 me\pirot\kingdomCore\rpg\AnimationManager$3.class
 me\pirot\kingdomCore\database\PlayerData.class
 me\pirot\kingdomCore\web\VerifyCommand.class
 me\pirot\kingdomCore\rpg\ClassListener$1.class
 me\pirot\kingdomCore\rpg\ClassSelectorGUI.class
 me\pirot\kingdomCore\rpg\SpecialItems.class
+me\pirot\kingdomCore\vault\VaultManager.class
 me\pirot\kingdomCore\rpg\CraftingGUI$1.class
 me\pirot\kingdomCore\config\ConfigManager.class
 me\pirot\kingdomCore\database\MongoManager.class
@@ -38,9 +40,11 @@ me\pirot\kingdomCore\rpg\ClassListener.class
 me\pirot\kingdomCore\bounty\BountyManager.class
 me\pirot\kingdomCore\rpg\AnimationManager$5.class
 me\pirot\kingdomCore\shop\ShopGUI.class
+me\pirot\kingdomCore\vault\VaultHolder.class
 me\pirot\kingdomCore\rpg\WeaponManager.class
 me\pirot\kingdomCore\rpg\AnimationManager$2.class
 me\pirot\kingdomCore\shop\ShopGUI$1.class
+me\pirot\kingdomCore\shop\ShopHolder.class
 me\pirot\kingdomCore\rpg\AnimationManager.class
 me\pirot\kingdomCore\rpg\ClassManager$1.class
 me\pirot\kingdomCore\auction\AuctionManager$AuctionListing.class

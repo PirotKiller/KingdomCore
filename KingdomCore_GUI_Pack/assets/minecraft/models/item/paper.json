@@ -1,44 +1,6 @@
 {
-    "parent": "item/generated",
-    "textures": {
-        "layer0": "item/paper"
-    },
-    "overrides": [
-        {
-            "predicate": {
-                "custom_model_data": 9999
-            },
-            "model": "item/custom_gui/background"
-        },
-        {
-            "predicate": {
-                "custom_model_data": 1000
-            },
-            "model": "item/custom_gui/archer"
-        },
-        {
-            "predicate": {
-                "custom_model_data": 2000
-            },
-            "model": "item/custom_gui/knight"
-        },
-        {
-            "predicate": {
-                "custom_model_data": 3000
-            },
-            "model": "item/custom_gui/wizard"
-        },
-        {
-            "predicate": {
-                "custom_model_data": 4000
-            },
-            "model": "item/custom_gui/rogue"
-        },
-        {
-            "predicate": {
-                "custom_model_data": 5000
-            },
-            "model": "item/custom_gui/ronin"
-        }
-    ]
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/paper"
+  }
 }

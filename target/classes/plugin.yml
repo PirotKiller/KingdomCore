@@ -27,10 +27,6 @@ commands:
   verify:
     description: Link your Minecraft account to the webstore
     usage: /verify <code>
-  resourcepack:
-    description: Download the server resource pack.
-    usage: /resourcepack
-    aliases: [rp]
   admin:
     description: Open the in-game admin panel
     usage: /admin [player <name>]
@@ -47,6 +43,10 @@ commands:
     description: Economy base command
     usage: /eco [note <amount>]
     aliases: [economy, balance, bal]
+  vault:
+    description: Open your personal vault (survives resets)
+    usage: /vault
+    aliases: [v, storage]
 
 permissions:
   kingdomcore.shop:

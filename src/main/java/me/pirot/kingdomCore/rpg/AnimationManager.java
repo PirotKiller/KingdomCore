@@ -79,8 +79,11 @@ public class AnimationManager {
         int level = data != null ? data.getLevel() : 1;
         float intensity = 1.0f + (level / 50.0f);
 
+        // Detect weapon hand slot to avoid duplication/switching bugs
+        EnumWrappers.ItemSlot originalSlot = getHandOfWeapon(player, weapon);
+
         // Hide real weapon via packets
-        updateVisualEquipment(player, new ItemStack(Material.AIR));
+        updateVisualEquipment(player, new ItemStack(Material.AIR), originalSlot);
 
         Location spawnLoc = player.getEyeLocation().add(0, 1, 0);
         ItemDisplay display = spawnSafeDisplay(player, spawnLoc, weapon);
@@ -98,7 +101,7 @@ public class AnimationManager {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (!player.isOnline()) { cleanupAll(player, weapon); return; }
+                if (!player.isOnline()) { cleanupAll(player, weapon, originalSlot); return; }
 
                 // Phase 2: CRUSHING SLAM — 5 ticks, fast and heavy
                 display.setInterpolationDuration(5);
@@ -121,7 +124,7 @@ public class AnimationManager {
                         w.spawnParticle(Particle.LARGE_SMOKE, impact, (int)(20 * intensity), 1.5, 0.2, 1.5, 0.05);
                         w.playSound(impact, Sound.ENTITY_DRAGON_FIREBALL_EXPLODE, 1f, 0.8f);
 
-                        // Launch flying blocks into the air
+                        // Launch flying blocks into the air (visual only — never place)
                         Material[] debrisMaterials = {Material.DIRT, Material.COBBLESTONE, Material.GRAVEL, Material.STONE};
                         int blockCount = (int)(4 * intensity);
                         for (int i = 0; i < blockCount; i++) {
@@ -130,18 +133,19 @@ public class AnimationManager {
                                     Math.random() * 2 - 1, 0.5, Math.random() * 2 - 1), mat.createBlockData());
                             fb.setDropItem(false);
                             fb.setHurtEntities(false);
+                            fb.setCancelDrop(true);
                             double vx = (Math.random() - 0.5) * 0.8;
                             double vy = 0.5 + Math.random() * 0.8;
                             double vz = (Math.random() - 0.5) * 0.8;
                             fb.setVelocity(new Vector(vx, vy, vz));
-                            // Remove after 3 seconds to prevent placement
+                            // Remove after 3 seconds
                             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                                 if (!fb.isDead()) fb.remove();
                             }, 60L);
                         }
 
                         spawnShockwave(player, tier, intensity);
-                        cleanupAll(player, weapon);
+                        cleanupAll(player, weapon, originalSlot);
                     }
                 }.runTaskLater(plugin, 5L);
             }
@@ -171,7 +175,10 @@ public class AnimationManager {
         int level = data != null ? data.getLevel() : 1;
         float intensity = 1.0f + (level / 50.0f);
 
-        updateVisualEquipment(player, new ItemStack(Material.AIR));
+        // Detect weapon hand slot to avoid duplication/switching bugs
+        EnumWrappers.ItemSlot originalSlot = getHandOfWeapon(player, weapon);
+
+        updateVisualEquipment(player, new ItemStack(Material.AIR), originalSlot);
 
         Location spawnLoc = player.getEyeLocation().add(
                 player.getLocation().getDirection().setY(0).normalize().multiply(0.5));
@@ -189,7 +196,7 @@ public class AnimationManager {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (!player.isOnline()) { cleanupAll(player, weapon); return; }
+                if (!player.isOnline()) { cleanupAll(player, weapon, originalSlot); return; }
 
                 // Phase 2: WIDE 180° HORIZONTAL SWEEP to the right
                 display.setInterpolationDuration(4);
@@ -205,7 +212,7 @@ public class AnimationManager {
                         player.getEyeLocation().add(player.getLocation().getDirection()), 1);
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1.2f, 1.2f);
 
-                Bukkit.getScheduler().runTaskLater(plugin, () -> cleanupAll(player, weapon), 6L);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> cleanupAll(player, weapon, originalSlot), 6L);
             }
         }.runTaskLater(plugin, 5L);
     }
@@ -219,6 +226,9 @@ public class AnimationManager {
         int level = data != null ? data.getLevel() : 1;
         float intensity = 1.0f + (level / 50.0f);
 
+        // Detect weapon hand slot to avoid duplication/switching bugs
+        EnumWrappers.ItemSlot originalSlot = getHandOfWeapon(player, weapon);
+
         // Phase 1: Brief invisibility + smoke puff at origin
         Location origin = player.getLocation().clone();
         origin.getWorld().spawnParticle(Particle.LARGE_SMOKE, origin.clone().add(0, 1, 0),
@@ -229,13 +239,13 @@ public class AnimationManager {
         player.addPotionEffect(new org.bukkit.potion.PotionEffect(
                 org.bukkit.potion.PotionEffectType.INVISIBILITY, 20, 0, false, false));
 
-        updateVisualEquipment(player, new ItemStack(Material.AIR));
+        updateVisualEquipment(player, new ItemStack(Material.AIR), originalSlot);
 
         // Phase 2: Lunge forward after 5 ticks
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (!player.isOnline()) { cleanupAll(player, weapon); return; }
+                if (!player.isOnline()) { cleanupAll(player, weapon, originalSlot); return; }
 
                 Vector lungeDir = player.getLocation().getDirection().normalize().multiply(1.5);
                 lungeDir.setY(0.2);
@@ -243,7 +253,7 @@ public class AnimationManager {
 
                 // Phase 3: Spawn dagger slash effect at target
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    if (!player.isOnline()) { cleanupAll(player, weapon); return; }
+                    if (!player.isOnline()) { cleanupAll(player, weapon, originalSlot); return; }
 
                     Location slashLoc = player.getEyeLocation().add(
                             player.getLocation().getDirection().multiply(1.0));
@@ -272,7 +282,7 @@ public class AnimationManager {
 
                     // Second slash (opposite diagonal) after 3 ticks
                     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                        if (!player.isOnline()) { cleanupAll(player, weapon); return; }
+                        if (!player.isOnline()) { cleanupAll(player, weapon, originalSlot); return; }
 
                         Location slash2Loc = player.getEyeLocation().add(
                                 player.getLocation().getDirection().multiply(1.0));
@@ -298,7 +308,7 @@ public class AnimationManager {
                         }
 
                         // Cleanup everything
-                        Bukkit.getScheduler().runTaskLater(plugin, () -> cleanupAll(player, weapon), 5L);
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> cleanupAll(player, weapon, originalSlot), 5L);
                     }, 3L);
                 }, 4L);
             }
@@ -314,7 +324,10 @@ public class AnimationManager {
         int level = data != null ? data.getLevel() : 1;
         float intensity = 1.0f + (level / 50.0f);
 
-        updateVisualEquipment(player, new ItemStack(Material.AIR));
+        // Detect weapon hand slot to avoid duplication/switching bugs
+        EnumWrappers.ItemSlot originalSlot = getHandOfWeapon(player, weapon);
+
+        updateVisualEquipment(player, new ItemStack(Material.AIR), originalSlot);
 
         Location bowLoc = player.getEyeLocation().add(player.getLocation().getDirection().multiply(0.5));
         ItemDisplay bowDisp = spawnSafeDisplay(player, bowLoc, weapon);
@@ -327,8 +340,8 @@ public class AnimationManager {
             public void run() {
                 if (ticks >= 10 || !player.isOnline()) {
                     this.cancel();
-                    if (!player.isOnline()) { cleanupAll(player, weapon); return; }
-                    fireVolley(player, weapon, tier, intensity);
+                    if (!player.isOnline()) { cleanupAll(player, weapon, originalSlot); return; }
+                    fireVolley(player, weapon, tier, intensity, originalSlot);
                     return;
                 }
 
@@ -346,7 +359,7 @@ public class AnimationManager {
         }.runTaskTimer(plugin, 0L, 1L);
     }
 
-    private void fireVolley(Player player, ItemStack weapon, WeaponTier tier, float intensity) {
+    private void fireVolley(Player player, ItemStack weapon, WeaponTier tier, float intensity, EnumWrappers.ItemSlot originalSlot) {
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 0.5f);
 
         int arrowCount = (int)(3 + intensity);
@@ -366,7 +379,7 @@ public class AnimationManager {
             }, 1L);
         }
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> cleanupAll(player, weapon), 5L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> cleanupAll(player, weapon, originalSlot), 5L);
     }
 
     // ============================================================
@@ -378,32 +391,22 @@ public class AnimationManager {
         int level = data != null ? data.getLevel() : 1;
         final float intensity = 1.0f + (level / 50.0f);
 
-        updateVisualEquipment(player, new ItemStack(Material.AIR));
+        // Range scales with level: 15 base + 0.5 per level, max 40
+        final int range = Math.min(40, 15 + (level / 2));
 
-        // Phase 1: STAFF RAISE — staff floats above head and spins
-        Location headLoc = player.getEyeLocation().add(0, 0.5, 0);
-        ItemDisplay staff = spawnSafeDisplay(player, headLoc, weapon);
-        staff.setInterpolationDuration(10);
-
-        staff.setTransformation(new Transformation(
-                new Vector3f(0, 1.5f, 0),
-                new Quaternionf().rotationY((float) Math.toRadians(360)),
-                new Vector3f(1.5f, 1.5f, 1.5f),
-                new Quaternionf()
-        ));
-
+        // Casting particles and sound (no staff animation)
         player.getWorld().spawnParticle(Particle.WITCH, player.getLocation().add(0, 2, 0), 30, 0.5, 0.5, 0.5, 0.05);
         player.playSound(player.getLocation(), Sound.BLOCK_BEACON_AMBIENT, 1f, 1.5f);
 
-        // Phase 2: After 10 ticks, spawn meteor at target
+        // After 10 ticks, spawn meteor at target
         new BukkitRunnable() {
             @Override
             public void run() {
                 if (!player.isOnline()) { cleanupAll(player, weapon); return; }
 
-                // Improved targeting: Prefer player if looking at one within 30 blocks
+                // Targeting: Prefer player if looking at one within range
                 Location tLoc = null;
-                List<Entity> targets = player.getNearbyEntities(30, 30, 30);
+                List<Entity> targets = player.getNearbyEntities(range, range, range);
                 Vector direction = player.getLocation().getDirection();
                 Location start = player.getEyeLocation();
                 
@@ -422,9 +425,9 @@ public class AnimationManager {
                 }
 
                 if (tLoc == null) {
-                    tLoc = player.getTargetBlock(null, 30).getLocation();
+                    tLoc = player.getTargetBlock(null, range).getLocation();
                     if (tLoc.getBlock().getType() == Material.AIR) {
-                        tLoc = player.getLocation().add(player.getLocation().getDirection().multiply(10));
+                        tLoc = player.getLocation().add(player.getLocation().getDirection().multiply(range / 2.0));
                     }
                 }
                 final Location targetLoc = tLoc;
@@ -450,19 +453,18 @@ public class AnimationManager {
                     }
                 }.runTaskLater(plugin, 1L);
 
-                // Phase 3: Meteor impact → Explosion and AOE Damage
+                // Phase 2: Meteor impact → Explosion and AOE Damage
                 new BukkitRunnable() {
                     @Override
                     public void run() {
                         World w = targetLoc.getWorld();
                         
-                        // Deal TNT-like damage in 4-block radius (scales with level)
+                        // Deal TNT-like damage (scales with level)
                         float power = 3.0f * intensity; 
                         w.spawnParticle(Particle.EXPLOSION, targetLoc, (int)(5 * intensity), 1, 0.5, 1, 0.1);
                         w.spawnParticle(Particle.LARGE_SMOKE, targetLoc, (int)(30 * intensity), 2, 1, 2, 0.1);
                         spawnTierParticle(targetLoc, tier, (int)(80 * intensity), 2, 1, 2);
                         
-                        // Use createExplosion with source to attribute damage/kills to the Wizard
                         // (false, false) means no fire and no block damage
                         w.createExplosion(targetLoc, power, false, false, player);
                         
@@ -490,9 +492,24 @@ public class AnimationManager {
     }
 
     /**
+     * Helper to find which slot the original weapon was held in.
+     */
+    private EnumWrappers.ItemSlot getHandOfWeapon(Player player, ItemStack weapon) {
+        if (weapon != null && player.getInventory().getItemInOffHand().isSimilar(weapon)) {
+            return EnumWrappers.ItemSlot.OFFHAND;
+        }
+        return EnumWrappers.ItemSlot.MAINHAND;
+    }
+
+    /**
      * Removes ALL active displays for a player and restores their weapon.
      */
     private void cleanupAll(Player player, ItemStack originalWeapon) {
+        EnumWrappers.ItemSlot originalSlot = getHandOfWeapon(player, originalWeapon);
+        cleanupAll(player, originalWeapon, originalSlot);
+    }
+
+    private void cleanupAll(Player player, ItemStack originalWeapon, EnumWrappers.ItemSlot originalSlot) {
         List<ItemDisplay> displays = activeDisplays.remove(player.getUniqueId());
         if (displays != null) {
             for (ItemDisplay d : displays) {
@@ -500,7 +517,7 @@ public class AnimationManager {
             }
         }
         if (player.isOnline()) {
-            updateVisualEquipment(player, originalWeapon);
+            updateVisualEquipment(player, originalWeapon, originalSlot);
         }
     }
 
@@ -536,11 +553,16 @@ public class AnimationManager {
     // ============================================================
 
     private void updateVisualEquipment(Player performer, ItemStack item) {
+        EnumWrappers.ItemSlot originalSlot = getHandOfWeapon(performer, item);
+        updateVisualEquipment(performer, item, originalSlot);
+    }
+
+    private void updateVisualEquipment(Player performer, ItemStack item, EnumWrappers.ItemSlot originalSlot) {
         PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.ENTITY_EQUIPMENT);
         packet.getIntegers().write(0, performer.getEntityId());
 
         List<Pair<EnumWrappers.ItemSlot, ItemStack>> equipment = new ArrayList<>();
-        equipment.add(new Pair<>(EnumWrappers.ItemSlot.MAINHAND, item));
+        equipment.add(new Pair<>(originalSlot, item));
         packet.getSlotStackPairLists().write(0, equipment);
 
         protocolManager.broadcastServerPacket(packet, performer, true);

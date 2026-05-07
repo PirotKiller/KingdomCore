@@ -1,13 +1,6 @@
 {
-  "parent": "item/handheld",
+  "parent": "minecraft:item/handheld",
   "textures": {
-    "layer0": "item/iron_sword"
-  },
-  "overrides": [
-    { "predicate": { "custom_model_data": 4001 }, "model": "item/custom_weapons/rogue/gold_dagger/spirit_flame_dagger" },
-    { "predicate": { "custom_model_data": 4002 }, "model": "item/custom_weapons/rogue/diamond_dagger/spirit_magic_dagger" },
-    { "predicate": { "custom_model_data": 4003 }, "model": "item/custom_weapons/rogue/ender_dagger/spirit_void_dagger" },
-    { "predicate": { "custom_model_data": 4004 }, "model": "item/custom_weapons/rogue/bone_dagger/bone_dagger" },
-    { "predicate": { "custom_model_data": 4005 }, "model": "item/custom_weapons/rogue/chaos_dagger/sword_dark" }
-  ]
+    "layer0": "minecraft:item/iron_sword"
+  }
 }

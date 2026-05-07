@@ -80,7 +80,7 @@
                         <configuration>
                             <target>
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                      tofile="D:/MC servers/purper 1.21.11/plugins/${project.build.finalName}.jar"/>
+                                      tofile="D:/MC servers/kingdomSMP purper 1.21.11/plugins/${project.build.finalName}.jar"/>
                             </target>
                         </configuration>
                     </execution>

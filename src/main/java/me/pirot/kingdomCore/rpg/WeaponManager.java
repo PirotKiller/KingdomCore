@@ -95,6 +95,10 @@ public class WeaponManager {
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE);
         meta.setUnbreakable(true);
 
+        // Make Wizard staves and other custom weapons unstackable
+        meta.setMaxStackSize(1);
+        pdc.set(new NamespacedKey(plugin, "weapon_unique_id"), PersistentDataType.STRING, UUID.randomUUID().toString());
+
         item.setItemMeta(meta);
         return item;
     }

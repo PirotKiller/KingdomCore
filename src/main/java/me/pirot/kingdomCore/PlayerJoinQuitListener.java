@@ -2,6 +2,7 @@ package me.pirot.kingdomCore;
 
 import me.pirot.kingdomCore.economy.EconomyManager;
 import me.pirot.kingdomCore.rpg.ClassManager;
+import me.pirot.kingdomCore.rpg.ClassSelectorGUI;
 import me.pirot.kingdomCore.scoreboard.ScoreboardManager;
 import me.pirot.kingdomCore.shop.ShopGUI;
 import me.pirot.kingdomCore.shop.ShopType;
@@ -22,15 +23,17 @@ public class PlayerJoinQuitListener implements Listener {
     private final ClassManager classManager;
     private final ScoreboardManager scoreboardManager;
     private final ShopGUI shopGUI;
+    private final ClassSelectorGUI classSelectorGUI;
 
     public PlayerJoinQuitListener(KingdomCore plugin, EconomyManager economyManager,
                                   ClassManager classManager, ScoreboardManager scoreboardManager,
-                                  ShopGUI shopGUI) {
+                                  ShopGUI shopGUI, ClassSelectorGUI classSelectorGUI) {
         this.plugin = plugin;
         this.economyManager = economyManager;
         this.classManager = classManager;
         this.scoreboardManager = scoreboardManager;
         this.shopGUI = shopGUI;
+        this.classSelectorGUI = classSelectorGUI;
     }
 
     @EventHandler
@@ -61,6 +64,13 @@ public class PlayerJoinQuitListener implements Listener {
                             me.pirot.kingdomCore.rpg.RPGClass.fromString(className).getColoredName() + "§7!");
                 } else {
                     player.sendMessage("§a§l[Kingdom] §eWelcome! Embark on your legendary quest today.");
+                    player.sendMessage("§a§l[Kingdom] §7Choose your class to begin!");
+                    // Open class selection GUI after a short delay (40 ticks = 2 seconds)
+                    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                        if (player.isOnline()) {
+                            classSelectorGUI.open(player);
+                        }
+                    }, 40L);
                 }
 
                 // Prompt for resource pack if enabled

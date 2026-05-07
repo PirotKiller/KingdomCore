@@ -7,12 +7,18 @@
       "type": "minecraft:condition",
       "property": "minecraft:using_item",
       "on_true": {
-        "type": "minecraft:model",
-        "model": "minecraft:item/shield_blocking"
+        "type": "minecraft:special",
+        "base": "minecraft:item/shield_blocking",
+        "model": {
+          "type": "minecraft:shield"
+        }
       },
       "on_false": {
-        "type": "minecraft:model",
-        "model": "minecraft:item/shield"
+        "type": "minecraft:special",
+        "base": "minecraft:item/shield",
+        "model": {
+          "type": "minecraft:shield"
+        }
       }
     },
     "entries": [
@@ -94,8 +100,22 @@
       {
         "threshold": 2006.0,
         "model": {
-          "type": "minecraft:model",
-          "model": "minecraft:item/shield"
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": {
+            "type": "minecraft:special",
+            "base": "minecraft:item/shield_blocking",
+            "model": {
+              "type": "minecraft:shield"
+            }
+          },
+          "on_false": {
+            "type": "minecraft:special",
+            "base": "minecraft:item/shield",
+            "model": {
+              "type": "minecraft:shield"
+            }
+          }
         }
       }
     ]

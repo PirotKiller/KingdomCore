@@ -280,16 +280,18 @@ public class ClassAbilityListener implements Listener {
         // Trigger Colossal Smash Animation
         animationManager.playKnightAbility(player, held, tier);
 
-        // Create AOE defensive zone
+        // Create AOE defensive zone (duration scales with level)
         Location center = player.getLocation();
-        player.sendMessage("§b§l[Kingdom] §7Earthshaker activated!");
+        final int durationTicks = Math.min(300, 100 + (level - 1) * 4);
+        double durationSeconds = durationTicks / 20.0;
+        player.sendMessage("§b§l[Kingdom] §7Earthshaker activated! §f(" + String.format("%.1f", durationSeconds) + "s)");
         player.playSound(center, Sound.ITEM_TOTEM_USE, 1f, 1.5f);
 
         new BukkitRunnable() {
             int ticks = 0;
             @Override
             public void run() {
-                if (ticks >= 100) { // 5 seconds
+                if (ticks >= durationTicks) {
                     this.cancel();
                     return;
                 }

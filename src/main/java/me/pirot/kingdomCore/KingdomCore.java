@@ -16,6 +16,7 @@ import me.pirot.kingdomCore.rpg.*;
 import me.pirot.kingdomCore.scoreboard.ScoreboardCommand;
 import me.pirot.kingdomCore.scoreboard.ScoreboardManager;
 import me.pirot.kingdomCore.shop.*;
+import me.pirot.kingdomCore.vault.VaultManager;
 import me.pirot.kingdomCore.web.VerifyCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -129,13 +130,10 @@ public final class KingdomCore extends JavaPlugin {
             return false;
         });
 
-        getCommand("resourcepack").setExecutor((sender, cmd, label, args) -> {
-            if (sender instanceof Player player) {
-                sendResourcePack(player);
-                return true;
-            }
-            return false;
-        });
+        // Vault Command
+        me.pirot.kingdomCore.vault.VaultManager vaultManager = new me.pirot.kingdomCore.vault.VaultManager(this, mongoManager);
+        getCommand("vault").setExecutor(vaultManager);
+        getServer().getPluginManager().registerEvents(vaultManager, this);
 
         // 12. Register Event Listeners
         getServer().getPluginManager().registerEvents(guiListener, this);
@@ -160,13 +158,13 @@ public final class KingdomCore extends JavaPlugin {
         BountyListener bountyListener = new BountyListener(this, bountyManager, configManager);
         getServer().getPluginManager().registerEvents(bountyListener, this);
 
-        PlayerJoinQuitListener joinQuitListener = new PlayerJoinQuitListener(
-                this, economyManager, classManager, scoreboardManager, shopGUI);
-        getServer().getPluginManager().registerEvents(joinQuitListener, this);
-
         // Special Items & Class Selection GUI
         ClassSelectorGUI classSelectorGUI = new ClassSelectorGUI(this, classManager);
         getServer().getPluginManager().registerEvents(classSelectorGUI, this);
+
+        PlayerJoinQuitListener joinQuitListener = new PlayerJoinQuitListener(
+                this, economyManager, classManager, scoreboardManager, shopGUI, classSelectorGUI);
+        getServer().getPluginManager().registerEvents(joinQuitListener, this);
 
         SpecialItemsListener specialItemsListener = new SpecialItemsListener(this, specialItems, classSelectorGUI, economyManager);
         getServer().getPluginManager().registerEvents(specialItemsListener, this);
@@ -247,7 +245,13 @@ public final class KingdomCore extends JavaPlugin {
             if (hash.isEmpty()) {
                 player.setResourcePack(url);
             } else {
-                player.setResourcePack(url, hash.getBytes(), required);
+                try {
+                    byte[] hashBytes = java.util.HexFormat.of().parseHex(hash.trim());
+                    player.setResourcePack(url, hashBytes, required);
+                } catch (IllegalArgumentException e) {
+                    getLogger().warning("[KingdomCore] Invalid resource pack hash in config.yml! Defaulting to sending URL only.");
+                    player.setResourcePack(url);
+                }
             }
         }
     }

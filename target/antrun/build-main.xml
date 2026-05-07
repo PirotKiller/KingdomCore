@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="maven-antrun-" default="main">
   <target name="main">
-    <copy file="C:\Users\thaku\IdeaProjects\KingdomCore\target/kingdomcore-1.0-SNAPSHOT.jar" tofile="D:/MC servers/purper 1.21.11/plugins/kingdomcore-1.0-SNAPSHOT.jar" />
+    <copy file="C:\Users\thaku\IdeaProjects\KingdomCore\target/kingdomcore-1.0-SNAPSHOT.jar" tofile="D:/MC servers/kingdomSMP purper 1.21.11/plugins/kingdomcore-1.0-SNAPSHOT.jar" />
   </target>
 </project>

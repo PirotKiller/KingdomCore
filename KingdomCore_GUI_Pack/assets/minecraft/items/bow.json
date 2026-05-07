@@ -212,7 +212,7 @@
           },
           "on_false": {
             "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/archer/bonebow/model"
+            "model": "minecraft:item/custom_weapons/archer/bonebow/bow_cold_blood"
           }
         }
       },
@@ -222,12 +222,40 @@
           "type": "minecraft:condition",
           "property": "minecraft:using_item",
           "on_true": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/archer/chaosbow/bow_dark_03"
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 20.0,
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "minecraft:item/custom_weapons/archer/bonebow/bow_cold_blood_0"
+            },
+            "entries": [
+              {
+                "threshold": 0.0,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/chaosbow/bow_dark_01"
+                }
+              },
+              {
+                "threshold": 0.65,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/chaosbow/bow_dark_02"
+                }
+              },
+              {
+                "threshold": 0.9,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "minecraft:item/custom_weapons/archer/chaosbow/bow_dark_03"
+                }
+              }
+            ]
           },
           "on_false": {
             "type": "minecraft:model",
-            "model": "minecraft:item/custom_weapons/archer/chaosbow/bow_dark_03"
+            "model": "minecraft:item/custom_weapons/archer/chaosbow/bow_dark"
           }
         }
       },
