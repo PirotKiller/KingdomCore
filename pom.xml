@@ -84,7 +84,7 @@
                             </target>
                         </configuration>
                     </execution>
-                </executions>
+                </executions>   
             </plugin>
         </plugins>
         <resources>
